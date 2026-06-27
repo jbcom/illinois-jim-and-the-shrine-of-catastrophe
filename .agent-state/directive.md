@@ -9,6 +9,15 @@ Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** an
 **Android APK (Capacitor)**.
 
 ## Locked decisions
+- **Genre: side-scroll platformer + mine-cart.** Run/jump/whip platforming
+  through temple levels with mine-cart rail segments. Gravity + AABB collision,
+  tile-based levels, hazards, collectibles, enemies. Touch-first controls
+  (virtual d-pad/swipe + action buttons).
+- **UI = SolidJS** (signals bridge engine→HUD). **Device profiles** via
+  `@capacitor/device` + `screen-orientation` drive the responsive scaler;
+  `@capacitor/app` pauses the loop on background; `@capacitor/status-bar` for immersion.
+- **Engine foundation done:** `createRng(seed)` (mulberry32) + `createClock()`
+  (fixed-timestep) — sim uses these, never `Math.random`/`performance.now`.
 - **Build fresh.** The original POC HTML is NOT migrated. It lives local-only at
   `raw-assets/reference/poc_original.html` (gitignored) as inspiration/floor only.
   The game must EXPAND well beyond the POC.
