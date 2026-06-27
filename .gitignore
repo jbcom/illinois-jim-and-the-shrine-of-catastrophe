@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Capacitor / Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/release/
+*.keystore
+*.apk
+*.aab
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Test / coverage
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+
+# Agent state — gitignored cache (re-derivable)
+.agent-state/digest.md
+.agent-state/cursor.md
+.agent-state/.indexed-sha
+.agent-state/.last-stop-sha
+.agent-state/.last-compaction
+.agent-state/batch.json
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Generated assets cache
+.assets-cache/
