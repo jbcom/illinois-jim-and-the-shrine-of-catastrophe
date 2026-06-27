@@ -16,19 +16,35 @@ import { geminiGenerateImage, readGeminiKey } from "./genai-client.mjs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "raw-assets", "generated");
 
+// Hard art-direction guardrails: an ORIGINAL hero — explicitly NOT the
+// brown-fedora-and-whip archetype. Distinct silhouette so it can't read as any
+// existing franchise. Clean game-sprite format (no scene/background), small,
+// chunky, readable at platformer scale.
 const STYLE =
-  "16-bit pixel art, transparent background, single centered subject, " +
-  "warm torch-lit temple palette (obsidian, tarnished gold, blood red, parchment), " +
-  "pulp adventure tone, original character (not Indiana Jones)";
+  "clean 32x32 pixel-art game sprite, single character centered on a FULLY " +
+  "TRANSPARENT background, no scenery, no ground, no frame; chunky readable " +
+  "silhouette for a side-scrolling platformer; warm temple palette of obsidian, " +
+  "tarnished gold, blood red, and parchment";
+
+// Illinois Jim: a wiry adventurer in a TEAL explorer vest and GOGGLES pushed up
+// on a flat cap (NOT a fedora), a glowing relic-lantern at the hip and a grappling
+// hook (NOT a bullwhip). Deliberately distinct from any existing pulp hero.
+const HERO =
+  "Illinois Jim, a wiry young explorer wearing a teal canvas vest, leather " +
+  "bracers, a flat newsboy cap with brass goggles pushed up, carrying a glowing " +
+  "amber relic-lantern and a coiled grappling hook";
 
 const PROMPTS = [
+  { name: "illinois-jim-idle", prompt: `${STYLE}; ${HERO}, standing idle facing right` },
+  { name: "illinois-jim-run", prompt: `${STYLE}; ${HERO}, mid-run stride facing right` },
   {
-    name: "illinois-jim-idle",
-    prompt: `${STYLE}; the hero Illinois Jim standing idle, fedora, satchel, coiled whip`,
+    name: "illinois-jim-jump",
+    prompt: `${STYLE}; ${HERO}, leaping with grappling hook raised, facing right`,
   },
-  { name: "illinois-jim-run", prompt: `${STYLE}; Illinois Jim mid-run stride` },
-  { name: "illinois-jim-jump", prompt: `${STYLE}; Illinois Jim leaping, whip trailing` },
-  { name: "idol-relic", prompt: `${STYLE}; a glowing golden idol relic collectible` },
+  {
+    name: "idol-relic",
+    prompt: `${STYLE}; a single glowing golden idol relic collectible, faceted gem core`,
+  },
   {
     name: "title-wordmark",
     prompt:
