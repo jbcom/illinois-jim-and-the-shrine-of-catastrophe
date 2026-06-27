@@ -13,9 +13,9 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* JSX via Preact */
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact",
+    /* JSX via SolidJS */
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
 
     /* Linting / strictness */
     "strict": true,

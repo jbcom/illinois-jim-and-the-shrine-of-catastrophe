@@ -29,9 +29,9 @@ Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** an
 ## Scaffold the arcade-game stack — make reality match the profiles
 
 - [x] `git init`; import commit on main; public jbcom repo created; Pages enabled
-- [ ] `package.json` (pnpm only) with vite, typescript, @biomejs/biome, @playwright/test, vitest
-- [ ] `vite.config.ts`, `tsconfig.json`, `biome.json`, `capacitor.config.ts`
-- [ ] `release-please-config.json` + `.release-please-manifest.json` (node)
+- [x] `package.json` (pnpm only) with vite, typescript, @biomejs/biome, @playwright/test, vitest — all latest
+- [x] `vite.config.ts`, `tsconfig.json`, `biome.json`, `capacitor.config.ts`, `vitest.config.ts`, `playwright.config.ts`
+- [x] `release-please-config.json` + `.release-please-manifest.json` (node)
 - [ ] `index.html` + `src/` entry — build the game FRESH (POC is reference only)
 - [ ] `src/sim/` (pure, deterministic), `src/engine/` (clock+rng facades, loop), `src/render/`, `src/ui/` (TSX), `src/audio/`
 - [ ] Responsive resolution (phone both rotations / tablet / foldable); touch+mouse primary

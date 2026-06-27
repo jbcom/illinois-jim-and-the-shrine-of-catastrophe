@@ -1,9 +1,13 @@
 <!-- profile: arcade-game agent-state mobile-android standard-repo v1 -->
 # illinois-jim-and-the-shrine-of-catastrophe
 
-A retro arcade game — an Indiana Jones / *Temple of Doom* clone rendered on an
-HTML5 canvas — being scaffolded into the arcade-game dialect (Vite + TypeScript +
-Capacitor + Biome + Playwright + release-please) and shipped to Android.
+An original mobile-first 2D arcade adventure, built fresh in the arcade-game
+dialect (Vite + TypeScript + Capacitor + Biome + Playwright + release-please).
+Ships to **GitHub Pages** (web, primary) and **Android APK** (Capacitor).
+UI/HUD layer is **SolidJS** (fine-grained reactivity, no VDOM) bridged to an
+imperative canvas engine via signals. Responsive scaling is driven by
+**Capacitor Device profiles** (`@capacitor/device` + `screen-orientation`),
+not CSS media queries alone — phones (both rotations), tablets, foldables.
 
 ## Profiles loaded
 
@@ -28,5 +32,10 @@ up to match.
 ## Notes
 
 - pnpm only — no `npm install`, no `yarn`, no lockfile churn (commit-gate enforces).
+- Develop against the **latest** of everything (deps + Actions pinned to latest SHAs).
 - Sim purity: `src/sim/**` stays pure TS — no DOM, no `Math.random()`, no `performance.now()`.
-- Not yet a git repo / no `package.json` at profile-init time; scaffolding is the first directive block.
+- UI = SolidJS (`src/ui/**`, kebab-case style props, signals as the engine→HUD bridge).
+  The engine stays framework-agnostic; only the HUD imports `solid-js`.
+- Device profiles: `@capacitor/device` + `@capacitor/screen-orientation` feed the responsive
+  scaler; `@capacitor/app` pauses the loop on background; `@capacitor/status-bar` for immersion.
+- POC retired to local-only `raw-assets/reference/poc_original.html` (gitignored) — built fresh.

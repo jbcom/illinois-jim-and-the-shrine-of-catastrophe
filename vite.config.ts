@@ -1,7 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
-import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import solid from "vite-plugin-solid";
 
 // On GitHub Pages the app is served from a sub-path
 // (https://<owner>.github.io/<repo>/ or the org's custom domain + /<repo>/).
@@ -12,7 +12,7 @@ const base = process.env.PAGES_BASE ?? "/";
 export default defineConfig({
   base,
   plugins: [
-    preact(),
+    solid(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],
