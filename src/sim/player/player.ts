@@ -54,6 +54,44 @@ function probeGrounded(map: TileMap, t: PlayerTuning, x: number, y: number): boo
   return r.grounded;
 }
 
+/** Horizontal velocity: accelerate toward the intended run speed. */
+function applyHorizontal(s: PlayerState, intent: PlayerIntent, t: PlayerTuning, dt: number): void {
+  const target = intent.moveX * t.runSpeed;
+  const moving = intent.moveX !== 0;
+  const rate = s.grounded ? (moving ? t.accel : t.decel) : t.airAccel;
+  if (s.vx < target) s.vx = Math.min(s.vx + rate * dt, target);
+  else if (s.vx > target) s.vx = Math.max(s.vx - rate * dt, target);
+
+  if (intent.moveX < 0) s.facing = -1;
+  else if (intent.moveX > 0) s.facing = 1;
+}
+
+/** Tick down timers and arm the jump/whip buffers from this step's presses. */
+function tickTimers(s: PlayerState, intent: PlayerIntent, t: PlayerTuning, dt: number): void {
+  s.coyote = Math.max(0, s.coyote - dt);
+  s.buffer = Math.max(0, s.buffer - dt);
+  s.whip = Math.max(0, s.whip - dt);
+  if (intent.jumpPressed) s.buffer = t.jumpBuffer;
+  if (intent.whipPressed && s.whip <= 0) s.whip = t.whipDuration;
+}
+
+/** Vertical velocity: buffered jump (with coyote grace) + gravity + jump-cut. */
+function applyVertical(s: PlayerState, intent: PlayerIntent, t: PlayerTuning, dt: number): void {
+  if (s.buffer > 0 && (s.grounded || s.coyote > 0)) {
+    s.vy = -t.jumpSpeed;
+    s.buffer = 0;
+    s.coyote = 0;
+    s.grounded = false;
+  }
+
+  s.vy += t.gravity * dt;
+  if (s.vy < 0 && !intent.jumpHeld) {
+    // Released early while rising → extra gravity for a shorter hop.
+    s.vy += t.gravity * (t.jumpCutMultiplier - 1) * dt;
+  }
+  s.vy = clamp(s.vy, -t.jumpSpeed * 2, t.maxFall);
+}
+
 export function stepPlayer(
   state: PlayerState,
   intent: PlayerIntent,
@@ -64,45 +102,9 @@ export function stepPlayer(
   if (state.dead) return state;
 
   const s: PlayerState = { ...state };
-
-  // --- Horizontal acceleration toward target run speed ---
-  const target = intent.moveX * t.runSpeed;
-  const onGround = s.grounded;
-  let rate: number;
-  if (intent.moveX !== 0) {
-    rate = onGround ? t.accel : t.airAccel;
-  } else {
-    rate = onGround ? t.decel : t.airAccel;
-  }
-  if (s.vx < target) s.vx = Math.min(s.vx + rate * dt, target);
-  else if (s.vx > target) s.vx = Math.max(s.vx - rate * dt, target);
-
-  if (intent.moveX < 0) s.facing = -1;
-  else if (intent.moveX > 0) s.facing = 1;
-
-  // --- Timers ---
-  s.coyote = Math.max(0, s.coyote - dt);
-  s.buffer = Math.max(0, s.buffer - dt);
-  s.whip = Math.max(0, s.whip - dt);
-  if (intent.jumpPressed) s.buffer = t.jumpBuffer;
-  if (intent.whipPressed && s.whip <= 0) s.whip = t.whipDuration;
-
-  // --- Jump (buffered press + coyote grace) ---
-  const canJump = s.grounded || s.coyote > 0;
-  if (s.buffer > 0 && canJump) {
-    s.vy = -t.jumpSpeed;
-    s.buffer = 0;
-    s.coyote = 0;
-    s.grounded = false;
-  }
-
-  // --- Gravity + variable jump height ---
-  s.vy += t.gravity * dt;
-  if (s.vy < 0 && !intent.jumpHeld) {
-    // Released early while rising → extra gravity for a shorter hop.
-    s.vy += t.gravity * (t.jumpCutMultiplier - 1) * dt;
-  }
-  s.vy = clamp(s.vy, -t.jumpSpeed * 2, t.maxFall);
+  applyHorizontal(s, intent, t, dt);
+  tickTimers(s, intent, t, dt);
+  applyVertical(s, intent, t, dt);
 
   // --- Integrate + resolve ---
   const body = aabb(s.x, s.y, t.width, t.height);

@@ -41,15 +41,29 @@ Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** an
 - [x] `package.json` (pnpm only) with vite, typescript, @biomejs/biome, @playwright/test, vitest — all latest
 - [x] `vite.config.ts`, `tsconfig.json`, `biome.json`, `capacitor.config.ts`, `vitest.config.ts`, `playwright.config.ts`
 - [x] `release-please-config.json` + `.release-please-manifest.json` (node)
-- [ ] `index.html` + `src/` entry — build the game FRESH (POC is reference only)
-- [ ] `src/sim/` (pure, deterministic), `src/engine/` (clock+rng facades, loop), `src/render/`, `src/ui/` (TSX), `src/audio/`
-- [ ] Responsive resolution (phone both rotations / tablet / foldable); touch+mouse primary
-- [ ] Original branding + fontography for "Illinois Jim and the Shrine of Catastrophe"
-- [ ] Asset pipeline: 2DLowPoly copy + itch.io fetch + Gemini gen
-- [ ] `tests/unit/`, `tests/browser/`, `tests/visual/`, `tests/e2e/` matching the gates
-- [ ] Capacitor: `android/` via `pnpm cap:add android`
-- [ ] `.github/workflows/` ci → release → cd (Pages deploy + Android APK), dependabot.yml
-- [ ] standard-repo root files: AGENTS.md, README.md, CHANGELOG.md, STANDARDS.md, docs/
+- [x] `index.html` + `src/` entry — building the game FRESH (POC is reference only)
+- [x] `src/sim/` + `src/engine/` + `src/audio/` + `src/render/` + `src/ui/` all landed
+  - [x] engine: rng + fixed-timestep clock facades (17 tests)
+  - [x] sim physics: vec2, AABB, tilemap, swept collision (32 tests cumulative)
+  - [x] sim player: controller (run/jump/whip, coyote, buffer, variable height) (10 tests)
+  - [x] sim world: deadzone camera + level parser + demo level (12 tests)
+  - [x] audio: Web Audio engine + procedural sfx bank (19 browser tests)
+  - [x] engine/viewport: device-profile responsive scaler (47 tests)
+  - [x] render: canvas2d renderer + interpolation + sprite atlas (7 browser/unit tests)
+  - [x] input: touch virtual controls + keyboard → PlayerIntent (7 tests)
+  - [x] engine: main game loop wiring sim+render+audio+viewport+input
+  - [x] ui: SolidJS HUD bridged via signals; verified running in mobile browser
+- [x] Responsive resolution (phone both rotations / tablet / foldable); touch+mouse primary
+- [x] Original branding + fontography (BRAND tokens, src/brand.ts)
+- [x] Asset pipeline: 2DLowPoly CC0 copy + itch.io fetch + Gemini gen (all 3 run)
+- [x] `tests/unit/` + `tests/browser/` + `tests/e2e/` matching the gates (99 + 23 + 12)
+- [ ] Capacitor: `android/` via `pnpm cap:add android` (CI does this on release; local optional)
+- [x] `.github/workflows/` ci → release → cd (Pages deploy + Android APK), dependabot.yml
+- [x] standard-repo root files: AGENTS.md, README.md, CHANGELOG.md, STANDARDS.md, docs/
+
+## Scaffold complete — next: open PR, merge, then gameplay expansion
+(enemies, collectibles, mine-cart rail segments, more levels, sprite rendering
+from the atlas, curated Gemini sprites sliced into animation frames)
 
 ## What CONTINUOUS means
 1. Never stop for status reports the user didn't ask for.

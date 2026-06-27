@@ -25,7 +25,7 @@ function makeCanvas(w: number, h: number) {
 
 function pixel(ctx: CanvasRenderingContext2D, x: number, y: number) {
   const d = ctx.getImageData(x, y, 1, 1).data;
-  return { r: d[0]!, g: d[1]!, b: d[2]!, a: d[3]! };
+  return { r: d[0] ?? 0, g: d[1] ?? 0, b: d[2] ?? 0, a: d[3] ?? 0 };
 }
 
 const profile = {

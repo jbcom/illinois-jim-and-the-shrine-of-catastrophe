@@ -53,6 +53,50 @@ function scanHazard(map: TileMap, body: Aabb): boolean {
  * Move `body` by `(dx, dy)` and resolve against solid tiles.
  * `body.pos` is the start position; the move is applied internally per-axis.
  */
+interface SweepResult {
+  /** Resolved leading-edge coordinate on the swept axis. */
+  readonly pos: number;
+  /** True if a blocker stopped the move. */
+  readonly hit: boolean;
+}
+
+/**
+ * Sweep one axis. `lead` is the body's start position on that axis, `size` its
+ * extent, `delta` the attempted move. `spanLo/spanHi` are the body's extent on
+ * the perpendicular axis. `blockAt(cell, perp)` reports whether the tile at
+ * (cell,perp) — ordered along the swept axis — blocks. Returns the resolved
+ * leading position and whether it was stopped, scanning cell-by-cell so a fast
+ * body cannot tunnel through a thin wall.
+ */
+function sweep(
+  lead: number,
+  size: number,
+  delta: number,
+  spanLo: number,
+  spanHi: number,
+  ts: number,
+  blockAt: (cell: number, perp: number) => boolean,
+): SweepResult {
+  const target = lead + delta;
+  const movingPos = delta > 0;
+  const [p0, p1] = tileRange(spanLo, spanHi, ts);
+  // Leading edge cell at start and at target.
+  const edge = (v: number) => Math.floor((movingPos ? v + size - EPSILON : v) / ts);
+  const fromCell = edge(lead);
+  const toCell = edge(target);
+  const stepDir = movingPos ? 1 : -1;
+
+  for (let cell = fromCell + stepDir; movingPos ? cell <= toCell : cell >= toCell; cell += stepDir) {
+    for (let perp = p0; perp <= p1; perp++) {
+      if (blockAt(cell, perp)) {
+        // Snap flush against the blocking cell.
+        return { pos: movingPos ? cell * ts - size : (cell + 1) * ts, hit: true };
+      }
+    }
+  }
+  return { pos: target, hit: false };
+}
+
 export function moveAndCollide(map: TileMap, body: Aabb, dx: number, dy: number): MoveResult {
   const ts = map.tileSize;
   const w = body.size.x;
@@ -65,93 +109,25 @@ export function moveAndCollide(map: TileMap, body: Aabb, dx: number, dy: number)
   let hitTop = false;
   let grounded = false;
 
-  // --- X axis ---
-  // Sweep the leading vertical edge through every column it crosses, stopping at
-  // the first blocker so fast bodies cannot tunnel through thin walls.
+  // X axis first (columns are the swept cells; rows the perpendicular span).
   if (dx !== 0) {
-    const startX = x;
-    const targetX = x + dx;
-    const [r0, r1] = tileRange(y, y + h, ts);
-    if (dx > 0) {
-      const fromCol = Math.floor((startX + w - EPSILON) / ts);
-      const toCol = Math.floor((targetX + w - EPSILON) / ts);
-      x = targetX;
-      for (let col = fromCol + 1; col <= toCol; col++) {
-        let blocked = false;
-        for (let row = r0; row <= r1; row++) {
-          if (blocks(tileAt(map, col, row), false)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (blocked) {
-          x = col * ts - w;
-          hitRight = true;
-          break;
-        }
-      }
-    } else {
-      const fromCol = Math.floor(startX / ts);
-      const toCol = Math.floor(targetX / ts);
-      x = targetX;
-      for (let col = fromCol - 1; col >= toCol; col--) {
-        let blocked = false;
-        for (let row = r0; row <= r1; row++) {
-          if (blocks(tileAt(map, col, row), false)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (blocked) {
-          x = (col + 1) * ts;
-          hitLeft = true;
-          break;
-        }
-      }
+    const r = sweep(x, w, dx, y, y + h, ts, (col, row) => blocks(tileAt(map, col, row), false));
+    x = r.pos;
+    if (r.hit) {
+      if (dx > 0) hitRight = true;
+      else hitLeft = true;
     }
   }
 
-  // --- Y axis ---
+  // Y axis (rows swept; columns perpendicular). Falling bodies are blocked by
+  // one-way platforms, so pass movingDown to `blocks`.
   if (dy !== 0) {
-    const startY = y;
-    const targetY = y + dy;
-    const [c0, c1] = tileRange(x, x + w, ts);
-    if (dy > 0) {
-      const fromRow = Math.floor((startY + h - EPSILON) / ts);
-      const toRow = Math.floor((targetY + h - EPSILON) / ts);
-      y = targetY;
-      for (let row = fromRow + 1; row <= toRow; row++) {
-        let blocked = false;
-        for (let col = c0; col <= c1; col++) {
-          if (blocks(tileAt(map, col, row), true)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (blocked) {
-          y = row * ts - h;
-          grounded = true;
-          break;
-        }
-      }
-    } else {
-      const fromRow = Math.floor(startY / ts);
-      const toRow = Math.floor(targetY / ts);
-      y = targetY;
-      for (let row = fromRow - 1; row >= toRow; row--) {
-        let blocked = false;
-        for (let col = c0; col <= c1; col++) {
-          if (blocks(tileAt(map, col, row), false)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (blocked) {
-          y = (row + 1) * ts;
-          hitTop = true;
-          break;
-        }
-      }
+    const movingDown = dy > 0;
+    const r = sweep(y, h, dy, x, x + w, ts, (row, col) => blocks(tileAt(map, col, row), movingDown));
+    y = r.pos;
+    if (r.hit) {
+      if (movingDown) grounded = true;
+      else hitTop = true;
     }
   }
 
