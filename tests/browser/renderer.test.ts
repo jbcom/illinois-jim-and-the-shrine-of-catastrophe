@@ -1,5 +1,10 @@
 import { computeViewport } from "@engine/viewport/scaler.ts";
 import { drawFrame, SHRINE_PALETTE } from "@render/renderer.ts";
+import { createPlayer } from "@sim/player/player.ts";
+import { DEFAULT_TUNING } from "@sim/player/tuning.ts";
+import { createCamera } from "@sim/world/camera.ts";
+import { createTileMap, setTile, TileKind } from "@sim/world/tilemap.ts";
+import { describe, expect, it } from "vitest";
 import { BRAND } from "@/brand.ts";
 
 /** Parse a #rrggbb brand token into an {r,g,b} triple for pixel assertions. */
@@ -8,12 +13,6 @@ function rgb(hex: string) {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 const SKY = rgb(BRAND.obsidian);
-
-import { createPlayer } from "@sim/player/player.ts";
-import { DEFAULT_TUNING } from "@sim/player/tuning.ts";
-import { createCamera } from "@sim/world/camera.ts";
-import { createTileMap, setTile, TileKind } from "@sim/world/tilemap.ts";
-import { describe, expect, it } from "vitest";
 
 function makeCanvas(w: number, h: number) {
   const canvas = document.createElement("canvas");
