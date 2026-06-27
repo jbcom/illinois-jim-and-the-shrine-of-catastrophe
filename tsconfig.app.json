@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable", "WebWorker"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* JSX via Preact */
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+
+    /* Linting / strictness */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Path aliases mirror vite.config.ts (TS6: relative paths, no baseUrl) */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@sim/*": ["./src/sim/*"],
+      "@engine/*": ["./src/engine/*"],
+      "@render/*": ["./src/render/*"],
+      "@ui/*": ["./src/ui/*"],
+      "@audio/*": ["./src/audio/*"],
+      "@assets/*": ["./src/assets/*"]
+    }
+  },
+  "include": ["src"]
+}
