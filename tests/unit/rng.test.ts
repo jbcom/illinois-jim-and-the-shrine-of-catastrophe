@@ -52,6 +52,14 @@ describe("createRng", () => {
     }
   });
 
+  it("int() and range() throw on inverted bounds", () => {
+    const r = createRng(5);
+    expect(() => r.int(10, 5)).toThrow();
+    expect(() => r.range(10, 5)).toThrow();
+    // Equal bounds are valid (degenerate but well-defined).
+    expect(r.int(3, 3)).toBe(3);
+  });
+
   it("pick() returns an element and throws on empty", () => {
     const r = createRng(42);
     const items = ["a", "b", "c"] as const;

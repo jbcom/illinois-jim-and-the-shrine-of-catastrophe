@@ -17,7 +17,10 @@ export function readGeminiKey() {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
   const envPath = join(ROOT, ".env");
   if (!existsSync(envPath)) return undefined;
-  return readFileSync(envPath, "utf8").match(/GEMINI_API_KEY=(\S+)/)?.[1];
+  // Capture only a key-shaped token (no whitespace/newlines) and trim it.
+  return readFileSync(envPath, "utf8")
+    .match(/GEMINI_API_KEY=([A-Za-z0-9._-]+)/)?.[1]
+    ?.trim();
 }
 
 /** prompt → PNG bytes (Buffer) or null. Throws without a key. */

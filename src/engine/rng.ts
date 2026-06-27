@@ -36,8 +36,16 @@ export function createRng(seed: number): Rng {
 
   return {
     next,
-    int: (min, max) => Math.floor(next() * (max - min + 1)) + min,
-    range: (min, max) => next() * (max - min) + min,
+    int: (min, max) => {
+      // Guard inverted bounds so a logic bug surfaces instead of silently
+      // producing out-of-range or negative-width results.
+      if (max < min) throw new Error(`createRng.int: max (${max}) < min (${min})`);
+      return Math.floor(next() * (max - min + 1)) + min;
+    },
+    range: (min, max) => {
+      if (max < min) throw new Error(`createRng.range: max (${max}) < min (${min})`);
+      return next() * (max - min) + min;
+    },
     chance: (p = 0.5) => next() < p,
     pick: <T>(items: readonly T[]): T => {
       if (items.length === 0) {

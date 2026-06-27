@@ -60,13 +60,22 @@ jobs:
           pnpm cap:add:android
           pnpm cap:sync
 
-      - name: Assemble debug APK
+      # Build a RELEASE APK (hardened, non-debuggable) rather than a debug build.
+      # It is unsigned here; release signing is wired once a keystore is added to
+      # repo secrets (ANDROID_KEYSTORE_BASE64 + passwords) and a signingConfig.
+      - name: Assemble release APK (unsigned)
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Locate APK
         id: apk
-        run: echo "path=$(find android -name '*-debug.apk' | head -n1)" >> "$GITHUB_OUTPUT"
+        run: |
+          path="$(find android -name '*-release*.apk' | head -n1)"
+          if [ -z "$path" ]; then
+            echo "No release APK found" >&2
+            exit 1
+          fi
+          echo "path=$path" >> "$GITHUB_OUTPUT"
 
       - name: Attest build provenance (APK)
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1

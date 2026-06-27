@@ -28,7 +28,10 @@ function readKey() {
   if (process.env.ITCH_API_KEY) return process.env.ITCH_API_KEY;
   const envPath = join(ROOT, ".env");
   if (!existsSync(envPath)) return undefined;
-  return readFileSync(envPath, "utf8").match(/ITCH_API_KEY=(\S+)/)?.[1];
+  // Capture only a key-shaped token (no whitespace/newlines) and trim it.
+  return readFileSync(envPath, "utf8")
+    .match(/ITCH_API_KEY=([A-Za-z0-9._-]+)/)?.[1]
+    ?.trim();
 }
 
 async function fetchOwnedKeys(key) {
