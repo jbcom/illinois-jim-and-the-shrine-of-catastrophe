@@ -1,0 +1,58 @@
+{
+  "name": "illinois-jim-and-the-shrine-of-catastrophe",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Illinois Jim and the Shrine of Catastrophe — a mobile-first 2D arcade adventure.",
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.test.json",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
+    "test": "vitest run --project unit",
+    "test:watch": "vitest --project unit",
+    "test:browser": "vitest run --project browser",
+    "test:visual": "vitest run --project browser tests/visual",
+    "test:e2e": "playwright test",
+    "cap:sync": "cap sync",
+    "cap:add:android": "cap add android",
+    "cap:run:android": "cap run android",
+    "cap:open:android": "cap open android",
+    "assets:kenney": "node scripts/copy-kenney-assets.mjs",
+    "assets:itch": "node scripts/fetch-itch-assets.mjs",
+    "assets:gen": "node scripts/genai-assets.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.1",
+    "@capacitor/cli": "8.4.1",
+    "@google/genai": "^2.10.0",
+    "@playwright/test": "1.61.1",
+    "@solidjs/testing-library": "^0.8.10",
+    "@types/node": "26.0.1",
+    "@vitest/browser": "4.1.9",
+    "@vitest/browser-playwright": "4.1.9",
+    "playwright": "1.61.1",
+    "typescript": "6.0.3",
+    "vite": "8.1.0",
+    "vite-plugin-pwa": "1.3.0",
+    "vite-plugin-solid": "^2.11.12",
+    "vitest": "4.1.9"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.4.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "8.4.1",
+    "@capacitor/device": "^8.0.2",
+    "@capacitor/screen-orientation": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "solid-js": "^1.9.13"
+  }
+}

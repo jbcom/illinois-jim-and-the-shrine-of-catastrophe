@@ -1,0 +1,47 @@
+/* Mobile-first reset. The game owns the full viewport; nothing scrolls. */
+:root {
+  /* Brand tokens — keep in sync with src/brand.ts BRAND. */
+  --shrine-bg: #17110b; /* obsidian */
+  --shrine-ink: #f3e9d2; /* parchment */
+  --shrine-gold: #e3b341; /* idolGold */
+  --shrine-danger: #c2402e; /* bloodRed */
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  /* Dynamic viewport unit — correct under mobile browser chrome.
+     Widely supported now; falls back to 100% on ancient engines. */
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--shrine-bg);
+  color: var(--shrine-ink);
+  font-family: system-ui, -apple-system, sans-serif;
+  /* Disable native gestures that would fight the game's touch controls. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  /* Respect notches/cutouts on phones and foldables. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+canvas {
+  display: block;
+  image-rendering: pixelated;
+}

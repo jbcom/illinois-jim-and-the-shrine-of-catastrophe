@@ -6,6 +6,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+*.tsbuildinfo
 
 # Capacitor / Android
 android/app/build/
@@ -39,6 +40,7 @@ test-results/
 playwright-report/
 playwright/.cache/
 blob-report/
+.vitest-attachments/
 
 # Agent state — gitignored cache (re-derivable)
 .agent-state/digest.md
@@ -55,3 +57,7 @@ pnpm-debug.log*
 
 # Generated assets cache
 .assets-cache/
+
+# Local-only reference + downloaded raw assets (POC, itch.io downloads, scratch).
+# Processed/optimized assets live under src/ or public/ and ARE tracked.
+raw-assets/
