@@ -9,12 +9,14 @@
  * frame. All world→screen mapping goes through the viewport (letterbox scale +
  * offset) and the camera (world scroll).
  */
+
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { PlayerState } from "@sim/player/player.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
 import type { Camera } from "@sim/world/camera.ts";
 import { TileKind, type TileMap } from "@sim/world/tilemap.ts";
+import { BRAND } from "@/brand.ts";
 
 export interface Palette {
   readonly sky: string;
@@ -28,14 +30,14 @@ export interface Palette {
 }
 
 export const SHRINE_PALETTE: Palette = {
-  sky: "#1a120b",
-  solid: "#6b4a2b",
-  platform: "#8a6534",
-  hazard: "#c2402e",
-  ladder: "#c9a35b",
-  rail: "#9a9a9a",
-  player: "#f3e9d2",
-  whip: "#e8c66b",
+  sky: BRAND.obsidian,
+  solid: BRAND.stone,
+  platform: BRAND.sandstone,
+  hazard: BRAND.bloodRed,
+  ladder: BRAND.idolGold,
+  rail: BRAND.steel,
+  player: BRAND.parchment,
+  whip: BRAND.relicGold,
 };
 
 function tileColor(kind: TileKind, p: Palette): string | null {

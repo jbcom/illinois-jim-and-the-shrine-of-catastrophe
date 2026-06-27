@@ -1,5 +1,14 @@
 import { computeViewport } from "@engine/viewport/scaler.ts";
 import { drawFrame, SHRINE_PALETTE } from "@render/renderer.ts";
+import { BRAND } from "@/brand.ts";
+
+/** Parse a #rrggbb brand token into an {r,g,b} triple for pixel assertions. */
+function rgb(hex: string) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+const SKY = rgb(BRAND.obsidian);
+
 import { createPlayer } from "@sim/player/player.ts";
 import { DEFAULT_TUNING } from "@sim/player/tuning.ts";
 import { createCamera } from "@sim/world/camera.ts";
@@ -41,11 +50,11 @@ describe("drawFrame", () => {
       tuning: DEFAULT_TUNING,
       alpha: 0,
     });
-    // Sky #1a120b = (26, 18, 11)
+    // Backdrop is the brand obsidian.
     const p = pixel(ctx, 5, 5);
-    expect(p.r).toBe(26);
-    expect(p.g).toBe(18);
-    expect(p.b).toBe(11);
+    expect(p.r).toBe(SKY.r);
+    expect(p.g).toBe(SKY.g);
+    expect(p.b).toBe(SKY.b);
   });
 
   it("draws a solid tile in the solid colour", () => {
@@ -65,7 +74,7 @@ describe("drawFrame", () => {
     });
     // Center of the first tile should be the solid colour, not sky.
     const p = pixel(ctx, 8, 8);
-    expect(p).not.toEqual({ r: 26, g: 18, b: 11, a: 255 });
+    expect(p).not.toEqual({ r: SKY.r, g: SKY.g, b: SKY.b, a: 255 });
   });
 
   it("renders the player rectangle in the player colour", () => {

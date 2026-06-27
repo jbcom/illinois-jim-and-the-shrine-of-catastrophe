@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: "dist",
   android: {
     // Game is rendered on a canvas; let it own the full surface.
-    backgroundColor: "#1a120b",
+    backgroundColor: "#17110b",
   },
   server: {
     androidScheme: "https",

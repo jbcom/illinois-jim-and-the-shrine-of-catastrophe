@@ -1,7 +1,10 @@
 /* Mobile-first reset. The game owns the full viewport; nothing scrolls. */
 :root {
-  --shrine-bg: #1a120b;
-  --shrine-ink: #f3e9d2;
+  /* Brand tokens — keep in sync with src/brand.ts BRAND. */
+  --shrine-bg: #17110b; /* obsidian */
+  --shrine-ink: #f3e9d2; /* parchment */
+  --shrine-gold: #e3b341; /* idolGold */
+  --shrine-danger: #c2402e; /* bloodRed */
   color-scheme: dark;
 }
 

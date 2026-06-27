@@ -20,8 +20,8 @@ export default defineConfig({
         name: "Illinois Jim and the Shrine of Catastrophe",
         short_name: "Illinois Jim",
         description: "A mobile-first 2D arcade adventure.",
-        theme_color: "#1a120b",
-        background_color: "#1a120b",
+        theme_color: "#17110b",
+        background_color: "#17110b",
         display: "fullscreen",
         orientation: "any",
         icons: [
