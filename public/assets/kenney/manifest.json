@@ -1,0 +1,16 @@
+{
+  "generatedFrom": "/Volumes/home/assets/2DLowPoly",
+  "license": "CC0 (Kenney, www.kenney.nl)",
+  "packs": [
+    {
+      "pack": "Pixel Platformer",
+      "credit": "Kenney",
+      "files": [
+        "kenney/platformer/tilemap_packed.png",
+        "kenney/platformer/tilemap-characters_packed.png",
+        "kenney/platformer/tilemap-backgrounds_packed.png",
+        "kenney/platformer/License.txt"
+      ]
+    }
+  ]
+}

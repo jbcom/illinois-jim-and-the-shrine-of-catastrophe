@@ -25,11 +25,15 @@
     "cap:sync": "cap sync",
     "cap:add:android": "cap add android",
     "cap:run:android": "cap run android",
-    "cap:open:android": "cap open android"
+    "cap:open:android": "cap open android",
+    "assets:kenney": "node scripts/copy-kenney-assets.mjs",
+    "assets:itch": "node scripts/fetch-itch-assets.mjs",
+    "assets:gen": "node scripts/genai-assets.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.1",
     "@capacitor/cli": "8.4.1",
+    "@google/genai": "^2.10.0",
     "@playwright/test": "1.61.1",
     "@solidjs/testing-library": "^0.8.10",
     "@types/node": "26.0.1",
