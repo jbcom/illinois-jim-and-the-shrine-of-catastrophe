@@ -9,11 +9,12 @@
  * Browser-only.
  */
 import type { AnimatedSprite, Texture } from "pixi.js";
+import { assetUrl } from "@/assetUrl.ts";
 import { type FrameSource, frames, loadFrames } from "@render/frameSource.ts";
 
 export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
 
-const BASE = "/assets/player";
+const BASE = assetUrl("assets/player");
 
 /** Ordered single-image frames per state (Imagen-generated, isolated). */
 export const PLAYER_ANIMS: Record<PlayerState, FrameSource> = {

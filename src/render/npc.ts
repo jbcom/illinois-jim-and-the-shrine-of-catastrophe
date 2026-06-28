@@ -20,6 +20,7 @@ import {
   Sprite,
   Texture,
 } from "pixi.js";
+import { assetUrl } from "@/assetUrl.ts";
 
 export const NPC_FRAME_W = 80;
 export const NPC_FRAME_H = 64;
@@ -37,7 +38,7 @@ export const NPC_ROW = {
 } as const;
 export type NpcAnim = keyof typeof NPC_ROW;
 
-const BASE = "/assets/classes/npcs";
+const BASE = assetUrl("assets/classes/npcs");
 
 /**
  * Paper-doll part slots, listed in BACK→FRONT paint order. The factory always

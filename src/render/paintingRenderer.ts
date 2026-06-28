@@ -246,6 +246,9 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
     ph.parent?.removeChild(ph);
     ph.destroy();
     views.set(e, { display: p.sprite, anim: p.sprite, acc: 0, fps: 12, faceable: true, dispose: () => p.destroy() });
+  }).catch((err) => {
+    // A missing/404 hero asset must not crash the game — keep the placeholder.
+    console.error("[render] player sprite failed to load:", err);
   });
 }
 
@@ -265,6 +268,8 @@ function ensureEnemy(e: Entity, visual: EnemyKind, views: Map<Entity, ActorView>
     ph.parent?.removeChild(ph);
     ph.destroy();
     views.set(e, { display: sprite, anim: sprite, acc: 0, fps: 10, faceable: true, dispose: () => sprite.destroy() });
+  }).catch((err) => {
+    console.error("[render] enemy sprite failed to load:", err);
   });
 }
 
@@ -292,13 +297,17 @@ function ensurePot(
   const ph = placeholder(0x8a6d3b);
   layer.addChild(ph);
   views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
-  void loadPotFrames(color).then((frames) => {
-    cache.set(color, frames);
-    if (!views.has(e)) return;
-    ph.parent?.removeChild(ph);
-    ph.destroy();
-    placePot(e, frames, views, layer);
-  });
+  void loadPotFrames(color)
+    .then((frames) => {
+      cache.set(color, frames);
+      if (!views.has(e)) return;
+      ph.parent?.removeChild(ph);
+      ph.destroy();
+      placePot(e, frames, views, layer);
+    })
+    .catch((err) => {
+      console.error("[render] pot frames failed to load:", err);
+    });
 }
 
 function placePot(e: Entity, frames: Texture[], views: Map<Entity, ActorView>, layer: Container): void {

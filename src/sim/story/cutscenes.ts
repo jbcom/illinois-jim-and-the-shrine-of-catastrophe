@@ -17,7 +17,9 @@ export interface Cutscene {
   readonly nextLevel?: string;
 }
 
-const IMG = "/assets/cutscenes";
+import { assetUrl } from "@/assetUrl.ts";
+
+const IMG = assetUrl("assets/cutscenes");
 
 export const CUTSCENES: readonly Cutscene[] = [
   {

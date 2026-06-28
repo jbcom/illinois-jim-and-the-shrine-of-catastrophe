@@ -12,8 +12,9 @@
  * red-gem relic block (the goal marker).
  */
 import type { ShapeStamp } from "@render/composition.ts";
+import { assetUrl } from "@/assetUrl.ts";
 
-const SHEET = "/assets/biomes/caves/mainlev_build.png";
+const SHEET = assetUrl("assets/biomes/caves/mainlev_build.png");
 const stamp = (x: number, y: number, w: number, h: number): ShapeStamp => ({ sheet: SHEET, x, y, w, h });
 
 export const CAVE = {
