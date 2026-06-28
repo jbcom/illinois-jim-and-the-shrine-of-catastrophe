@@ -41,33 +41,47 @@ const CHAR_TO_KIND: Record<string, TileKind> = {
   x: TileKind.Empty, // chase enemy
 };
 
+interface ParseAcc {
+  spawnCol: number;
+  spawnRow: number;
+  readonly collectibles: CollectibleSpawn[];
+  readonly enemies: (SpawnPoint & { kind: "patrol" | "chase" })[];
+}
+
+/** Record the actor (if any) that a level character spawns at (col,row). */
+function recordActor(ch: string, col: number, row: number, tileSize: number, acc: ParseAcc): void {
+  const x = col * tileSize;
+  const y = row * tileSize;
+  switch (ch) {
+    case "@":
+      acc.spawnCol = col;
+      acc.spawnRow = row;
+      break;
+    case "*":
+      acc.collectibles.push({ x, y, value: 100 });
+      break;
+    case "o":
+      acc.enemies.push({ x, y, kind: "patrol" });
+      break;
+    case "x":
+      acc.enemies.push({ x, y, kind: "chase" });
+      break;
+  }
+}
+
 export function parseLevel(rows: readonly string[], tileSize = 16): Level {
   const height = rows.length;
   if (height === 0) throw new Error("parseLevel: empty level");
   const width = Math.max(...rows.map((r) => r.length));
   const map = createTileMap(width, height, tileSize);
 
-  let spawnCol = 1;
-  let spawnRow = 1;
-  const collectibles: CollectibleSpawn[] = [];
-  const enemies: (SpawnPoint & { kind: "patrol" | "chase" })[] = [];
+  const acc: ParseAcc = { spawnCol: 1, spawnRow: 1, collectibles: [], enemies: [] };
 
   for (let row = 0; row < height; row++) {
     const line = rows[row] ?? "";
     for (let col = 0; col < width; col++) {
       const ch = line[col] ?? ".";
-      const x = col * tileSize;
-      const y = row * tileSize;
-      if (ch === "@") {
-        spawnCol = col;
-        spawnRow = row;
-      } else if (ch === "*") {
-        collectibles.push({ x, y, value: 100 });
-      } else if (ch === "o") {
-        enemies.push({ x, y, kind: "patrol" });
-      } else if (ch === "x") {
-        enemies.push({ x, y, kind: "chase" });
-      }
+      recordActor(ch, col, row, tileSize, acc);
       const kind = CHAR_TO_KIND[ch];
       if (kind !== undefined && kind !== TileKind.Empty) {
         setTile(map, col, row, kind);
@@ -77,10 +91,10 @@ export function parseLevel(rows: readonly string[], tileSize = 16): Level {
 
   return {
     map,
-    spawnX: spawnCol * tileSize,
-    spawnY: spawnRow * tileSize,
-    collectibles,
-    enemies,
+    spawnX: acc.spawnCol * tileSize,
+    spawnY: acc.spawnRow * tileSize,
+    collectibles: acc.collectibles,
+    enemies: acc.enemies,
   };
 }
 

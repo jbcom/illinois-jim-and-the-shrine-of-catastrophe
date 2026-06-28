@@ -32,6 +32,76 @@ function accelToward(vx: number, target: number, rate: number, dt: number): numb
   return vx;
 }
 
+/** Mutable refs to a player's traits for one fixed step (keeps system complexity low). */
+interface PlayerTraitRefs {
+  p: { grounded: boolean; coyote: number; buffer: number; whip: number; dead: boolean };
+  pos: { x: number; y: number };
+  vel: { x: number; y: number };
+  size: { w: number; h: number };
+  facing: { dir: -1 | 1 };
+}
+
+function applyPlayerHorizontal(
+  r: PlayerTraitRefs,
+  intent: PlayerIntent,
+  t: PlayerTuning,
+  dt: number,
+) {
+  const target = intent.moveX * t.runSpeed;
+  const moving = intent.moveX !== 0;
+  const rate = r.p.grounded ? (moving ? t.accel : t.decel) : t.airAccel;
+  r.vel.x = accelToward(r.vel.x, target, rate, dt);
+  if (intent.moveX < 0) r.facing.dir = -1;
+  else if (intent.moveX > 0) r.facing.dir = 1;
+}
+
+function applyPlayerTimersAndJump(
+  r: PlayerTraitRefs,
+  intent: PlayerIntent,
+  t: PlayerTuning,
+  dt: number,
+) {
+  r.p.coyote = Math.max(0, r.p.coyote - dt);
+  r.p.buffer = Math.max(0, r.p.buffer - dt);
+  r.p.whip = Math.max(0, r.p.whip - dt);
+  if (intent.jumpPressed) r.p.buffer = t.jumpBuffer;
+  if (intent.whipPressed && r.p.whip <= 0) r.p.whip = t.whipDuration;
+
+  if (r.p.buffer > 0 && (r.p.grounded || r.p.coyote > 0)) {
+    r.vel.y = -t.jumpSpeed;
+    r.p.buffer = 0;
+    r.p.coyote = 0;
+    r.p.grounded = false;
+  }
+
+  r.vel.y += t.gravity * dt;
+  if (r.vel.y < 0 && !intent.jumpHeld) r.vel.y += t.gravity * (t.jumpCutMultiplier - 1) * dt;
+  r.vel.y = clamp(r.vel.y, -t.jumpSpeed * 2, t.maxFall);
+}
+
+function resolvePlayerMove(r: PlayerTraitRefs, map: TileMap, t: PlayerTuning, dt: number) {
+  const res = moveAndCollide(
+    map,
+    aabb(r.pos.x, r.pos.y, r.size.w, r.size.h),
+    r.vel.x * dt,
+    r.vel.y * dt,
+  );
+  r.pos.x = res.x;
+  r.pos.y = res.y;
+  if (res.hitLeft || res.hitRight) r.vel.x = 0;
+  if (res.hitTop && r.vel.y < 0) r.vel.y = 0;
+
+  const wasGrounded = r.p.grounded;
+  const probe = moveAndCollide(map, aabb(r.pos.x, r.pos.y, r.size.w, r.size.h), 0, 0.5);
+  r.p.grounded = res.grounded || probe.grounded;
+  if (r.p.grounded) {
+    if (r.vel.y > 0) r.vel.y = 0;
+  } else if (wasGrounded) {
+    r.p.coyote = t.coyoteTime;
+  }
+  if (res.touchedHazard) r.p.dead = true;
+}
+
 /**
  * Player movement + physics system. Mirrors the standalone stepPlayer feel
  * (accel curves, coyote, jump buffer, variable height) but reads/writes ECS
@@ -48,52 +118,10 @@ export function playerSystem(
     .query(Player, Position, Velocity, Size, Facing)
     .updateEach(([p, pos, vel, size, facing]) => {
       if (p.dead) return;
-
-      // Horizontal
-      const target = intent.moveX * t.runSpeed;
-      const moving = intent.moveX !== 0;
-      const rate = p.grounded ? (moving ? t.accel : t.decel) : t.airAccel;
-      vel.x = accelToward(vel.x, target, rate, dt);
-      if (intent.moveX < 0) facing.dir = -1;
-      else if (intent.moveX > 0) facing.dir = 1;
-
-      // Timers
-      p.coyote = Math.max(0, p.coyote - dt);
-      p.buffer = Math.max(0, p.buffer - dt);
-      p.whip = Math.max(0, p.whip - dt);
-      if (intent.jumpPressed) p.buffer = t.jumpBuffer;
-      if (intent.whipPressed && p.whip <= 0) p.whip = t.whipDuration;
-
-      // Jump (buffered + coyote)
-      if (p.buffer > 0 && (p.grounded || p.coyote > 0)) {
-        vel.y = -t.jumpSpeed;
-        p.buffer = 0;
-        p.coyote = 0;
-        p.grounded = false;
-      }
-
-      // Gravity + variable height
-      vel.y += t.gravity * dt;
-      if (vel.y < 0 && !intent.jumpHeld) vel.y += t.gravity * (t.jumpCutMultiplier - 1) * dt;
-      vel.y = clamp(vel.y, -t.jumpSpeed * 2, t.maxFall);
-
-      // Integrate + resolve
-      const res = moveAndCollide(map, aabb(pos.x, pos.y, size.w, size.h), vel.x * dt, vel.y * dt);
-      pos.x = res.x;
-      pos.y = res.y;
-      if (res.hitLeft || res.hitRight) vel.x = 0;
-      if (res.hitTop && vel.y < 0) vel.y = 0;
-
-      const wasGrounded = p.grounded;
-      const probe = moveAndCollide(map, aabb(pos.x, pos.y, size.w, size.h), 0, 0.5);
-      p.grounded = res.grounded || probe.grounded;
-      if (p.grounded) {
-        if (vel.y > 0) vel.y = 0;
-      } else if (wasGrounded) {
-        p.coyote = t.coyoteTime;
-      }
-
-      if (res.touchedHazard) p.dead = true;
+      const r: PlayerTraitRefs = { p, pos, vel, size, facing };
+      applyPlayerHorizontal(r, intent, t, dt);
+      applyPlayerTimersAndJump(r, intent, t, dt);
+      resolvePlayerMove(r, map, t, dt);
     });
 }
 
