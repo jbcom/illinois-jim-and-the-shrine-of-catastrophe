@@ -26,6 +26,12 @@ export const Player = trait({
   buffer: 0,
   whip: 0,
   dead: false,
+  /**
+   * Post-hit invulnerability timer (seconds). While > 0 the player can't be hurt
+   * again — a brief mercy window after taking damage / respawning so a single
+   * enemy contact can't chain-kill across lives (the classic blink-invuln).
+   */
+  invuln: 0,
 });
 
 /**

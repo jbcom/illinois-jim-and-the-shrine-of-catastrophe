@@ -16,6 +16,8 @@ const WHIP = new Set(["KeyX", "KeyJ", "ShiftLeft"]);
 export interface KeyboardInput {
   /** Read the current intent and clear edge flags for the next frame. */
   poll(): PlayerIntent;
+  /** Drop all held keys + edge state (e.g. on a pause→play boundary). */
+  clear(): void;
   dispose(): void;
 }
 
@@ -57,6 +59,11 @@ export function createKeyboardInput(target: EventTarget = window): KeyboardInput
       jumpPressed = false;
       whipPressed = false;
       return intent;
+    },
+    clear() {
+      held.clear();
+      jumpPressed = false;
+      whipPressed = false;
     },
     dispose() {
       target.removeEventListener("keydown", onDown);

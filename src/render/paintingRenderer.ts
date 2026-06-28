@@ -164,11 +164,15 @@ export async function createPaintingRenderer(
   function syncActors(o: PaintingRenderOpts): void {
     const seen = new Set<Entity>();
 
-    o.world.query(Player, Position, Size, Facing).readEach(([, pos, size, facing], e) => {
+    o.world.query(Player, Position, Size, Facing).readEach(([player, pos, size, facing], e) => {
       seen.add(e);
       ensurePlayer(e, views, actorsLayer);
-      place(views.get(e), e, o, pos, size);
-      faceView(views.get(e), facing.dir);
+      const v = views.get(e);
+      place(v, e, o, pos, size);
+      faceView(v, facing.dir);
+      // Blink while invulnerable (post-hit mercy window) — flicker the sprite so
+      // the player can read "I just took a hit and I'm briefly safe".
+      if (v) v.display.alpha = player.invuln > 0 ? (Math.floor(player.invuln * 12) % 2 === 0 ? 0.35 : 1) : 1;
     });
     o.world.query(Enemy, Position, Size, Facing).readEach(([enemy, pos, size, facing], e) => {
       seen.add(e);
