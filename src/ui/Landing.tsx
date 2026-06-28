@@ -36,6 +36,9 @@ export function Landing(props: { onStart: () => void }) {
         style={{
           paddingTop: "max(env(safe-area-inset-top), 3vh)",
           paddingBottom: "max(env(safe-area-inset-bottom), 3vh)",
+          // Landscape phones notch on the sides — pad left/right too.
+          paddingLeft: "max(env(safe-area-inset-left), 4vw)",
+          paddingRight: "max(env(safe-area-inset-right), 4vw)",
         }}
       >
         {/* The curated GenAI wordmark (carved-stone gold, transparent) — used as

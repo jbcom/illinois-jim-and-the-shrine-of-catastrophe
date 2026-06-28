@@ -17,13 +17,9 @@ import { hudStore } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
 import { RotatePrompt } from "@ui/RotatePrompt.tsx";
-import {
-  applyNativeOrientationLock,
-  type OrientationState,
-  readOrientationState,
-} from "@engine/viewport/orientation.ts";
+import { useOrientation } from "@ui/orientationStore.ts";
 import { useMachine } from "@xstate/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function App() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -38,41 +34,10 @@ export function App() {
   const playingRef = useRef(false);
   playingRef.current = state === "playing";
 
-  // Device-profile-driven orientation: phones lock to landscape; tablets,
-  // unfolded foldables, and desktop stay free. Re-evaluated on resize so a
-  // foldable unfolding (or a rotation) updates the lock + the web rotate prompt.
-  const [orientation, setOrientation] = useState<OrientationState>(() =>
-    readOrientationState(window),
-  );
-  useEffect(() => {
-    // Only re-render + re-apply the native lock when the orientation state
-    // actually changes — resize fires continuously during a drag and
-    // readOrientationState returns a fresh object each call, which would
-    // otherwise spam React + the native screen-orientation bridge.
-    let first = true;
-    const sync = () => {
-      setOrientation((prev) => {
-        const next = readOrientationState(window);
-        const changed =
-          first ||
-          prev.deviceClass !== next.deviceClass ||
-          prev.lockLandscape !== next.lockLandscape ||
-          prev.isPortrait !== next.isPortrait ||
-          prev.needsRotatePrompt !== next.needsRotatePrompt;
-        if (!changed) return prev;
-        first = false;
-        void applyNativeOrientationLock(next);
-        return next;
-      });
-    };
-    sync();
-    window.addEventListener("resize", sync);
-    window.addEventListener("orientationchange", sync);
-    return () => {
-      window.removeEventListener("resize", sync);
-      window.removeEventListener("orientationchange", sync);
-    };
-  }, []);
+  // Device-profile-driven orientation via the UI orientation store (phones lock
+  // landscape; tablets / unfolded foldables / desktop stay free). The store owns
+  // the engine bridge + native lock; App just reads the signal.
+  const orientation = useOrientation();
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode

@@ -95,12 +95,19 @@ async function main() {
   // (a safe middle for foldables / tablets in either rotation). Files are
   // suffixed -16x9 / -9x16 / -1x1; the wordmark + any non-scene asset stays 1:1.
   const ASPECTS = { "16:9": "16x9", "9:16": "9x16", "1:1": "1x1" };
+  // Append ratio-specific framing so each variant is COMPOSED for its shape (the
+  // shared CUT cue is otherwise landscape-biased — "cinematic wide composition").
+  const frameFor = (prompt, ratio) => {
+    if (ratio === "9:16") return `${prompt}; vertical portrait composition, tall framing, the subject fills the frame top-to-bottom`;
+    if (ratio === "1:1") return `${prompt}; square composition, balanced centred framing with safe margins`;
+    return `${prompt}; wide cinematic landscape composition`;
+  };
   for (const p of prompts) {
     const ratios = p.multiAspect ? Object.entries(ASPECTS) : [["1:1", null]];
     for (const [ratio, suffix] of ratios) {
       const outName = suffix ? `${p.name}-${suffix}` : p.name;
       console.warn(`generating ${outName} (${ratio})…`);
-      const bytes = await generate(p.prompt, ratio);
+      const bytes = await generate(p.multiAspect ? frameFor(p.prompt, ratio) : p.prompt, ratio);
       if (!bytes) {
         console.warn(`  no image returned for ${outName}`);
         continue;

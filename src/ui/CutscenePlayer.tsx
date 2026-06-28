@@ -120,8 +120,14 @@ export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
       {/* Narration BAR — solid, prominent, pinned to the bottom. Safe-area
           padding so the text + hint never clip under the home bar on phones. */}
       <div
-        className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] px-6 pt-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.75rem)" }}
+        className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] pt-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
+        style={{
+          paddingBottom: "max(env(safe-area-inset-bottom), 1.75rem)",
+          // Landscape phones put the notch/home-indicator on the SIDES — pad
+          // left/right so the narration never slips under them.
+          paddingLeft: "max(env(safe-area-inset-left), 1.5rem)",
+          paddingRight: "max(env(safe-area-inset-right), 1.5rem)",
+        }}
       >
         <p
           className="cutscene-text mx-auto max-w-3xl text-[#f4e4c1] text-lg leading-relaxed transition-opacity md:text-2xl"
