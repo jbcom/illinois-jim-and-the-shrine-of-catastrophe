@@ -1,10 +1,18 @@
+import { createRngPair } from "@engine/rng.ts";
 import {
+  award,
+  COMBO_WINDOW,
   collectibleSystem,
   combatSystem,
   enemySystem,
   lifetimeSystem,
+  MAX_COMBO,
+  mineCartSystem,
+  particleSystem,
   physicsSystem,
   playerSystem,
+  scoreSystem,
+  spawnBurst,
 } from "@sim/ecs/systems.ts";
 import {
   Collectible,
@@ -12,8 +20,11 @@ import {
   Facing,
   Gravity,
   Lifetime,
+  MineCart,
+  Particle,
   Player,
   Position,
+  Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
@@ -134,7 +145,7 @@ describe("ECS world + systems", () => {
   it("patrol enemy reverses direction at its bounds", () => {
     const level = parseLevel(["........", "..o.....", "########"], 16);
     const sim = createSimWorld(level, T);
-    enemySystem(sim.world);
+    enemySystem(sim.world, DT);
     const enemy = sim.world.query(Enemy)[0];
     const vel = enemy?.get(Velocity);
     expect(Math.abs(vel?.x ?? 0)).toBeGreaterThan(0); // it moves
@@ -143,7 +154,7 @@ describe("ECS world + systems", () => {
   it("chase enemy moves toward the player's x", () => {
     const level = parseLevel(["..........", "x........@", "##########"], 16);
     const sim = createSimWorld(level, T);
-    enemySystem(sim.world);
+    enemySystem(sim.world, DT);
     const enemy = sim.world.query(Enemy)[0];
     const vel = enemy?.get(Velocity);
     const facing = enemy?.get(Facing);
@@ -229,6 +240,121 @@ describe("ECS world + systems", () => {
     const sim = createSimWorld(level, T);
     const res = combatSystem(sim.world, T);
     expect(res).toEqual({ kills: 0, playerHurt: false });
+  });
+
+  it("award scales points by the combo and raises it", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    expect(award(sim.world, 100)).toBe(100); // combo starts at 1
+    expect(award(sim.world, 100)).toBe(200); // combo now 2
+    const s = sim.score.get(Score);
+    expect(s?.points).toBe(300);
+    expect(s?.combo).toBe(3);
+    expect(s?.comboTimer).toBeCloseTo(COMBO_WINDOW);
+  });
+
+  it("combo multiplier is capped at MAX_COMBO", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 20; i++) award(sim.world, 10);
+    expect(sim.score.get(Score)?.combo).toBe(MAX_COMBO);
+  });
+
+  it("scoreSystem decays the combo timer and resets the multiplier on lapse", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    award(sim.world, 100); // combo 2, timer = COMBO_WINDOW
+    // Advance past the window.
+    const steps = Math.ceil(COMBO_WINDOW / DT) + 2;
+    for (let i = 0; i < steps; i++) scoreSystem(sim.world, DT);
+    const s = sim.score.get(Score);
+    expect(s?.combo).toBe(1);
+    expect(s?.comboTimer).toBe(0);
+  });
+
+  it("collectibleSystem awards through the combo system", () => {
+    const level = parseLevel(["#####", "..@..", "#####"], 16);
+    const sim = createSimWorld(level, T);
+    const pp = sim.player.get(Position);
+    const ps = sim.player.get(Size);
+    sim.world.spawn(
+      Position({ x: pp?.x ?? 0, y: pp?.y ?? 0 }),
+      Size({ w: ps?.w ?? 10, h: ps?.h ?? 10 }),
+      Collectible({ value: 100, taken: false }),
+    );
+    const gained = collectibleSystem(sim.world);
+    expect(gained).toBe(100);
+    expect(sim.score.get(Score)?.points).toBe(100);
+    expect(sim.score.get(Score)?.combo).toBe(2); // bumped after the pickup
+  });
+
+  it("mine-cart: player rides along a rail at cart speed when grounded on it", () => {
+    // Rail tiles ('~') along the floor row; player spawns on them.
+    const level = parseLevel(["........", "...@....", "~~~~~~~~"], 16);
+    const sim = createSimWorld(level, T);
+    // Settle the player onto the rail floor.
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    // Face right and ride.
+    const f = sim.player.get(Facing);
+    if (f) sim.player.set(Facing, { dir: 1 });
+    const riding = mineCartSystem(sim.world, NEUTRAL_INTENT, level.map);
+    expect(riding).toBe(true);
+    const vel = sim.player.get(Velocity);
+    expect(vel?.x).toBeCloseTo(sim.player.get(MineCart)?.speed ?? 0);
+  });
+
+  it("mine-cart: jumping dismounts the cart", () => {
+    const level = parseLevel(["........", "...@....", "~~~~~~~~"], 16);
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    const riding = mineCartSystem(sim.world, intent({ jumpPressed: true }), level.map);
+    expect(riding).toBe(false);
+    expect(sim.player.get(MineCart)?.riding).toBe(false);
+  });
+
+  it("mine-cart: no ride when not on a rail", () => {
+    const level = flatLevel(); // solid floor, no rails
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    expect(mineCartSystem(sim.world, NEUTRAL_INTENT, level.map)).toBe(false);
+  });
+
+  it("spawnBurst creates particles using the FX rng (deterministic per seed)", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const fx = createRngPair("seed-A").fx;
+    spawnBurst(sim.world, fx, 50, 50, { count: 8, color: 0xff0000, speed: 80 });
+    expect(sim.world.query(Particle).length).toBe(8);
+  });
+
+  it("particleSystem moves particles and lifetimeSystem removes them", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const fx = createRngPair("seed-B").fx;
+    spawnBurst(sim.world, fx, 50, 50, { count: 4, color: 0xff0000, speed: 80, lifetime: 0.05 });
+    const before = sim.world.query(Particle)[0]?.get(Position);
+    particleSystem(sim.world, DT, T.gravity);
+    const after = sim.world.query(Particle)[0]?.get(Position);
+    // At least one coordinate changed (particles have non-zero velocity).
+    expect(after?.x !== before?.x || after?.y !== before?.y).toBe(true);
+    // Expire them.
+    for (let i = 0; i < 6; i++) lifetimeSystem(sim.world, DT);
+    expect(sim.world.query(Particle).length).toBe(0);
+  });
+
+  it("FX particle stream does not desync the sim stream", () => {
+    // Two identical sim runs; one also spawns FX bursts. Player path must match.
+    const playerX = (withFx: boolean) => {
+      const level = flatLevel();
+      const sim = createSimWorld(level, T);
+      const fx = createRngPair("run").fx;
+      for (let i = 0; i < 30; i++) {
+        playerSystem(sim.world, intent({ moveX: 1 }), level.map, T, DT);
+        if (withFx) spawnBurst(sim.world, fx, 0, 0, { count: 3, color: 1, speed: 50 });
+      }
+      return sim.player.get(Position)?.x;
+    };
+    expect(playerX(true)).toBe(playerX(false));
   });
 
   it("is deterministic for an identical intent sequence", () => {

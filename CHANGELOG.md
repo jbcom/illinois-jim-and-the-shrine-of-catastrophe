@@ -1,6 +1,6 @@
 ---
 title: Changelog
-updated: 2026-06-27
+updated: 2026-06-28
 status: current
 domain: context
 ---
@@ -16,123 +16,147 @@ do not edit version numbers manually.
 
 ## [Unreleased]
 
-### Added
+### Added — Milestone 2: Playable Cave Level (PixiJS + ECS + React shell)
+
+**Stack migration**
+- Replaced SolidJS with **React 19** + **Tailwind v4** for the UI/HUD layer.
+- Replaced canvas 2D `drawFrame` with **PixiJS 8** `PaintingRenderer`
+  (`src/render/paintingRenderer.ts`): WebGL renderer, StrictMode-safe (fresh
+  canvas per `Application` init avoids poisoned WebGL contexts).
+- Replaced the monolithic game loop (`game.ts`) with the ECS loop
+  (`src/engine/gameEcs.ts`) driven by a **koota** world and fixed-step systems.
+- Added **xstate v5** FSM (`src/ui/gameMachine.ts`) for game-state flow:
+  `title → cutscene → playing → won/lost`.
+- Upgraded `vite.config.ts`: `@vitejs/plugin-react` + `@tailwindcss/vite`
+  replace the former SolidJS Vite plugin.
+- Dual **mulberry32 PRNG** (`createRngPair`): separate sim and spawn streams.
+
+**Level architecture — painting + invisible collision**
+- `src/render/composition.ts`: `paintComposition` — assembles hand-placed shape
+  stamps (pixel rects cut from biome sheets) into a PixiJS `Container`. Levels
+  are paintings, not tile grids.
+- `src/render/levels/caveDescent.ts`: `CAVE_DESCENT` placement array +
+  `CAVE_DESCENT_FRAME` (authored vertical band bounds); cover-scaled to fill the
+  canvas height.
+- `src/sim/world/gameLevel.ts`: `GameLevel` — invisible collision tilemap +
+  spawn lists (collectibles, enemies, pots, goal-x). `DESCENT` is the first
+  cave level. Painting and collision share a level id but are authored separately.
+- `src/sim/world/levels/`: `shrine01.ts`, `shrine02.ts`, `shrine03.ts` —
+  collision + spawn data for three levels.
+
+**ECS sim (koota)**
+- `src/sim/ecs/traits.ts`: koota traits — `Position`, `Velocity`, `Size`,
+  `Facing`, `Player`, `Enemy`, `Npc`, `Collectible`, `Pot`, `Gravity`, `Hazard`,
+  `Lifetime`, `Score`, `MineCart`, particle traits.
+- `src/sim/ecs/systems.ts`: pure fixed-step systems — `physicsSystem`,
+  `playerSystem`, `enemySystem` (patrol/chase via yuka steering), `combatSystem`
+  (whip/stomp kills), `potSystem` (smash + drop spawn), `collectibleSystem`
+  (pickup + combo award), `scoreSystem` (combo decay), `mineCartSystem` (rail
+  riding), `npcInteractionSystem`, `lifetimeSystem`, `particleSystem`, `spawnBurst`.
+- `src/sim/ecs/world.ts`: `createSimWorld`.
+- `src/sim/ai/steering.ts`: yuka-based steering for chase enemies.
+
+**Story**
+- `src/sim/story/cutscenes.ts`: `Cutscene` type + registry (`intro`, `escape`).
+  GenAI 16-bit painted scene images in `public/assets/cutscenes/`.
+- `src/sim/story/dialogue.ts`: NPC dialogue script registry (pure data).
+
+**Renderer components (PixiJS 8)**
+- `src/render/parallax.ts`: `createParallax` — depth-scrolled `TilingSprite`
+  stack. `CAVE_PARALLAX` spec.
+- `src/render/playerSprite.ts`: Illinois Jim animator — idle/run/jump/fall/attack
+  states from `public/assets/player/illinois-jim-*.png`, feet-anchored,
+  scale-flip for facing.
+- `src/render/enemySprites.ts`: 4 animated enemy kinds × 5 states from itch.io
+  packs (goblin, skeleton, mushroom, flyingEye).
+- `src/render/npc.ts`: `composeNpcSheet` — paper-doll NPC compositor; bakes
+  skin/clothing/hair/hand layers into a `RenderTexture`.
+- `src/render/pots.ts`: `loadPotFrames` — 4-colour breakable pot sheets; row 0
+  is the smash sequence.
+- `src/render/hpBar.ts`: HP bar overlay.
+- `src/render/layers.ts`: render-layer koota traits + compositor functions.
+- `src/render/scene.ts`: `buildScene` — full layered scene builder.
+
+**Audio**
+- `src/audio/gameAudio.ts`: `createGameAudio` — wires SFX events (whip, stomp,
+  coin, pot-break, death) to the ECS world; starts the looping cave-ambience
+  music track.
+
+**React UI/HUD**
+- `src/ui/gameMachine.ts`: xstate v5 FSM — title → cutscene → playing →
+  won/lost. Context carries score, bestScore, cutsceneId.
+- `src/ui/App.tsx`: React 19 root shell — PixiJS host div + HUD overlay,
+  `useMachine` FSM driver, StrictMode-safe game lifecycle.
+- `src/ui/Hud.tsx`: score, combo multiplier, lives display, PAUSED overlay.
+- `src/ui/CutscenePlayer.tsx`: full-screen 16-bit cutscene viewer with
+  tap/click/Enter narration advance.
+- `src/ui/Screens.tsx`: `TitleScreen` + `ResultScreen` (won/lost, score,
+  restart/title buttons).
+- `src/ui/hudState.ts`: plain reactive HUD store (score, lives, combo, paused).
+- `src/ui/persistence.ts`: `loadBestScore` / `saveBestScore` via
+  `@capacitor/preferences`.
+
+**Assets**
+- `public/assets/player/illinois-jim-*.png`: GenAI Illinois Jim — Imagen-
+  generated, magenta-key isolated, height-normalised transparent frames.
+- `public/assets/cutscenes/`: GenAI 16-bit cutscene paintings (intro, escape).
+- `public/assets/enemies/`: animated enemy sprite packs (goblin, skeleton,
+  mushroom, flyingEye) from itch.io.
+- `public/assets/npcs/classes/`: layered NPC paper-doll kit.
+- `public/assets/breakables/`: breakable pot colour sheets (gray, red, white,
+  yellow).
+- `public/assets/biomes/`: cave biome sheet for level composition shape stamps.
+
+**Tests**
+- `tests/unit/`: expanded to cover ECS systems, FSM, dialogue, cutscenes,
+  levels, pots, steering, atlas, brand.
+- `tests/browser/`: full PixiJS component suite — paintingRenderer, composition,
+  parallax, playerSprite, enemySprites, npc, pots, hpBar, scene, sprites,
+  tileLayer, audio, gameAudio, persistence, pixiStrictMode. Proof screenshots
+  committed alongside each test.
+
+---
+
+## Milestone 1 — Scaffold + foundation (released)
 
 **Project scaffold and configuration**
 - `package.json` with pnpm 9.15.0, Vite 8, TypeScript 6, Biome 2, Vitest 4,
-  Playwright 1.61, Capacitor 8, SolidJS 1.9, and release-please configuration.
-- `vite.config.ts`: SolidJS plugin, PWA plugin (`vite-plugin-pwa`), path aliases
-  (`@`, `@sim`, `@engine`, `@render`, `@ui`, `@audio`, `@assets`), `PAGES_BASE`
-  sub-path support for GitHub Pages builds.
-- `biome.json`: Biome 2 linter + formatter (2-space indent, 100-char line width,
-  double quotes, trailing commas, import organizer).
+  Playwright 1.61, Capacitor 8, and release-please configuration.
+- `vite.config.ts`: PWA plugin, path aliases, `PAGES_BASE` sub-path support.
+- `biome.json`: Biome 2 linter + formatter.
 - `tsconfig.json` / `tsconfig.app.json` / `tsconfig.test.json` / `tsconfig.node.json`.
 - `capacitor.config.ts`: appId `com.jbcom.illinoisjim`, `webDir: "dist"`,
-  dark background `#17110b`, `androidScheme: https`.
-- `vitest.config.ts`: `unit` project (Node, pure sim) and `browser` project
-  (Chromium via `@vitest/browser-playwright`).
-- `playwright.config.ts`: multi-project across phone portrait, phone landscape,
-  tablet, and desktop viewports.
+  `androidScheme: https`.
+- `vitest.config.ts`: `unit` (Node) and `browser` (Chromium) projects.
+- `playwright.config.ts`: phone portrait/landscape, tablet, desktop viewports.
 - `release-please-config.json`: node release type, conventional-commit sections.
-- `.claude/gates.json`: pre-commit coverage rules, `Math.random`/`performance.now`
-  ban patterns for sim+engine, forbidden bash patterns.
+- `.claude/gates.json`: coverage rules, `Math.random`/`performance.now` ban,
+  forbidden bash patterns.
 
-**Engine — RNG + clock facades**
-- `src/engine/rng.ts`: `createRng(seed)` — mulberry32 deterministic PRNG facade.
-  Sim code must never call `Math.random()` directly.
-- `src/engine/clock.ts`: `createClock()` — fixed-timestep accumulator (default
-  1/60 s step, max 5 sub-steps). Returns `{ steps, dt, alpha }` per tick.
-  `alpha` is the interpolation fraction for the renderer.
+**Engine — RNG + clock**
+- `src/engine/rng.ts`: `createRng(seed)` mulberry32 facade.
+- `src/engine/clock.ts`: `createClock()` fixed-timestep accumulator.
 
 **Sim — physics**
-- `src/sim/math/vec2.ts`: 2D vector type + `clamp` utility.
-- `src/sim/physics/aabb.ts`: axis-aligned bounding box helpers.
-- `src/sim/physics/collide.ts`: `moveAndCollide` — swept tile collision against
-  all tile kinds (solid, one-way platform, hazard); returns hit flags + hazard
-  touch flag.
+- `src/sim/math/vec2.ts`, `src/sim/physics/aabb.ts`, `src/sim/physics/collide.ts`.
 
 **Sim — world**
-- `src/sim/world/tilemap.ts`: `TileKind` enum (Empty, Solid, Platform, Rail,
-  Hazard, Ladder), flat row-major tile grid, query helpers.
-- `src/sim/world/camera.ts`: `createCamera` + `followCamera` — deadzone scroll
-  camera clamped to level bounds.
-- `src/sim/world/level.ts`: `parseLevel` — ASCII level art parser. Characters:
-  `.` empty, `#` solid, `=` one-way platform, `^` hazard, `H` ladder, `~` rail,
-  `@` player spawn.
-- `src/sim/world/levels/shrine01.ts`: `SHRINE_01` — "Threshold of the Shrine",
-  the first hand-authored demo level.
+- `src/sim/world/tilemap.ts`, `src/sim/world/camera.ts`, `src/sim/world/level.ts`.
 
 **Sim — player controller**
-- `src/sim/input/intent.ts`: `PlayerIntent` interface (moveX, moveY, jumpPressed,
-  jumpHeld, whipPressed) + `NEUTRAL_INTENT`.
-- `src/sim/input/touchModel.ts`: pure touch→intent model (no DOM); `touchToAxes`
-  maps pointer positions + `TouchLayout` to axes and button states.
-- `src/sim/player/tuning.ts`: `PlayerTuning` interface + `DEFAULT_TUNING`
-  constants (runSpeed 130, gravity 900, jumpSpeed 330, coyoteTime 0.08,
-  jumpBuffer 0.1, whipReach 26, whipDuration 0.18, etc.).
-- `src/sim/player/player.ts`: `stepPlayer` — deterministic platformer controller.
-  Implements acceleration/deceleration curves, variable-height jump (early-release
-  gravity multiplier), coyote time, jump buffering, whip state, hazard death.
+- `src/sim/input/intent.ts`, `src/sim/input/touchModel.ts`.
+- `src/sim/player/tuning.ts`, `src/sim/player/player.ts` (`stepPlayer`).
 
 **Engine — viewport / responsive scaler**
-- `src/engine/viewport/deviceProfile.ts`: `classifyDevice` — pure classifier
-  producing `DeviceProfile` category (phone, tablet, foldable, desktop) from CSS
-  dimensions, DPR, and platform string.
-- `src/engine/viewport/scaler.ts`: `computeViewport` — pure "contain/fit"
-  letterbox geometry: largest integer-friendly scale that fits the design
-  resolution within the canvas, centered with pillarbox/letterbox bars.
-- `src/engine/viewport/responsive.ts`: DOM + Capacitor adapter; reads
-  `window.innerWidth/Height`, `devicePixelRatio` (capped at 2),
-  `@capacitor/device` platform, `@capacitor/screen-orientation`; debounces
-  resize/orientationchange events; exposes `current()` / `onChange()` / `dispose()`.
+- `src/engine/viewport/deviceProfile.ts`, `scaler.ts`, `responsive.ts`.
 
 **Engine — input**
-- `src/engine/input/keyboard.ts`: DOM `keydown`/`keyup` → `PlayerIntent`. Bound
-  keys: WASD + arrows (move), Space/Z/K (jump), X/J/ShiftLeft (whip).
-- `src/engine/input/touch.ts`: Pointer Events adapter → `touchModel.touchToAxes`.
-- `src/engine/input/inputManager.ts`: `createInputManager` — merges touch +
-  keyboard intents (touch axes take priority when non-zero).
-
-**Engine — game loop**
-- `src/engine/game.ts`: `createGame` — `requestAnimationFrame` loop. Each frame:
-  `clock.tick` → `input.poll` → N × `stepPlayer` → `followCamera` →
-  `drawFrame` (with interpolation alpha) → HUD signal writes.
-  Respawns player on death. Handles pause via `@capacitor/app` lifecycle events.
-
-**Renderer**
-- `src/render/renderer.ts`: `drawFrame(ctx, FrameInput)` — canvas 2D renderer.
-  `SHRINE_PALETTE` derives from the `BRAND` tokens in `src/brand.ts` (obsidian, stone, sandstone, idolGold, relicGold, bloodRed, parchment, steel
-  rail `#9a9a9a`, player `#f3e9d2`, whip `#e8c66b`). Camera projection transforms
-  world coordinates into canvas pixels via the `ViewportGeometry` scale + offset.
-  Player and whip are drawn with interpolated positions.
-
-**Audio**
-- `src/audio/audioEngine.ts`: `createAudioEngine` — Web Audio context wrapper;
-  unlock-on-user-gesture, master gain bus, per-bus gain control, SFX scheduling.
-- `src/audio/sfxBank.ts`: procedural SFX bank — `renderBlip`, `renderCoin`,
-  `renderThud`, `renderWhipCrack` — square, triangle, and noise envelopes rendered
-  into `AudioBuffer`s; no asset files required.
-
-**SolidJS UI / HUD**
-- `src/ui/hudState.ts`: `HudModel` Solid signal bridge (score, lives, paused,
-  deviceClass). Engine writes via setters; components read via reactive getters.
-- `src/ui/Hud.tsx`: score and lives display, PAUSED overlay.
-- `src/ui/App.tsx`: mounts canvas + HUD, Capacitor app lifecycle pause/resume,
-  status bar hide.
+- `src/engine/input/keyboard.ts`, `touch.ts`, `inputManager.ts`.
 
 **CI / CD**
-- `.github/workflows/ci.yml`: lint → typecheck → unit tests → Playwright Chromium
-  install → browser tests → build; runs on PR and push to main.
-- `.github/workflows/release.yml`: release-please PR automation + debug APK build
-  (Java 21, Gradle `assembleDebug`) + build-provenance attestation + APK attached
-  to GitHub release; triggers on push to main when a release is created.
-- `.github/workflows/cd.yml`: GitHub Pages deploy; builds with
-  `PAGES_BASE=/illinois-jim-and-the-shrine-of-catastrophe/`; triggers on push to
-  main and `workflow_dispatch`.
+- `.github/workflows/ci.yml`, `release.yml`, `cd.yml`.
 
 **Tests**
-- `tests/unit/`: 99 passing unit tests covering vec2, AABB, collision, tilemap,
-  level parser, camera, clock, rng, device-profile classifier, viewport scaler,
-  touch model, and player controller.
-- `tests/browser/`: 23 passing browser tests covering the canvas 2D renderer and
-  the Web Audio engine, running in real Chromium.
+- 99 unit tests (vec2, AABB, collision, tilemap, level, camera, clock, rng,
+  device-profile, scaler, touchModel, player).
+- 23 browser tests (canvas 2D renderer, Web Audio engine).

@@ -29,6 +29,8 @@ export interface AudioEngine {
   mute(bus?: AudioBus): void;
   unmute(bus?: AudioBus): void;
   playSfx(buffer: AudioBuffer, opts?: SfxOptions): SfxHandle;
+  /** Play a buffer on the MUSIC bus (looping by default). Returns a stop handle. */
+  playMusic(buffer: AudioBuffer, opts?: { gain?: number; loop?: boolean }): SfxHandle;
   state(): "suspended" | "running" | "closed";
   dispose(): void;
   /** Expose the underlying AudioContext for tests / OfflineAudioContext users. */
@@ -180,6 +182,29 @@ export function createAudioEngine(): AudioEngine {
             } catch {
               // Already stopped (e.g. buffer finished) — ignore.
             }
+          }
+        },
+      };
+    },
+
+    playMusic(buffer: AudioBuffer, opts?: { gain?: number; loop?: boolean }): SfxHandle {
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = clamp01(opts?.gain ?? 1);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = opts?.loop ?? true;
+      source.connect(gainNode);
+      gainNode.connect(musicBus);
+      source.start();
+      let stopped = false;
+      return {
+        stop(): void {
+          if (stopped) return;
+          stopped = true;
+          try {
+            source.stop();
+          } catch {
+            /* already stopped */
           }
         },
       };

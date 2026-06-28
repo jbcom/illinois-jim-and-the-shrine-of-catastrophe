@@ -16,39 +16,35 @@ import { geminiGenerateImage, readGeminiKey } from "./genai-client.mjs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "raw-assets", "generated");
 
-// Hard art-direction guardrails: an ORIGINAL hero — explicitly NOT the
-// brown-fedora-and-whip archetype. Distinct silhouette so it can't read as any
-// existing franchise. Clean game-sprite format (no scene/background), small,
-// chunky, readable at platformer scale.
-const STYLE =
-  "clean 32x32 pixel-art game sprite, single character centered on a FULLY " +
-  "TRANSPARENT background, no scenery, no ground, no frame; chunky readable " +
-  "silhouette for a side-scrolling platformer; warm temple palette of obsidian, " +
-  "tarnished gold, blood red, and parchment";
+// GenAI is used ONLY for cutscene scenes + branding — gameplay sprites come from
+// real transparent asset packs. (The old isolated-hero sprite prompts were
+// retired when the hero became the real classes/adventure pack.)
 
-// Illinois Jim: a wiry adventurer in a TEAL explorer vest and GOGGLES pushed up
-// on a flat cap (NOT a fedora), a glowing relic-lantern at the hip and a grappling
-// hook (NOT a bullwhip). Deliberately distinct from any existing pulp hero.
-const HERO =
-  "Illinois Jim, a wiry young explorer wearing a teal canvas vest, leather " +
-  "bracers, a flat newsboy cap with brass goggles pushed up, carrying a glowing " +
-  "amber relic-lantern and a coiled grappling hook";
+// Cutscene style — full-screen 16-bit SNES/Genesis-era story art. Unlike the
+// gameplay sprites (which come from real transparent packs), cutscenes are
+// PAINTED SCENES with backgrounds: this is the one place GenAI art belongs.
+const CUT =
+  "16-bit SNES-era pixel-art story cutscene illustration, full scene with a " +
+  "background, cinematic wide composition, dramatic lighting, limited retro " +
+  "palette of obsidian, tarnished gold, blood red, parchment, and teal; the mood " +
+  "of an early-90s pulp adventure game";
+
+// The hero as he appears in cutscenes (matches the in-game red-cloaked adventurer).
+const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak and travel boots";
 
 const PROMPTS = [
-  { name: "illinois-jim-idle", prompt: `${STYLE}; ${HERO}, standing idle facing right` },
-  { name: "illinois-jim-run", prompt: `${STYLE}; ${HERO}, mid-run stride facing right` },
-  {
-    name: "illinois-jim-jump",
-    prompt: `${STYLE}; ${HERO}, leaping with grappling hook raised, facing right`,
-  },
-  {
-    name: "idol-relic",
-    prompt: `${STYLE}; a single glowing golden idol relic collectible, faceted gem core`,
-  },
+  // Story beats — one full-screen scene per cutscene, in narrative order.
+  { name: "cut-01-village", prompt: `${CUT}; ${JIM} standing at the edge of a windswept clifftop village at dusk, an elder pointing toward a distant mountain shrine, the sea far below` },
+  { name: "cut-02-descent", prompt: `${CUT}; ${JIM} lowering himself by rope into a vast black cave mouth in the mountainside, torchlight flickering on jagged rock, ominous depth below` },
+  { name: "cut-03-ruins", prompt: `${CUT}; ${JIM} crossing a crumbling brick-and-stone underground ruin lit by glowing red gems, broken pottery and ancient carvings around him` },
+  { name: "cut-04-shrine", prompt: `${CUT}; a towering ancient shrine deep underground, a single glowing idol on an altar atop cracked steps, ${JIM} small in the foreground gazing up in awe and dread` },
+  { name: "cut-05-catastrophe", prompt: `${CUT}; the shrine cracking and erupting with red light as ${JIM} grabs the idol and flees, the cavern collapsing behind him, debris and dust` },
+  { name: "cut-06-escape", prompt: `${CUT}; ${JIM} bursting out of the cave mouth into dawn light clutching the glowing idol, the mountain crumbling behind him, triumphant and exhausted` },
+  // Branding.
   {
     name: "title-wordmark",
     prompt:
-      "pulp adventure game logo wordmark reading 'ILLINOIS JIM AND THE SHRINE OF CATASTROPHE', carved-stone gold lettering, transparent background",
+      "16-bit pulp adventure game logo wordmark reading 'ILLINOIS JIM AND THE SHRINE OF CATASTROPHE', carved-stone gold lettering with a cracked-relic motif, on a transparent background",
   },
 ];
 
@@ -64,7 +60,11 @@ async function main() {
   }
   const generate = geminiGenerateImage(key);
   mkdirSync(OUT, { recursive: true });
-  for (const p of PROMPTS) {
+  // `--only <substr>` narrows the run to matching prompt names (e.g. the hero).
+  const onlyIdx = process.argv.indexOf("--only");
+  const only = onlyIdx >= 0 ? process.argv[onlyIdx + 1] : undefined;
+  const prompts = only ? PROMPTS.filter((p) => p.name.includes(only)) : PROMPTS;
+  for (const p of prompts) {
     console.warn(`generating ${p.name}…`);
     const bytes = await generate(p.prompt);
     if (!bytes) {

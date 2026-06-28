@@ -6,24 +6,31 @@
  * No DOM / Math.random / wall-clock — determinism preserved.
  */
 
+import type { Rng } from "@engine/rng.ts";
+import { applySteering, arrive } from "@sim/ai/steering.ts";
 import {
   Collectible,
   Enemy,
   Facing,
   Gravity,
   Lifetime,
+  MineCart,
+  Npc,
+  Particle,
   Player,
   Position,
+  Pot,
+  Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import type { PlayerIntent } from "@sim/input/intent.ts";
-import { clamp } from "@sim/math/vec2.ts";
+import { approach, clamp } from "@sim/math/vec2.ts";
 import { aabb, intersects } from "@sim/physics/aabb.ts";
 import { moveAndCollide } from "@sim/physics/collide.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
-import type { TileMap } from "@sim/world/tilemap.ts";
-import type { World } from "koota";
+import { TileKind, type TileMap, tileAtWorld } from "@sim/world/tilemap.ts";
+import type { Entity, World } from "koota";
 
 /** Horizontal acceleration toward the intended run speed (player only). */
 function accelToward(vx: number, target: number, rate: number, dt: number): number {
@@ -115,11 +122,13 @@ export function playerSystem(
   dt: number,
 ): void {
   world
-    .query(Player, Position, Velocity, Size, Facing)
-    .updateEach(([p, pos, vel, size, facing]) => {
+    .query(Player, Position, Velocity, Size, Facing, MineCart)
+    .updateEach(([p, pos, vel, size, facing, cart]) => {
       if (p.dead) return;
       const r: PlayerTraitRefs = { p, pos, vel, size, facing };
-      applyPlayerHorizontal(r, intent, t, dt);
+      // While riding a mine-cart, the cart owns horizontal velocity — don't let
+      // the run-accel decelerate it. Jump/gravity still apply.
+      if (!cart.riding) applyPlayerHorizontal(r, intent, t, dt);
       applyPlayerTimersAndJump(r, intent, t, dt);
       resolvePlayerMove(r, map, t, dt);
     });
@@ -139,16 +148,54 @@ export function collectibleSystem(world: World): number {
   if (!pp || !ps) return 0;
   const playerBox = aabb(pp.x, pp.y, ps.w, ps.h);
 
-  let gained = 0;
+  // Collect first (mutating the query), then award through the combo system so
+  // chained pickups stack the multiplier.
+  const values: number[] = [];
   world.query(Collectible, Position, Size).updateEach(([c, pos, size], entity) => {
     if (c.taken) return;
     if (intersects(playerBox, aabb(pos.x, pos.y, size.w, size.h))) {
       c.taken = true;
-      gained += c.value;
+      values.push(c.value);
       entity.destroy();
     }
   });
+  let gained = 0;
+  for (const v of values) gained += award(world, v);
   return gained;
+}
+
+/** The NPC nearest to the player and within its talk range, if any. */
+export interface TalkTarget {
+  readonly entity: Entity;
+  readonly dialogueId: string;
+}
+
+/**
+ * Find the nearest story NPC within talk range of the player. Pure read — the
+ * HUD uses the result to show a "talk" prompt and, on interact, open the
+ * dialogue. Returns null when no NPC is in range (or there's no player).
+ */
+export function npcInteractionSystem(world: World): TalkTarget | null {
+  const player = world.query(Player, Position, Size)[0];
+  if (!player) return null;
+  const pp = player.get(Position);
+  const ps = player.get(Size);
+  if (!pp || !ps) return null;
+  const cx = pp.x + ps.w / 2;
+  const cy = pp.y + ps.h / 2;
+
+  let best: TalkTarget | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  world.query(Npc, Position, Size).readEach(([npc, pos, size], entity) => {
+    const nx = pos.x + size.w / 2;
+    const ny = pos.y + size.h / 2;
+    const dist = Math.hypot(nx - cx, ny - cy);
+    if (dist <= npc.range && dist < bestDist) {
+      bestDist = dist;
+      best = { entity, dialogueId: npc.dialogueId };
+    }
+  });
+  return best;
 }
 
 /**
@@ -174,9 +221,9 @@ export function physicsSystem(world: World, map: TileMap, t: PlayerTuning, dt: n
 }
 
 /**
- * Enemy steering: patrol bounces between minX/maxX; chase moves toward the
- * player on the x axis. Velocity is set here; physicsSystem integrates it.
- * (Yuka steering is layered on top of this in a later step.)
+ * Enemy steering: patrol bounces between minX/maxX; chase uses arrive-style
+ * steering (Yuka model, src/sim/ai/steering.ts) toward the player on the x axis.
+ * Velocity is set here; physicsSystem integrates it against the tilemap.
  */
 function steerPatrol(
   e: { minX: number; maxX: number; speed: number },
@@ -190,31 +237,47 @@ function steerPatrol(
   vel.x = e.speed * facing.dir;
 }
 
+/**
+ * Chase uses arrive-style steering on the x-axis (Yuka model): accelerate toward
+ * the player and decelerate when close, so the chaser settles rather than
+ * jittering on top of the target. Enemies are ground-bound (y is gravity), so we
+ * steer in 1D and project the 2D force onto x.
+ */
 function steerChase(
-  e: { speed: number },
-  pos: { x: number },
-  vel: { x: number },
+  e: { speed: number; accel: number },
+  pos: { x: number; y: number },
+  vel: { x: number; y: number },
   facing: { dir: -1 | 1 },
-  playerX: number | null,
+  player: { x: number; y: number } | null,
+  dt: number,
 ): void {
-  if (playerX === null) {
-    vel.x = 0; // no player to chase — hold position
+  if (player === null) {
+    // Decelerate to a stop when there's no target.
+    vel.x = approach(vel.x, 0, e.accel * dt);
     return;
   }
-  const dir: -1 | 1 = playerX > pos.x ? 1 : -1;
-  facing.dir = dir;
-  vel.x = e.speed * dir;
+  const force = arrive(
+    { x: pos.x, y: 0 },
+    { x: vel.x, y: 0 },
+    { x: player.x, y: 0 },
+    e.speed,
+    e.accel,
+  );
+  const steered = applySteering({ x: vel.x, y: 0 }, force, dt, e.speed);
+  vel.x = steered.x;
+  if (Math.abs(vel.x) > 1) facing.dir = vel.x > 0 ? 1 : -1;
 }
 
-export function enemySystem(world: World): void {
+export function enemySystem(world: World, dt: number): void {
   // Chase targets the first player; null when there's no player (so chasers idle
   // instead of marching toward world origin x=0).
-  const playerX = world.query(Player, Position)[0]?.get(Position)?.x ?? null;
+  const playerPos = world.query(Player, Position)[0]?.get(Position) ?? null;
+  const player = playerPos ? { x: playerPos.x, y: playerPos.y } : null;
 
   world.query(Enemy, Position, Velocity, Facing, Size).updateEach(([e, pos, vel, facing, size]) => {
     if (!e.alive) return;
     if (e.kind === "patrol") steerPatrol(e, pos, vel, facing, size.w);
-    else steerChase(e, pos, vel, facing, playerX);
+    else steerChase({ speed: e.speed, accel: 600 }, pos, vel, facing, player, dt);
   });
 }
 
@@ -308,4 +371,208 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
   if (bounce) player.set(Velocity, { x: vel.x, y: -t.jumpSpeed * 0.6 });
   if (playerHurt) player.set(Player, { ...p, dead: true });
   return { kills, playerHurt };
+}
+
+/** Seconds the smash animation plays before the pot entity is removed. */
+export const POT_BREAK_TIME = 0.4;
+/** Points a relic dropped from a pot is worth; a "secret" relic is worth more. */
+export const POT_RELIC_VALUE = 50;
+export const POT_SECRET_VALUE = 250;
+
+export interface PotResult {
+  /** Pots smashed this step. */
+  readonly smashed: number;
+  /** Lives gained from "health" drops this step. */
+  readonly healthDrops: number;
+}
+
+/**
+ * Breakable pots. An active whip overlapping an intact pot smashes it: the pot
+ * latches `broken`, starts its break-animation timer, and spawns its drop —
+ * a relic (Collectible worth POT_RELIC_VALUE), a secret (a higher-value relic),
+ * or health (a +1 life applied to Score here). Broken pots count down and are
+ * removed when the animation finishes. Pure: returns counts for sfx/particles.
+ */
+export function potSystem(world: World, t: PlayerTuning, dt: number): PotResult {
+  let smashed = 0;
+  let healthDrops = 0;
+
+  const player = world.query(Player, Position, Size, Facing)[0];
+  const whip = player ? playerWhipBox(player, t) : null;
+
+  // Pass 1 (read-only): decide which pots smash + age broken ones. Collect
+  // mutations so spawning drops mid-iteration can't perturb the query.
+  const drops: Array<{ x: number; y: number; drop: "relic" | "health" | "secret" }> = [];
+  const toBreak: Entity[] = [];
+  const toExpire: Entity[] = [];
+  world.query(Pot, Position, Size).updateEach(([pot, pos, size], entity) => {
+    if (pot.broken) {
+      const remaining = pot.breakTimer - dt;
+      if (remaining <= 0) toExpire.push(entity);
+      else entity.set(Pot, { ...pot, breakTimer: remaining });
+      return;
+    }
+    if (!whip || !intersects(whip, aabb(pos.x, pos.y, size.w, size.h))) return;
+    toBreak.push(entity);
+    smashed++;
+    drops.push({ x: pos.x + size.w / 2, y: pos.y + size.h / 2, drop: pot.drop });
+  });
+
+  for (const e of toExpire) e.destroy();
+  for (const e of toBreak) {
+    const pot = e.get(Pot);
+    if (pot) e.set(Pot, { ...pot, broken: true, breakTimer: POT_BREAK_TIME });
+  }
+
+  for (const d of drops) {
+    if (d.drop === "health") {
+      healthDrops += addLife(world);
+    } else {
+      const value = d.drop === "secret" ? POT_SECRET_VALUE : POT_RELIC_VALUE;
+      world.spawn(Position({ x: d.x - 5, y: d.y - 5 }), Size({ w: 10, h: 10 }), Collectible({ value, taken: false }));
+    }
+  }
+  return { smashed, healthDrops };
+}
+
+/** Grant the player one life via the Score entity. Returns 1 if applied. */
+function addLife(world: World): number {
+  const e = world.query(Score)[0];
+  if (!e) return 0;
+  const s = e.get(Score);
+  if (!s) return 0;
+  e.set(Score, { ...s, lives: s.lives + 1 });
+  return 1;
+}
+
+/** The whip hitbox for a player entity (snapshot-safe wrapper around whipBox). */
+function playerWhipBox(player: Entity, t: PlayerTuning): ReturnType<typeof aabb> | null {
+  const p = player.get(Player);
+  const pos = player.get(Position);
+  const size = player.get(Size);
+  const facing = player.get(Facing);
+  if (!p || !pos || !size || !facing) return null;
+  return whipBox(p, pos, size, facing, t);
+}
+
+/** How long (seconds) a combo stays alive after the last scoring event. */
+export const COMBO_WINDOW = 2.5;
+/** Combo multiplier ceiling. */
+export const MAX_COMBO = 8;
+
+/**
+ * Award `basePoints` to the run score, scaled by the current combo multiplier,
+ * and refresh/raise the combo. Returns the points actually added (base × combo).
+ * Chained pickups/kills within COMBO_WINDOW stack the multiplier.
+ */
+export function award(world: World, basePoints: number): number {
+  const e = world.query(Score)[0];
+  if (!e) return 0;
+  const s = e.get(Score);
+  if (!s) return 0;
+  const added = basePoints * s.combo;
+  e.set(Score, {
+    ...s,
+    points: s.points + added,
+    combo: Math.min(MAX_COMBO, s.combo + 1),
+    comboTimer: COMBO_WINDOW,
+  });
+  return added;
+}
+
+/** Decay the combo timer; reset the multiplier to 1 when it lapses. */
+export function scoreSystem(world: World, dt: number): void {
+  world.query(Score).updateEach(([s]) => {
+    if (s.comboTimer > 0) {
+      s.comboTimer -= dt;
+      if (s.comboTimer <= 0) {
+        s.comboTimer = 0;
+        s.combo = 1;
+      }
+    }
+  });
+}
+
+/** Is there a Rail tile under this body's feet? */
+function onRail(
+  map: TileMap,
+  pos: { x: number; y: number },
+  size: { w: number; h: number },
+): boolean {
+  const feetY = pos.y + size.h + 1;
+  const left = tileAtWorld(map, pos.x + 2, feetY);
+  const right = tileAtWorld(map, pos.x + size.w - 2, feetY);
+  return left === TileKind.Rail || right === TileKind.Rail;
+}
+
+/**
+ * Mine-cart system (the iconic hook): when the player (with a MineCart trait) is
+ * grounded on a Rail tile, they ride at cart speed in the rail direction,
+ * accelerating the run. Pressing jump dismounts. The cart carries the player's
+ * horizontal velocity; playerSystem still resolves collisions, so rail gaps and
+ * walls behave naturally. Returns whether the player is currently riding.
+ */
+export function mineCartSystem(world: World, intent: PlayerIntent, map: TileMap): boolean {
+  const e = world.query(Player, MineCart, Position, Velocity, Size, Facing)[0];
+  if (!e) return false;
+  const p = e.get(Player);
+  const cart = e.get(MineCart);
+  const pos = e.get(Position);
+  const vel = e.get(Velocity);
+  const size = e.get(Size);
+  const facing = e.get(Facing);
+  if (!p || !cart || !pos || !vel || !size || !facing) return false;
+
+  const railed = p.grounded && onRail(map, pos, size);
+
+  if (railed && !intent.jumpPressed) {
+    const dir = facing.dir; // ride the way the player faces
+    e.set(MineCart, { ...cart, riding: true, dir });
+    e.set(Velocity, { x: cart.speed * dir, y: vel.y });
+    return true;
+  }
+
+  if (cart.riding) e.set(MineCart, { ...cart, riding: false });
+  return false;
+}
+
+export interface BurstOptions {
+  readonly count: number;
+  readonly color: number;
+  readonly speed: number;
+  readonly size?: number;
+  readonly gravity?: number;
+  readonly lifetime?: number;
+}
+
+/**
+ * Spawn a cosmetic particle burst at (x,y). Uses the FX rng stream so it never
+ * advances the sim stream — cosmetic variety can't desync a gameplay replay.
+ * Each particle gets a random direction + speed jitter, a Lifetime, and motion
+ * the particleSystem integrates.
+ */
+export function spawnBurst(world: World, fx: Rng, x: number, y: number, o: BurstOptions): void {
+  const size = o.size ?? 2;
+  const gravity = o.gravity ?? 0;
+  const lifetime = o.lifetime ?? 0.5;
+  for (let i = 0; i < o.count; i++) {
+    const angle = fx.range(0, Math.PI * 2);
+    const speed = o.speed * fx.range(0.4, 1);
+    world.spawn(
+      Position({ x, y }),
+      Velocity({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }),
+      Particle({ size, color: o.color, gravity }),
+      Lifetime({ remaining: lifetime * fx.range(0.7, 1) }),
+    );
+  }
+}
+
+/** Integrate particle motion (velocity + optional gravity). Lifetime is handled
+ * by lifetimeSystem, which removes expired particles. */
+export function particleSystem(world: World, dt: number, gravityAccel: number): void {
+  world.query(Particle, Position, Velocity).updateEach(([part, pos, vel]) => {
+    if (part.gravity !== 0) vel.y += gravityAccel * part.gravity * dt;
+    pos.x += vel.x * dt;
+    pos.y += vel.y * dt;
+  });
 }

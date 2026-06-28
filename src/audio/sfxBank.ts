@@ -150,3 +150,34 @@ export function renderWhipCrack(ctx: BaseAudioContext): AudioBuffer {
   }
   return buf;
 }
+
+/**
+ * Seamless looping cave ambience — a low drone (stacked detuned triangles) under
+ * faint filtered noise, with whole-number cycles across the buffer so it loops
+ * without a click. Quiet by design; meant to play on the music bus under gameplay.
+ */
+export function renderCaveAmbience(ctx: BaseAudioContext): AudioBuffer {
+  const duration = 4; // 4s loop
+  const buf = allocMono(ctx, duration);
+  const data = buf.getChannelData(0);
+  const sr = ctx.sampleRate;
+  // Drone tones — frequencies chosen so an integer number of cycles fits `duration`
+  // (freq × duration ∈ ℤ) for a click-free loop point.
+  const tones = [55, 82.5, 110]; // A1, ~E2, A2 (all × 4s = integer cycles)
+  for (let i = 0; i < data.length; i++) {
+    const t = i / sr;
+    let s = 0;
+    for (const f of tones) s += Math.sin(2 * Math.PI * f * t);
+    data[i] = (s / tones.length) * 0.18;
+  }
+  // Faint noise shimmer, low-passed by a simple moving average.
+  const noise = new Float32Array(data.length);
+  fillNoise(noise, 9001);
+  let acc = 0;
+  const win = 32;
+  for (let i = 0; i < data.length; i++) {
+    acc += (noise[i] ?? 0) - (noise[i - win] ?? 0);
+    data[i] = (data[i] ?? 0) + (acc / win) * 0.04;
+  }
+  return buf;
+}

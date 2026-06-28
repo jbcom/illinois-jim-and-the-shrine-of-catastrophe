@@ -61,3 +61,7 @@ pnpm-debug.log*
 # Local-only reference + downloaded raw assets (POC, itch.io downloads, scratch).
 # Processed/optimized assets live under src/ or public/ and ARE tracked.
 raw-assets/
+
+# vitest-browser proof screenshots (re-derivable)
+tests/browser/__screenshots__/
+tests/browser/*.png

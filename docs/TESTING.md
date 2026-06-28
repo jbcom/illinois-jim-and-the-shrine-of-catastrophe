@@ -1,6 +1,6 @@
 ---
 title: Testing Strategy
-updated: 2026-06-27
+updated: 2026-06-28
 status: current
 domain: quality
 ---
@@ -30,41 +30,61 @@ These tests run in Node (no browser, no DOM). They cover every module in
 | `camera.test.ts` | `src/sim/world/camera.ts` |
 | `player.test.ts` | `src/sim/player/player.ts`, `src/sim/player/tuning.ts` |
 | `touchModel.test.ts` | `src/sim/input/touchModel.ts` |
+| `ecs.test.ts` | `src/sim/ecs/traits.ts`, `src/sim/ecs/systems.ts` — physics, combat, scoring, pots |
+| `gameMachine.test.ts` | `src/ui/gameMachine.ts` — FSM state transitions |
+| `dialogue.test.ts` | `src/sim/story/dialogue.ts` |
+| `cutscenes.test.ts` | `src/sim/story/cutscenes.ts` |
+| `pots.test.ts` | `src/sim/ecs/traits.ts` (Pot) + `potSystem` |
+| `steering.test.ts` | `src/sim/ai/steering.ts` |
+| `atlas.test.ts` | Texture atlas / strip slicing |
+| `brand.test.ts` | `src/brand.ts` palette constants |
 | `rng.test.ts` | `src/engine/rng.ts` |
 | `clock.test.ts` | `src/engine/clock.ts` |
 | `deviceProfile.test.ts` | `src/engine/viewport/deviceProfile.ts` |
 | `scaler.test.ts` | `src/engine/viewport/scaler.ts` |
 
-**Current count:** 99 tests passing.
-
 ### Determinism tests
 
-`player.test.ts` includes replay tests: a fixed intent sequence is applied from
-a known `PlayerState`, and the resulting state is compared against a snapshot.
+`ecs.test.ts` includes replay tests: a fixed intent sequence is applied from a
+known world seed, and the resulting entity state is compared against a snapshot.
 These tests catch any accidental introduction of non-determinism (floating-point
-divergence, hidden state, etc.).
+divergence, hidden state, `Math.random` calls in sim code, etc.).
 
 ---
 
-## Tier 2 — Browser tests (real Chromium, canvas + audio)
+## Tier 2 — Browser tests (real Chromium, PixiJS + audio)
 
 **Location:** `tests/browser/`
 **Runner:** `vitest run --project browser` via `@vitest/browser-playwright`
 **Command:** `pnpm test:browser`
 
 These tests run in a real Chromium process (not JSDOM). They cover code that
-requires actual browser APIs:
+requires actual browser APIs — WebGL (PixiJS), Web Audio, and DOM persistence:
 
 | Test file | Module(s) covered |
 |---|---|
-| `renderer.test.ts` | `src/render/renderer.ts` — canvas 2D draw, colour sampling |
+| `paintingRenderer.test.ts` | `src/render/paintingRenderer.ts` — PixiJS Application, canvas init, render call |
+| `composition.test.ts` | `src/render/composition.ts` — shape stamp placement |
+| `parallax.test.ts` | `src/render/parallax.ts` — TilingSprite depth stack |
+| `playerSprite.test.ts` | `src/render/playerSprite.ts` — Illinois Jim states, facing flip |
+| `enemySprites.test.ts` | `src/render/enemySprites.ts` — 4 enemy kinds × 5 states |
+| `npc.test.ts` | `src/render/npc.ts` — paper-doll NPC compositor |
+| `pots.test.ts` | `src/render/pots.ts` — 4-colour breakable pot frame slicing |
+| `hpBar.test.ts` | `src/render/hpBar.ts` — HP bar render states |
+| `scene.test.ts` | `src/render/scene.ts` — full layered scene builder |
+| `sprites.test.ts` | `src/render/sprites.ts` — sliceStrip, animatedFromStrip |
+| `tileLayer.test.ts` | `src/render/tileLayer.ts` — @pixi/tilemap grid paint |
 | `audio.test.ts` | `src/audio/audioEngine.ts`, `src/audio/sfxBank.ts` — AudioContext state, buffer rendering |
+| `gameAudio.test.ts` | `src/audio/gameAudio.ts` — SFX event wiring, ambience |
+| `persistence.test.ts` | `src/ui/persistence.ts` — @capacitor/preferences load/save |
+| `pixiStrictMode.test.ts` | React StrictMode Pixi init/teardown safety |
 
-**Current count:** 23 tests passing.
+Every render component test captures a screenshot (`*.png` files in `tests/browser/`)
+for visual review. Screenshot files are gitignored proof artifacts, not committed assets.
 
-Browser tests are required whenever `src/render/**` or `src/audio/**` changes
-(gate rule). CI installs Playwright Chromium with `--with-deps` before running
-them.
+Browser tests are required whenever `src/render/**`, `src/ui/**`, or
+`src/audio/**` changes (gate rule). CI installs Playwright Chromium with
+`--with-deps` before running them.
 
 ### Visual regression
 
@@ -88,10 +108,11 @@ Full Playwright tests that load the built app in a browser and interact with it.
 - Tablet (e.g. 1024 × 768)
 - Desktop (1280+)
 
-E2E tests verify that the game loads, the canvas is rendered, the HUD mounts, and
-touch + keyboard controls produce expected game responses across all form factors.
+E2E tests verify that the game loads, the canvas is rendered, the React HUD mounts,
+the title screen appears, and touch + keyboard controls produce expected game
+responses across all form factors.
 
-**Status:** E2E test suite is next in the work queue (see `.agent-state/directive.md`).
+**Status:** E2E test suite is in progress (see `.agent-state/directive.md`).
 
 ---
 
@@ -136,7 +157,7 @@ The `ci.yml` workflow runs on every PR and push to `main`:
 1. `pnpm lint` (Biome)
 2. `pnpm typecheck`
 3. `pnpm test` (unit, Node)
-4. Playwright Chromium install
+4. Playwright Chromium install (`--with-deps`)
 5. `pnpm test:browser`
 6. `pnpm build`
 
