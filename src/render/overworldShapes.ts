@@ -38,7 +38,9 @@ export const OVERWORLD = {
   blossom: whole("Flowering Tree.png", 96, 112),
 
   // --- VILLAGE BUILT: houses, tents, hearth, torches ---
-  house: { sheet: `${OW}/House Tiles.png`, x: 20, y: 0, w: 408, h: 224 }, // the main house, cut from the tile sheet
+  // House Tiles.png is TWO complete houses side by side (each ~224px: pitched red
+  // roof, stone walls, door, windows, porch). Slice ONE — the left one.
+  house: { sheet: `${OW}/House Tiles.png`, x: 0, y: 0, w: 224, h: 224 },
   tentLarge: whole("Large Tent.png", 96, 128),
   tentSmall: whole("Small Tent.png", 64, 64),
   cookfire: whole("Cooking area.png", 768, 64),
@@ -58,5 +60,36 @@ export const OVERWORLD = {
    */
   ground: { sheet: `${OW}/Floor Tiles1.png`, x: 0, y: 0, w: 96, h: 96 },
 } as const;
+
+/**
+ * DECOR ATLAS slices (Decor.png, 416×544) — the village-life + scatter brushes,
+ * each rect measured by connected-component analysis of the atlas then named by
+ * eye. These are the pieces that turn a row of props into a crafted scene:
+ * foreground rocks/bushes for depth, market clutter + a clothesline for village
+ * life, a statue + gravestones for the road-to-the-shrine atmosphere.
+ */
+const DECOR = `${OW}/Decor.png`;
+const decor = (x: number, y: number, w: number, h: number): ShapeStamp => ({ sheet: DECOR, x, y, w, h });
+
+export const DECOR_SHAPES = {
+  // Foreground scatter — rocks & boulders (grass-skirted) for depth layering.
+  boulderBig: decor(2, 278, 92, 44),
+  boulderBig2: decor(98, 278, 92, 44),
+  // Single bushes (green / autumn) for midground + foreground filler.
+  bushGreen: decor(1, 422, 42, 28),
+  bushAutumn: decor(1, 454, 42, 28),
+  // Village life.
+  clothesline: decor(25, 352, 110, 66),
+  basket: decor(326, 79, 21, 19),
+  crate: decor(32, 0, 31, 34),
+  butcherBlock: decor(197, 1, 22, 33), // chopping stump w/ cleaver
+  // Road-to-the-shrine atmosphere (foreshadowing the dark). NOTE: in the atlas
+  // the statue and brick-wall art sit at each other's "obvious" rects — verified
+  // by eye, the classical statue is here and the masonry wall below it.
+  statue: decor(385, 263, 30, 59),
+  brickWall: decor(357, 139, 54, 55),
+} as const;
+
+export type DecorShapeName = keyof typeof DECOR_SHAPES;
 
 export type OverworldShapeName = keyof typeof OVERWORLD;
