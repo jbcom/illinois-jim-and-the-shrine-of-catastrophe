@@ -79,6 +79,10 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
       Gravity({ scale: 1 }),
       Enemy({
         kind: e.kind,
+        // Levels that author a `visual` (GameLevel) pick the real sprite; older
+        // ASCII levels fall back to a sensible default by behaviour.
+        visual: (e as { visual?: "goblin" | "skeleton" | "mushroom" | "flyingEye" }).visual ??
+          (e.kind === "chase" ? "skeleton" : "goblin"),
         speed: e.kind === "chase" ? 55 : 40,
         minX: e.x - ts * 3,
         maxX: e.x + ts * 4,

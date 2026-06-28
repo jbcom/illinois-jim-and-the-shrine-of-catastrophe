@@ -19,13 +19,19 @@ export interface PotSpawn extends GameLevelSpawn {
   readonly drop: "relic" | "health" | "secret";
 }
 
+/** An enemy placed by design: AI `kind` + which real animated `visual` sprite. */
+export interface EnemySpawn extends GameLevelSpawn {
+  readonly kind: "patrol" | "chase";
+  readonly visual: "goblin" | "skeleton" | "mushroom" | "flyingEye";
+}
+
 export interface GameLevel {
   readonly id: string;
   readonly map: TileMap;
   readonly spawnX: number;
   readonly spawnY: number;
   readonly collectibles: readonly (GameLevelSpawn & { value: number })[];
-  readonly enemies: readonly (GameLevelSpawn & { kind: "patrol" | "chase" })[];
+  readonly enemies: readonly EnemySpawn[];
   readonly pots: readonly PotSpawn[];
   /** World-x past which the level is "won" (reaching the relic block). */
   readonly goalX: number;
@@ -73,8 +79,11 @@ export const DESCENT: GameLevel = {
     { x: 520, y: 140, value: 100 },
   ],
   enemies: [
-    { x: 340, y: 280, kind: "patrol" },
-    { x: 760, y: 280, kind: "patrol" },
+    // Placed by design across the chamber, each a real animated enemy:
+    { x: 240, y: 280, kind: "patrol", visual: "goblin" }, // ground patrol near the ruins
+    { x: 470, y: 150, kind: "patrol", visual: "flyingEye" }, // floats over the chasm
+    { x: 700, y: 280, kind: "patrol", visual: "mushroom" }, // guards the far ground
+    { x: 840, y: 280, kind: "chase", visual: "skeleton" }, // chases near the relic goal
   ],
   pots: [
     { x: 180, y: 288, color: "red", drop: "relic" },

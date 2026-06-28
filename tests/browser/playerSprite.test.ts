@@ -51,42 +51,42 @@ describe("player sprite (Illinois Jim)", () => {
     canvas?.remove();
   });
 
-  it("renders all three animation states side by side (visual proof)", async () => {
+  it("renders all five animation states side by side (visual proof)", async () => {
     app = new Application();
     await app.init({ canvas: canvas!, width: 600, height: 120, background: "#17110b" });
 
-    const states: PlayerState[] = ["idle", "run", "attack"];
-    let x = 100;
+    const states: PlayerState[] = ["idle", "run", "jump", "fall", "attack"];
+    let x = 60;
     for (const state of states) {
       const player = await createPlayerSprite(state);
-      player.sprite.scale.set(1.4);
+      player.sprite.scale.set(1.2);
       player.sprite.x = x;
       player.sprite.y = 116;
       app.stage.addChild(player.sprite);
-      x += 200;
+      x += 116;
     }
     app.render();
 
     await page.screenshot({ path: "player-states.png" });
-    expect(app.stage.children.length).toBe(3);
+    expect(app.stage.children.length).toBe(5);
   });
 
-  it("renders the 8-frame run cycle in sequence (visual proof)", async () => {
+  it("renders the 4-frame run cycle in sequence (visual proof)", async () => {
     app = new Application();
     await app.init({ canvas: canvas!, width: 600, height: 120, background: "#17110b" });
 
-    // Lay all 8 run frames across the canvas by indexing currentFrame.
-    for (let i = 0; i < 8; i++) {
+    // Lay all 4 run frames across the canvas by indexing currentFrame.
+    for (let i = 0; i < 4; i++) {
       const p = await createPlayerSprite("run");
       p.sprite.currentFrame = i;
-      p.sprite.scale.set(1.2);
-      p.sprite.x = 40 + i * 70;
+      p.sprite.scale.set(1.4);
+      p.sprite.x = 80 + i * 140;
       p.sprite.y = 116;
       app.stage.addChild(p.sprite);
     }
     app.render();
 
     await page.screenshot({ path: "player-run-cycle.png" });
-    expect(app.stage.children.length).toBe(8);
+    expect(app.stage.children.length).toBe(4);
   });
 });

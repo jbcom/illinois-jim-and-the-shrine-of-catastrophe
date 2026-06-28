@@ -20,7 +20,7 @@ screenshot-tested component under `src/render/`.
 | Kenney platformer tileset | Kenney | `public/assets/kenney/platformer/` | packed grid, 18px cells |
 | Breakable pots | itch.io packs | `public/assets/breakables/pots/` | strips |
 | HP bar | itch.io packs | `public/assets/ux/hp_bar/` | single images |
-| **Illinois Jim (hero)** | itch.io adventure pack | `public/assets/classes/adventure/` | directional **strips**, 96×80 frames (8/clip) |
+| **Illinois Jim (hero)** | **GenAI (Imagen) + isolation** | `public/assets/player/` | single transparent PNG per pose (idle/run/jump/fall/attack) |
 
 Raw downloads and raw GenAI output live in gitignored `raw-assets/`; only
 curated, prepped art lands in `public/assets/`.
@@ -40,23 +40,32 @@ wraps it in a deterministic (`autoUpdate = false`) `AnimatedSprite`. **The
 renderer never branches on asset format** — a strip and a list of single images
 are interchangeable inputs.
 
-## The hero: a real transparent sprite pack
+## The hero: GenAI Illinois Jim → isolation → frames
 
-Illinois Jim is the `classes/adventure` itch pack — directional clips (IDLE, RUN,
-ATTACK 1/2 in down/left/right/up), each a **96×80, 8-frame horizontal strip with
-a real alpha channel** (no backdrop, no chromakey). `src/render/playerSprite.ts`
-loads the right-facing strips via the frame-source `strip()` path, pre-loads all
-states, and exposes a controller: `setState` (idle/run/attack), `setFacing`
-(horizontal scale flip), deterministic `update(ticks)`, feet-anchored sprite.
+Illinois Jim is the ORIGINAL hero (teal explorer vest, brass-goggle flat cap,
+amber relic-lantern, coiled grappling hook) — generated, not a stock pack:
 
-Every shipped art pack under `public/assets/` is already fully transparent
-(verified: 70–98 % clear pixels, alpha=0 at the corners). There is **no
-background-removal step in the asset path** — sprites load straight through Pixi.
+1. **Generate** — `scripts/genai-assets.mjs` (Imagen, `GEMINI_API_KEY` from the
+   gitignored `.env`): one pose per prompt on a flat magenta backdrop, framed
+   off-ground so no floor is baked in. Output → `raw-assets/generated/` (gitignored).
+2. **Isolate** — `scripts/prep-sprites.mjs` (offline, `sharp`): flood-fill from
+   the corners by **colour-distance to the sampled corner colour** (robust to
+   Imagen's non-flat pink-magenta), despill the magenta fringe, clear the faint
+   foot drop-shadow in the bottom band, trim to the character bbox, height-
+   normalize + bottom-anchor. Every frame was READ and verified clean (a frame
+   that came out with a baked floor — jump-2 — was regenerated). Output →
+   `public/assets/player/illinois-jim-*.png` (committed).
+3. **Consume** — `src/render/playerSprite.ts` maps states (idle/run/jump/fall/
+   attack) to `frames([...])` sources, pre-loads all, and exposes a controller:
+   `setState`, `setFacing` (scale flip), deterministic `update(ticks)`,
+   feet-anchored. Screenshot-proven (`player-states.png`, `player-run-cycle.png`).
 
-> GenAI (`scripts/genai-assets.mjs`, Imagen 4) is reserved for **story cutscene
-> backplates and branding**, where a rendered background is wanted. The
-> `scripts/prep-sprites.mjs` chromakey/trim helper exists only for that case (when
-> a generated frame needs isolating); it is NOT in the gameplay sprite pipeline.
+The itch packs (enemies, biomes, breakables, ux, npcs) ship already-transparent
+and load straight through Pixi — no isolation needed; only the GenAI hero +
+cutscene art use the magenta-key prep.
+
+Regenerate: `node scripts/genai-assets.mjs --only illinois-jim` then
+`node scripts/prep-sprites.mjs --in illinois-jim --out public/assets/player`.
 
 ## Render component catalog (`src/render/`)
 

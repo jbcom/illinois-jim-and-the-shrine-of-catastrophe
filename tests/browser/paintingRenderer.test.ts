@@ -67,9 +67,12 @@ describe("painting renderer (in-game integration)", () => {
     renderer = await createPaintingRenderer(host!, {
       parallax: CAVE_PARALLAX,
       painting: CAVE_DESCENT,
+      frameTop: -20,
+      frameBottom: 360,
     });
     const world = buildDescentWorld();
-    const camera = { ...createCamera(480, 270), x: 60, y: 40 };
+    // Camera in WORLD px: view height = the authored frame (380), width = aspect.
+    const camera = { ...createCamera(675, 380), x: 60, y: 0 };
     const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 480, viewH: 270 };
 
     // Two renders: first creates the async actor sprites, second shows them once loaded.

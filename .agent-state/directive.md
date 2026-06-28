@@ -54,7 +54,12 @@ must all be used for narrative purpose, not decoration:
   public/assets/cutscenes/ (intro→descent→ruins→shrine→catastrophe→escape),
   cutscene script (src/sim/story/cutscenes.ts) + CutscenePlayer.tsx + unit tests
   done. REMAINING: wire the cutscene→level→cutscene flow into the FSM/App.
-The hero is the real transparent `classes/adventure` pack (no chromakey, no gen).
+The hero is the ORIGINAL GenAI Illinois Jim (teal vest, brass goggles, relic-
+lantern, grappling hook) — generated via Imagen + isolated to clean transparent
+frames (corner-color-distance flood-fill + foot-shadow clear in prep-sprites.mjs;
+every frame READ + verified clean; jump-2 regenerated to drop a baked floor).
+public/assets/player/illinois-jim-*.png. Enemies: all 4 real animated kinds
+placed PER-LEVEL by design via Enemy.visual (goblin/skeleton/mushroom/flyingEye).
 
 ### Build checklist (the FULL game — keep going until ALL done + proven)
 - [x] AnimatedSprite component — browser test + screenshot REVIEWED

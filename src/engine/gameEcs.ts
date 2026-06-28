@@ -13,7 +13,7 @@ import { type Clock, createClock } from "@engine/clock.ts";
 import { createInputManager, type InputManager } from "@engine/input/inputManager.ts";
 import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
-import { CAVE_DESCENT } from "@render/levels/caveDescent.ts";
+import { CAVE_DESCENT, CAVE_DESCENT_FRAME } from "@render/levels/caveDescent.ts";
 import { createPaintingRenderer, type PaintingRenderer } from "@render/paintingRenderer.ts";
 import { CAVE_PARALLAX } from "@render/parallax.ts";
 import {
@@ -72,19 +72,30 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   const renderer: PaintingRenderer = await createPaintingRenderer(container, {
     parallax: CAVE_PARALLAX,
     painting: CAVE_DESCENT,
+    frameTop: CAVE_DESCENT_FRAME.top,
+    frameBottom: CAVE_DESCENT_FRAME.bottom,
   });
   const canvas: HTMLCanvasElement = renderer.canvas;
   const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
+
+  // The renderer cover-scales the authored frame to fill the canvas height. The
+  // camera's WORLD-space view must match: height = the authored frame band,
+  // width = that height × the canvas aspect ratio (the camera scrolls the level
+  // horizontally). Recomputed on every resize so scroll/clamp stay correct.
+  const frameH = CAVE_DESCENT_FRAME.bottom - CAVE_DESCENT_FRAME.top;
+  const cameraView = (vw: number, vh: number): { viewW: number; viewH: number } => {
+    const aspect = Math.max(0.1, vw / Math.max(1, vh));
+    return { viewW: frameH * aspect, viewH: frameH };
+  };
   const clock: Clock = createClock();
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.
   const fx: Rng = createRngPair("shrine-run").fx;
 
   let sim: SimWorld = createSimWorld(level);
-  let camera: Camera = createCamera(
-    viewport.current().viewport.viewW,
-    viewport.current().viewport.viewH,
-  );
+  // Use the canvas backing-store aspect (matches app.screen the renderer covers).
+  const initView = cameraView(canvas.width || 1280, canvas.height || 720);
+  let camera: Camera = createCamera(initView.viewW, initView.viewH);
   // Previous-frame positions per entity id, for render interpolation.
   let prev = new Map<number, { x: number; y: number }>();
 
@@ -93,7 +104,8 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   let paused = false;
 
   viewport.onChange((state) => {
-    camera = { ...camera, viewW: state.viewport.viewW, viewH: state.viewport.viewH };
+    const view = cameraView(canvas.width || state.viewport.viewW, canvas.height || state.viewport.viewH);
+    camera = { ...camera, viewW: view.viewW, viewH: view.viewH };
     input.resize(
       canvas.clientWidth || state.viewport.viewW,
       canvas.clientHeight || state.viewport.viewH,

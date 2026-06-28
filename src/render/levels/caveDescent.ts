@@ -60,3 +60,12 @@ export const CAVE_DESCENT: readonly Placement[] = [
 
 /** The painting's pixel extents (camera bounds / collision authoring). */
 export const CAVE_DESCENT_BOUNDS = { width: 1024, floorY: FLOOR_Y } as const;
+
+/**
+ * The authored vertical frame of the level, in world px. The renderer
+ * cover-scales this band to fill the canvas height edge-to-edge (no letterbox).
+ * Top sits just above the highest stalactite (y ≈ -16); bottom sits below the
+ * floor base (FLOOR_Y 300 + ~60px of solid ground) so the cave floor reaches the
+ * bottom screen edge. ~380px tall — matches the side-scroller's playable band.
+ */
+export const CAVE_DESCENT_FRAME = { top: -20, bottom: FLOOR_Y + 60 } as const;

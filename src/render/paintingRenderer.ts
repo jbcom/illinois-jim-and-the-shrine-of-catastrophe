@@ -41,10 +41,19 @@ export interface PaintingRenderer {
 export interface PaintingRendererSpec {
   readonly parallax: readonly ParallaxLayerSpec[];
   readonly painting: readonly Placement[];
+  /**
+   * The authored vertical band of the level, in world px (top → bottom). The
+   * world is cover-scaled so this band exactly fills the canvas height — the
+   * cave reaches the top and bottom edges with no letterbox bands. The level is
+   * a horizontal side-scroller, so width is whatever the canvas aspect allows
+   * (the camera scrolls across it). `frameTop` is usually slightly negative
+   * (ceiling stalactites) and `frameBottom` past the floor so solid ground
+   * fills to the bottom edge.
+   */
+  readonly frameTop: number;
+  readonly frameBottom: number;
 }
 
-/** Map sim patrol/chase kinds to a visual enemy kind. */
-const ENEMY_VISUAL: Record<"patrol" | "chase", EnemyKind> = { patrol: "goblin", chase: "skeleton" };
 
 interface ActorView {
   display: Sprite | AnimatedSprite | Graphics;
@@ -82,6 +91,11 @@ export async function createPaintingRenderer(
   try {
     await app.init({
       canvas,
+      // Pixi owns canvas sizing: it tracks the host container's CSS box and keeps
+      // the backing store + `app.screen` in sync (resolution handles dpr). This
+      // is what makes the canvas fill the host and `app.screen` authoritative for
+      // the cover transform — no second party mutating canvas.width behind Pixi.
+      resizeTo: container,
       background: "#17110b",
       antialias: false,
       resolution: Math.min(2, globalThis.devicePixelRatio || 1),
@@ -92,12 +106,13 @@ export async function createPaintingRenderer(
     throw err;
   }
 
-  const root = new Container();
-  app.stage.addChild(root);
-
+  // Layer tree: parallax fills the WHOLE canvas (no world transform), the world
+  // sits on top under a cover-by-height transform so the authored cave frame
+  // exactly fills the canvas height. Parallax is a sibling of (and behind) the
+  // world so its full-bleed fill is never clipped to the world rect.
   const parallax: Parallax = await createParallax(spec.parallax);
   const worldLayer = new Container();
-  root.addChild(parallax.container, worldLayer);
+  app.stage.addChild(parallax.container, worldLayer);
 
   const painting: Painting = await paintComposition(spec.painting);
   worldLayer.addChild(painting.container);
@@ -120,7 +135,7 @@ export async function createPaintingRenderer(
     });
     o.world.query(Enemy, Position, Size, Facing).updateEach(([enemy, pos, size, facing], e) => {
       seen.add(e);
-      ensureEnemy(e, enemy.kind, views, actorsLayer);
+      ensureEnemy(e, enemy.visual, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
       faceView(views.get(e), facing.dir);
     });
@@ -143,16 +158,31 @@ export async function createPaintingRenderer(
     }
   }
 
+  const frameH = Math.max(1, spec.frameBottom - spec.frameTop);
+
   function render(o: PaintingRenderOpts): void {
-    const { camera: cam, viewport: vp } = o;
-    root.position.set(vp.offsetX, vp.offsetY);
-    root.scale.set(vp.scale);
+    const { camera: cam } = o;
+    // app.screen is the logical (CSS-px) drawing surface; autoDensity maps it to
+    // the dpr-scaled backing store. We work entirely in these logical units.
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+
+    // Cover by HEIGHT: the authored frame band fills the canvas top-to-bottom, so
+    // the cave reaches both edges with NO letterbox bands. Width is whatever the
+    // canvas aspect allows — the level is a side-scroller and the camera scrolls
+    // across it horizontally.
+    const worldScale = screenH / frameH;
     const camX = Math.round(cam.x);
     const camY = Math.round(cam.y);
 
-    parallax.resize(vp.viewW, vp.viewH);
+    // Parallax fills the entire canvas (its own un-cover-scaled space).
+    parallax.resize(screenW, screenH);
     parallax.update(camX, camY);
-    worldLayer.position.set(-camX, -camY);
+
+    // World: scale by cover factor, then translate so the camera's top-left world
+    // point lands at the canvas origin. frameTop is pinned to the screen top.
+    worldLayer.scale.set(worldScale);
+    worldLayer.position.set(-camX * worldScale, (-camY - spec.frameTop) * worldScale);
 
     syncActors(o);
     for (const v of views.values()) {
@@ -201,12 +231,12 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
   });
 }
 
-function ensureEnemy(e: Entity, kind: "patrol" | "chase", views: Map<Entity, ActorView>, layer: Container): void {
+function ensureEnemy(e: Entity, visual: EnemyKind, views: Map<Entity, ActorView>, layer: Container): void {
   if (views.has(e)) return;
   const ph = placeholder(0xc2402e);
   layer.addChild(ph);
   views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
-  void createEnemySprite(ENEMY_VISUAL[kind], "move").then((sprite) => {
+  void createEnemySprite(visual, "move").then((sprite) => {
     if (!views.has(e)) {
       sprite.destroy();
       return;

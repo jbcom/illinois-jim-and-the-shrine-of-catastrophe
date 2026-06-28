@@ -28,9 +28,14 @@ export const Player = trait({
   dead: false,
 });
 
-/** Marks an enemy + its behaviour parameters. */
+/**
+ * Marks an enemy + its behaviour parameters. `kind` drives AI (patrol/chase);
+ * `visual` selects which real animated enemy sprite the renderer draws, chosen
+ * per-level by design (goblin/skeleton/mushroom/flyingEye) independently of AI.
+ */
 export const Enemy = trait({
   kind: "patrol" as "patrol" | "chase",
+  visual: "goblin" as "goblin" | "skeleton" | "mushroom" | "flyingEye",
   speed: 40,
   /** Patrol bounds in world x; chase ignores these. */
   minX: 0,

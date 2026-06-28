@@ -23,7 +23,12 @@ import { CAVE_PARALLAX } from "@render/parallax.ts";
 import { describe, expect, it } from "vitest";
 
 const renderer = (host: HTMLElement) =>
-  createPaintingRenderer(host, { parallax: CAVE_PARALLAX, painting: CAVE_DESCENT });
+  createPaintingRenderer(host, {
+    parallax: CAVE_PARALLAX,
+    painting: CAVE_DESCENT,
+    frameTop: -20,
+    frameBottom: 360,
+  });
 
 function makeHost(): HTMLDivElement {
   const host = document.createElement("div");

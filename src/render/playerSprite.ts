@@ -1,31 +1,40 @@
 /**
- * Illinois Jim — the player sprite. Uses the real `classes/adventure` sprite
- * pack: clean, fully-transparent directional strips (96×80 frames, 8 per clip)
- * authored for a top-down/side hybrid. For our side-scroller we drive the
- * left/right facing strips and flip via scale; no chromakey, no prep — the pack
- * already ships proper alpha, loaded straight through the frame-source layer.
+ * Illinois Jim — the player sprite. The ORIGINAL hero (teal explorer vest, brass-
+ * goggle cap, amber relic-lantern, coiled grappling hook), generated via Imagen
+ * and isolated to clean transparent frames (one PNG per pose — see scripts/
+ * genai-assets.mjs + prep-sprites.mjs). Each animation is a list of single-image
+ * frames assembled through the frame-source layer; art faces right, flipped via
+ * scale for left.
  *
  * Browser-only.
  */
 import type { AnimatedSprite, Texture } from "pixi.js";
-import { type FrameSource, loadFrames, strip } from "@render/frameSource.ts";
+import { type FrameSource, frames, loadFrames } from "@render/frameSource.ts";
 
-export type PlayerState = "idle" | "run" | "attack";
+export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
 
-const BASE = "/assets/classes/adventure";
-const FRAMES = 8;
+const BASE = "/assets/player";
 
-/** Right-facing source strip per state (left is the same art, scale-flipped). */
+/** Ordered single-image frames per state (Imagen-generated, isolated). */
 export const PLAYER_ANIMS: Record<PlayerState, FrameSource> = {
-  idle: strip(`${BASE}/IDLE/idle_right.png`, FRAMES),
-  run: strip(`${BASE}/RUN/run_right.png`, FRAMES),
-  attack: strip(`${BASE}/ATTACK 1/attack1_right.png`, FRAMES),
+  idle: frames([`${BASE}/illinois-jim-idle-1.png`, `${BASE}/illinois-jim-idle-2.png`]),
+  run: frames([
+    `${BASE}/illinois-jim-run-1.png`,
+    `${BASE}/illinois-jim-run-2.png`,
+    `${BASE}/illinois-jim-run-3.png`,
+    `${BASE}/illinois-jim-run-4.png`,
+  ]),
+  jump: frames([`${BASE}/illinois-jim-jump-1.png`, `${BASE}/illinois-jim-jump-2.png`]),
+  fall: frames([`${BASE}/illinois-jim-fall.png`]),
+  attack: frames([`${BASE}/illinois-jim-attack-1.png`, `${BASE}/illinois-jim-attack-2.png`]),
 };
 
 /** Per-state playback speed (fps) and looping. */
 export const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
-  idle: { fps: 6, loop: true },
+  idle: { fps: 3, loop: true },
   run: { fps: 12, loop: true },
+  jump: { fps: 8, loop: false },
+  fall: { fps: 1, loop: false },
   attack: { fps: 14, loop: false },
 };
 
