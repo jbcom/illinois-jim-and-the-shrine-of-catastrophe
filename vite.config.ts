@@ -1,7 +1,8 @@
 import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import solid from "vite-plugin-solid";
 
 // On GitHub Pages the app is served from a sub-path
 // (https://<owner>.github.io/<repo>/ or the org's custom domain + /<repo>/).
@@ -12,7 +13,8 @@ const base = process.env.PAGES_BASE ?? "/";
 export default defineConfig({
   base,
   plugins: [
-    solid(),
+    react(),
+    tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],

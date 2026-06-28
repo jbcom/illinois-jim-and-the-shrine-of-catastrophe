@@ -1,7 +1,69 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
+
+## 🎮 Milestone 2 — Complete the game (ACTIVE, 2026-06-28)
+Full-autonomy build-out. **Guiding principle (user directive):** custom code is
+INCREMENTAL scaffolding — replace it with proper, well-maintained libraries for
+every aspect (ECS, physics, tween/easing, state machine, particles, persistence,
+audio). Don't hand-roll what a battle-tested library does better. Determinism
+still matters for replays, so prefer libraries that allow a fixed-step,
+seeded-RNG integration (drive them from our clock + rng) over ones that bury
+wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
+
+### Library adoption plan (custom code → proper libs) — DECIDED
+- **UI framework: React 19** (replaces SolidJS) — unifies the stack so @pixi/react
+  and koota/react bindings work natively.
+- **Game canvas: @pixi/react** (PixiJS 8 as React components).
+- ECS: **koota** (replaces miniplex) — `koota/react` `WorldProvider`/`useQuery`/
+  `useTrait` drive the HUD reactively, replacing the manual Solid signal bridge.
+  Plain-trait entities stay serializable for replays; systems run in the fixed loop.
+- **UI components: Tailwind CSS + Radix UI / shadcn** — arcade-styled HUD, menus,
+  title/pause/win-lose/level-select screens. Max control, minimal runtime.
+- PRNG: **seedrandom** — **dual-layer**: a `sim` stream (gameplay, replay-critical)
+  and a separate `fx` stream (cosmetic/particles) so visual variation never
+  desyncs the deterministic sim. Replaces the custom mulberry32 facade (keep the
+  Rng interface, swap the engine).
+- State machine: **xstate** v5 (typed FSM for title/play/win/lose game states).
+- Tween/easing: **popmotion** (clock-driven; never self-animates off wall-clock).
+- IDs: **nanoid** (entity + save-slot ids).
+- Persistence: **@capacitor/preferences** (native) + localStorage (web) behind one facade.
+- Audio: keep the custom Web Audio bus (already solid); wire sfx to events.
+- **Renderer: PixiJS 8 (WebGL/WebGPU)** — replaces the hand-rolled canvas2d
+  renderer. Proper sprite batching, container/scene graph, particles, filters.
+  Render is a VIEW of the deterministic sim (sim stays pure; Pixi only draws).
+  Local reference: ~/src/reference-codebases/pixijs.
+- **Enemy AI: Yuka** — steering behaviors (seek/flee/patrol/path) for enemies,
+  driven by our fixed-step clock + seeded sim stream. Local ref: ~/src/reference-codebases/yuka.
+- Physics: keep our AABB swept resolver as the deterministic substrate (tile
+  collision); layer Yuka steering + ECS on top. Full engines (matter/box2d) rejected.
+- Reference codebases (docs/examples cloned locally): ~/src/reference-codebases/
+  {pixijs, yuka, bitECS, matter-js, phaser, pixi-react} — consult before building.
+
+### Queue
+- [x] Research: pick the concrete libs (miniplex/seedrandom/xstate/popmotion/nanoid/preferences)
+- [ ] PRNG v2: dual-layer seedrandom (sim + fx streams) behind the Rng interface
+- [ ] Adopt ECS (miniplex): port player + tiles into entities/components/systems
+- [ ] Physics v2: momentum, friction, knockback, moving/one-way platforms, triggers (lib-assisted)
+- [ ] Enemies: at least 2 types with deterministic AI (patrol, chase) + whip/stomp kills
+- [ ] Collectibles + scoring: relics/gems, score, combo; wire HUD signals
+- [ ] Mine-cart rail segments (the iconic hook): rail-follow physics + speed
+- [ ] Adopt PixiJS 8 renderer: replace canvas2d; sim→Pixi view layer; sprite/tile draw from atlas
+- [ ] Adopt Yuka for enemy steering AI (patrol/chase/path), clock-driven + seeded
+- [ ] Particles: dust, impact, collectible sparkle (deterministic)
+- [ ] Game-state machine: title → play → win/lose → restart; SolidJS screens
+- [ ] Persistence: best score / progress via localStorage (Capacitor Preferences on native)
+- [ ] Levels: 3+ hand-authored levels + a level-select
+- [ ] Audio: wire sfx to events (jump/coin/hurt/whip), simple music loop
+- [x] Pivot stack to React: SolidJS → React 19 + Tailwind v4; @pixi/react + koota wired next
+  (engine/sim untouched, all 123 tests green, verified in browser)
+- [ ] Landing page (React route): hero, the Gemini title wordmark, play CTA, screenshots, about
+- [ ] Cutscenes: GenAI-generated cutscene art (Gemini) + a React cutscene player
+  (intro: Jim enters the shrine; win/lose stingers) driven by the FSM
+- [ ] Tests at every step (unit for sim, browser for render, e2e for flows)
+- [ ] Docs kept in lockstep (ARCHITECTURE/STATE/CHANGELOG)
+- [ ] Self-improve: refine this directive + capture decisions as work surfaces
 
 ## ✅ Scaffold milestone SHIPPED (2026-06-27)
 PR #1 (scaffold) + PR #3 (PWA icons) squash-merged to main. **Live in

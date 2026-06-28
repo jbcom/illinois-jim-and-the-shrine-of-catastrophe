@@ -1,10 +1,24 @@
+@import "tailwindcss";
+
+/* Brand tokens as Tailwind theme colours (keep in sync with src/brand.ts). */
+@theme {
+  --color-obsidian: #17110b;
+  --color-stone: #6f4e2e;
+  --color-sandstone: #9a7240;
+  --color-idol-gold: #e3b341;
+  --color-relic-gold: #f6d36b;
+  --color-blood-red: #c2402e;
+  --color-parchment: #f3e9d2;
+  --color-jungle: #26331f;
+  --color-steel: #9a9a9a;
+}
+
 /* Mobile-first reset. The game owns the full viewport; nothing scrolls. */
 :root {
-  /* Brand tokens — keep in sync with src/brand.ts BRAND. */
-  --shrine-bg: #17110b; /* obsidian */
-  --shrine-ink: #f3e9d2; /* parchment */
-  --shrine-gold: #e3b341; /* idolGold */
-  --shrine-danger: #c2402e; /* bloodRed */
+  --shrine-bg: #17110b;
+  --shrine-ink: #f3e9d2;
+  --shrine-gold: #e3b341;
+  --shrine-danger: #c2402e;
   color-scheme: dark;
 }
 
