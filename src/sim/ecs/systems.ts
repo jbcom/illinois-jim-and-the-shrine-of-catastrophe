@@ -253,10 +253,11 @@ function whipBox(
  * player otherwise hurts the player. Returns kills + whether the player was hurt
  * so the caller can update score, spawn particles, and play sfx.
  *
- * STOMP_MARGIN is how far into the enemy's top the player's feet must be, and a
- * downward velocity is required, so brushing the side doesn't count as a stomp.
+ * Stomp = falling while the player's feet are in the enemy's upper half. Using
+ * the enemy's vertical midpoint (rather than a small fixed top margin) keeps the
+ * stomp robust at high downward velocity, where a fast faller can sink several
+ * pixels into the enemy in a single step before collision resolves.
  */
-const STOMP_MARGIN = 6;
 
 export function combatSystem(world: World, t: PlayerTuning): CombatResult {
   const player = world.query(Player, Position, Velocity, Size, Facing)[0];
@@ -293,8 +294,9 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
 
     if (!intersects(playerBox, enemyBox)) return;
 
-    // Stomp: player's feet near the enemy's top while moving down.
-    if (vel.y > 0 && playerFeet <= epos.y + STOMP_MARGIN) {
+    // Stomp: falling with feet in the enemy's upper half (midpoint test is
+    // robust to high-velocity sink-in that a fixed top margin would miss).
+    if (vel.y > 0 && playerFeet <= epos.y + esize.h / 2) {
       kills++;
       entity.destroy();
       bounce = true;
