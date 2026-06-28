@@ -18,6 +18,10 @@ export interface TouchInput {
   poll(): PlayerIntent;
   setLayout(layout: TouchLayout): void;
   resize(width: number, height: number): void;
+  /** Drop all tracked pointers + edge state. Called on a pause→play boundary so
+   *  a pointer whose `pointerup` was lost (e.g. captured by an overlay that
+   *  unmounted mid-tap) can't leak a persistent joystick tilt into the run. */
+  clear(): void;
   dispose(): void;
 }
 
@@ -77,6 +81,13 @@ export function createTouchInput(surface: HTMLElement): TouchInput {
     },
     resize(width, height) {
       layout = defaultTouchLayout(width, height);
+    },
+    clear() {
+      pointers.clear();
+      prevJump = false;
+      prevWhip = false;
+      jumpPressed = false;
+      whipPressed = false;
     },
     dispose() {
       surface.removeEventListener("pointerdown", onDown);

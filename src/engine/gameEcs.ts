@@ -293,12 +293,22 @@ export async function createGame(
     setPaused(next) {
       if (paused === next) return;
       paused = next;
-      if (!paused) clock.resync(now());
+      if (!paused) {
+        // A play session is (re)starting. Discard any input held during the
+        // pause — e.g. the tap that dismissed the cutscene, whose `pointerup`
+        // can be lost when the overlay unmounts mid-tap, leaving a phantom
+        // joystick pointer that walks the player into an enemy on the village
+        // floor and drains lives passively. Resync the clock so the pause gap
+        // doesn't become a step backlog.
+        input.clear();
+        clock.resync(now());
+      }
     },
     restart() {
       rebuildWorld();
       won = false;
       paused = false;
+      input.clear();
       if (!running) {
         running = true;
         handle = raf(frame);

@@ -147,9 +147,11 @@ export const VILLAGE: GameLevel = {
   ],
   enemies: [
     // The forest road is where the first threats appear — easing in (1–2/screen).
+    // All PATROL on the intro level: nothing relentlessly homes on the player's
+    // spawn (chase enemies are introduced later, in the cave).
     { x: 1080, y: 280, kind: "patrol", visual: "goblin" },
     { x: 1620, y: 280, kind: "patrol", visual: "mushroom" },
-    { x: 1980, y: 280, kind: "chase", visual: "goblin" },
+    { x: 1980, y: 280, kind: "patrol", visual: "goblin" },
   ],
   pots: [
     { x: 360, y: 288, color: "white", drop: "secret" }, // by the cooking fire

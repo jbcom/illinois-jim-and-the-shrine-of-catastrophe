@@ -47,7 +47,9 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
     Facing({ dir: 1 }),
     Gravity({ scale: 1 }),
     MineCart({ speed: 180, dir: 1, riding: false }),
-    Player({ grounded: false, coyote: 0, buffer: 0, whip: 0, dead: false }),
+    // Spawn with a brief invulnerability window so the player isn't instantly
+    // re-hit by an enemy sitting on the spawn point after a death + respawn.
+    Player({ grounded: false, coyote: 0, buffer: 0, whip: 0, dead: false, invuln: 1.5 }),
   );
 
   // Collectibles authored on the level (relics) — placed where the level marks

@@ -41,7 +41,7 @@ function accelToward(vx: number, target: number, rate: number, dt: number): numb
 
 /** Mutable refs to a player's traits for one fixed step (keeps system complexity low). */
 interface PlayerTraitRefs {
-  p: { grounded: boolean; coyote: number; buffer: number; whip: number; dead: boolean };
+  p: { grounded: boolean; coyote: number; buffer: number; whip: number; dead: boolean; invuln: number };
   pos: { x: number; y: number };
   vel: { x: number; y: number };
   size: { w: number; h: number };
@@ -69,6 +69,7 @@ function applyPlayerTimersAndJump(
   dt: number,
 ) {
   r.p.coyote = Math.max(0, r.p.coyote - dt);
+  r.p.invuln = Math.max(0, r.p.invuln - dt);
   r.p.buffer = Math.max(0, r.p.buffer - dt);
   r.p.whip = Math.max(0, r.p.whip - dt);
   if (intent.jumpPressed) r.p.buffer = t.jumpBuffer;
@@ -346,6 +347,9 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
   const playerBox = aabb(pos.x, pos.y, size.w, size.h);
   const whip = whipBox(p, pos, size, facing, t);
   const playerFeet = pos.y + size.h;
+  // During the post-hit mercy window the player still kills by stomp/whip but
+  // can't be hurt — so one enemy contact can't chain-kill across lives.
+  const canBeHurt = p.invuln <= 0;
 
   let kills = 0;
   let playerHurt = false;
@@ -372,7 +376,7 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
       kills++;
       entity.destroy();
       bounce = true;
-    } else {
+    } else if (canBeHurt) {
       playerHurt = true;
     }
   });

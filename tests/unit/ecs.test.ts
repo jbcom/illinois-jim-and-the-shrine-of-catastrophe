@@ -240,6 +240,9 @@ describe("ECS world + systems", () => {
   it("combat: a side collision with no stomp/whip hurts (kills) the player", () => {
     const level = parseLevel(["......", "..@...", "######"], 16);
     const sim = createSimWorld(level, T);
+    // Clear the spawn mercy window so this tests the raw hurt mechanic.
+    const p0 = sim.player.get(Player);
+    if (p0) sim.player.set(Player, { ...p0, invuln: 0 });
     const pp = sim.player.get(Position);
     const ps = sim.player.get(Size);
     // Enemy overlapping the player's side; player not falling, no whip.
@@ -254,6 +257,26 @@ describe("ECS world + systems", () => {
     const res = combatSystem(sim.world, T);
     expect(res.playerHurt).toBe(true);
     expect(sim.player.get(Player)?.dead).toBe(true);
+  });
+
+  it("combat: invulnerability frames block a hit (no chain-kill after respawn)", () => {
+    const level = parseLevel(["......", "..@...", "######"], 16);
+    const sim = createSimWorld(level, T);
+    // Fresh spawn carries a mercy window (invuln > 0).
+    expect(sim.player.get(Player)?.invuln).toBeGreaterThan(0);
+    const pp = sim.player.get(Position);
+    const ps = sim.player.get(Size);
+    sim.world.spawn(
+      Position({ x: (pp?.x ?? 0) + (ps?.w ?? 12) - 2, y: pp?.y ?? 0 }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 14, h: 14 }),
+      Facing({ dir: 1 }),
+      Enemy({ kind: "patrol", speed: 40, minX: 0, maxX: 80, alive: true }),
+    );
+    // While invulnerable, an overlapping enemy must NOT hurt the player.
+    const res = combatSystem(sim.world, T);
+    expect(res.playerHurt).toBe(false);
+    expect(sim.player.get(Player)?.dead).toBe(false);
   });
 
   it("combat: no-op when there are no enemies", () => {

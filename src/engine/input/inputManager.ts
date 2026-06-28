@@ -12,6 +12,10 @@ import type { PlayerIntent } from "@sim/input/intent.ts";
 export interface InputManager {
   poll(): PlayerIntent;
   resize(width: number, height: number): void;
+  /** Drop all held/tracked input state (e.g. on a pause→play boundary) so a
+   *  stuck key or a pointer with a lost `pointerup` can't leak movement into
+   *  the run the moment it unpauses. */
+  clear(): void;
   dispose(): void;
 }
 
@@ -36,6 +40,10 @@ export function createInputManager(surface: HTMLElement): InputManager {
     },
     resize(width, height) {
       touch.resize(width, height);
+    },
+    clear() {
+      touch.clear();
+      keyboard.clear();
     },
     dispose() {
       touch.dispose();
