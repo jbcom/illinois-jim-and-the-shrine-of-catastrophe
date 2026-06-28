@@ -17,13 +17,23 @@ export type GameEvent =
   | { type: "WIN"; score: number }
   | { type: "LOSE"; score: number }
   | { type: "RESTART" }
-  | { type: "TO_TITLE" };
+  | { type: "TO_TITLE" }
+  /** Seed the persisted best score (loaded from storage on mount). */
+  | { type: "SET_BEST"; bestScore: number };
 
 export const gameMachine = createMachine({
   id: "game",
   initial: "title",
   context: { score: 0, bestScore: 0 },
   types: {} as { context: GameContext; events: GameEvent },
+  // Available in any state: seed the best score from persistence on mount.
+  on: {
+    SET_BEST: {
+      actions: assign({
+        bestScore: ({ context, event }) => Math.max(context.bestScore, event.bestScore),
+      }),
+    },
+  },
   states: {
     title: {
       on: { START: { target: "playing" } },

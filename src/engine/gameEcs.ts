@@ -52,6 +52,8 @@ export interface GameDeps {
   readonly onHud?: (hud: { score: number; lives: number; combo: number }) => void;
   /** Fired when the player runs out of lives (final score). */
   readonly onGameOver?: (finalScore: number) => void;
+  /** Fired when the player reaches the level goal (final score). */
+  readonly onWin?: (finalScore: number) => void;
 }
 
 export async function createGame(container: HTMLElement, deps: GameDeps = {}): Promise<Game> {
@@ -59,7 +61,9 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   const cancelRaf = deps.cancelRaf ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const now = deps.now ?? (() => performance.now());
   const onGameOver = deps.onGameOver ?? (() => {});
+  const onWin = deps.onWin ?? (() => {});
   const onHud = deps.onHud ?? (() => {});
+  let won = false;
 
   const level = DESCENT;
   const bounds = levelBounds(level);
@@ -188,10 +192,21 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     if (ns) sim.score.set(Score, { ...ns, lives, points });
   }
 
+  /** Win when the player reaches the level goal (the relic at goalX). */
+  function checkWin(): void {
+    if (won) return;
+    const pos = sim.world.query(Player, Position)[0]?.get(Position);
+    if (!pos || pos.x < level.goalX) return;
+    won = true;
+    stop();
+    onWin(sim.score.get(Score)?.points ?? 0);
+  }
+
   function updateCameraAndHud(): void {
     followPlayer();
     const s = sim.score.get(Score);
     if (s) onHud({ score: s.points, lives: s.lives, combo: s.combo });
+    checkWin();
     handleDeath();
   }
 
@@ -239,6 +254,7 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     },
     restart() {
       rebuildWorld();
+      won = false;
       paused = false;
       if (!running) {
         running = true;

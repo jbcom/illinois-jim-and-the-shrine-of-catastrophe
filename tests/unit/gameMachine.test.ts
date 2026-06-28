@@ -63,4 +63,14 @@ describe("gameMachine", () => {
     a.send({ type: "WIN", score: 999 });
     expect(a.getSnapshot().value).toBe("title");
   });
+
+  it("SET_BEST seeds the persisted best score in any state", () => {
+    const a = boot();
+    a.send({ type: "SET_BEST", bestScore: 5000 }); // loaded from storage on mount
+    expect(a.getSnapshot().context.bestScore).toBe(5000);
+    // A lower run score never lowers the seeded best.
+    a.send({ type: "START" });
+    a.send({ type: "LOSE", score: 200 });
+    expect(a.getSnapshot().context.bestScore).toBe(5000);
+  });
 });

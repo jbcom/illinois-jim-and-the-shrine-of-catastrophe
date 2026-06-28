@@ -8,6 +8,7 @@ import { App as CapApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { createGame, type Game } from "@engine/gameEcs.ts";
+import { loadBestScore, saveBestScore } from "@ui/persistence.ts";
 import { gameMachine } from "@ui/gameMachine.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
@@ -38,6 +39,7 @@ export function App() {
           hudStore.setLives(lives);
         },
         onGameOver: (finalScore) => send({ type: "LOSE", score: finalScore }),
+        onWin: (finalScore) => send({ type: "WIN", score: finalScore }),
       })
         .then((g) => {
           if (disposed) {
@@ -87,6 +89,18 @@ export function App() {
     if (state === "playing") g.setPaused(false);
     else g.setPaused(true);
   }, [state]);
+
+  // Seed the persisted best score once on mount.
+  useEffect(() => {
+    void loadBestScore().then((best) => {
+      if (best > 0) send({ type: "SET_BEST", bestScore: best });
+    });
+  }, [send]);
+
+  // Persist the best score whenever a run ends (won/lost).
+  useEffect(() => {
+    if (state === "won" || state === "lost") void saveBestScore(snapshot.context.score);
+  }, [state, snapshot.context.score]);
 
   return (
     <main className="relative h-full w-full">
