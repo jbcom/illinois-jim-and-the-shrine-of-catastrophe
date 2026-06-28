@@ -53,9 +53,16 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 - [x] Combat PR #8 MERGED to main (whip/stomp + robust stomp fix from review).
 - [x] Scoring: Score trait (points/combo/comboTimer/lives) + award() (combo-scaled) +
   scoreSystem (decay) + collectibleSystem awards through combo. 124 tests.
-- [ ] Wire HUD to score: surface points/combo/lives from the ECS into the React HUD (needs ECS-in-loop)
-- [ ] Mine-cart rail segments (the iconic hook): rail-follow physics + speed
-- [ ] Adopt PixiJS 8 renderer: replace canvas2d; sim→Pixi view layer; sprite/tile draw from atlas
+- [x] Wire HUD to score: gameEcs onHud pipes Score → hudStore → React HUD (points/lives).
+- [x] Mine-cart rail segments: MineCart trait + mineCartSystem (ride/dismount), rails
+  one-way standable. 127 tests.
+- [x] Adopt PixiJS 8 renderer: pixiRenderer.ts (ECS world → Graphics) + gameEcs.ts
+  (ECS-driven loop replacing canvas2d). TWO bugs fixed + verified on real Safari GPU:
+  (1) StrictMode double-init hang — serialize create/dispose on a ref promise (debugger);
+  (2) `app.destroy(true)` removed React's canvas — use `{removeView:false}`. Safari
+  evaluate confirms responsive + canvas present + HUD renders; pixiStrictMode browser
+  test passes. NOTE: chrome-devtools-mcp hung; Safari MCP screenshot targets wrong
+  window but evaluate works — use safari_evaluate for verification, not screenshot.
 - [ ] Adopt Yuka for enemy steering AI (patrol/chase/path), clock-driven + seeded
 - [ ] Particles: dust, impact, collectible sparkle (deterministic)
 - [ ] Game-state machine (xstate): title → play → win/lose → restart; React screens
