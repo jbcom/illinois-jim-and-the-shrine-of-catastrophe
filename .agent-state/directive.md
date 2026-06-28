@@ -70,7 +70,9 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
   bang-bang. 6 steering tests, 133 total. Determinism preserved.
 - [x] Particles: Particle trait + spawnBurst (FX rng stream) + particleSystem; bursts
   on kills (red) + pickups (gold), rendered by pixiRenderer. 3 tests incl. FX-no-desync proof. 136 total.
-- [ ] Game-state machine (xstate): title → play → win/lose → restart; React screens
+- [x] Game-state machine (xstate v5): title → playing → won/lost → restart; React
+  TitleScreen + ResultScreen (brand-styled); gameEcs restart() + onGameOver hook.
+  7 machine tests, 143 total. Verified full flow on Safari GPU (title→PLAY→HUD+game).
 - [ ] Persistence: best score / progress via @capacitor/preferences (web localStorage fallback)
 - [ ] Levels: 3+ hand-authored levels + a level-select
 - [ ] Audio: wire sfx to events (jump/coin/hurt/whip), simple music loop
@@ -104,6 +106,10 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 - **Browser verification: chrome-devtools-mcp hung on the WebGL page; Safari MCP
   works** — but `safari_screenshot` targeted the wrong window. Use `safari_evaluate`
   (responsive check + DOM/canvas/HUD assertions) for headed-GPU verification.
+- **A tested system is NOT a wired system.** Built+tested mineCartSystem but forgot
+  to call it in gameEcs.step() — feature was dead in the running game (CodeRabbit
+  caught it). When adding a system: write it → test it → CALL it in the loop →
+  verify it runs in the app. Unit tests pass on uncalled code.
 - **Determinism preserved through the lib swaps**: seedrandom dual-stream + koota
   plain-trait entities + fixed-step systems = replayable. No lib reads wall-clock.
 
