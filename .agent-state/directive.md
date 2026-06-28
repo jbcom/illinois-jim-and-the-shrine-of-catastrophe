@@ -1,9 +1,22 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
-## 🎮 Milestone 2 — Complete the game (ACTIVE, 2026-06-28)
+## ✅ Milestone 2 SHIPPED (2026-06-28)
+The complete game merged to `main` (PR #9, squash `bdbc35e`), CI green, deployed to
+GitHub Pages, release cut. A 16-bit story-driven side-scroller: GenAI Illinois Jim
+hero, all-4 animated enemies, painted cave level ("The Descent"), NPC paper-doll
+factory + dialogue, breakable pots, HP/lives bar, story cutscenes (title→cutscene→
+playing→cutscene→won), procedural audio + music, win condition + best-score
+persistence, landing page — all screenshot-proven and live-verified. 160 unit +
+browser tests pass; PixiJS 8 painting renderer / React 19 / koota ECS / xstate FSM.
+
+NEXT MILESTONE (fresh branch + directive when started): overworld + shrine painted
+levels + level-select; the cave/overworld sheets are ORGANIC COMPOSITIONAL SHAPES
+(place/assemble as scenery, not a tile grid) with a separate invisible collision.
+
+## 🎮 Milestone 2 — Complete the game (SHIPPED, 2026-06-28)
 Full-autonomy build-out. **Guiding principle (user directive):** custom code is
 INCREMENTAL scaffolding — replace it with proper, well-maintained libraries for
 every aspect (ECS, physics, tween/easing, state machine, particles, persistence,
