@@ -3,6 +3,15 @@
 **Status:** ACTIVE
 **Owner:** jbogaty
 
+## ✅ Scaffold milestone SHIPPED (2026-06-27)
+PR #1 (scaffold) + PR #3 (PWA icons) squash-merged to main. **Live in
+production:** https://jonbogaty.com/illinois-jim-and-the-shrine-of-catastrophe/
+— verified rendering with zero console errors. CI/release/cd all green;
+Pages deploy working (fixed env branch policy to allow main). 100 unit + 23
+browser + 12 e2e tests. Next milestone: gameplay expansion (sprite rendering
+from the atlas + curated Gemini art, enemies, collectibles, mine-cart rails,
+more levels).
+
 Build **Illinois Jim and the Shrine of Catastrophe** — an original, mobile-first
 2D arcade adventure — in the arcade-game dialect: Vite + TypeScript + Capacitor +
 Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** and
@@ -57,7 +66,7 @@ Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** an
 - [x] Original branding + fontography (BRAND tokens, src/brand.ts)
 - [x] Asset pipeline: 2DLowPoly CC0 copy + itch.io fetch + Gemini gen (all 3 run)
 - [x] `tests/unit/` + `tests/browser/` + `tests/e2e/` matching the gates (99 + 23 + 12)
-- [ ] Capacitor: `android/` via `pnpm cap:add android` (CI does this on release; local optional)
+- [x] Capacitor: `android/` platform added; `assembleRelease` builds an APK locally (verified)
 - [x] `.github/workflows/` ci → release → cd (Pages deploy + Android APK), dependabot.yml
 - [x] standard-repo root files: AGENTS.md, README.md, CHANGELOG.md, STANDARDS.md, docs/
 

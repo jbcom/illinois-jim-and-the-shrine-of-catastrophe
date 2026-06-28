@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Illinois Jim and the Shrine of Catastrophe</string>
+    <string name="title_activity_main">Illinois Jim and the Shrine of Catastrophe</string>
+    <string name="package_name">com.jbcom.illinoisjim</string>
+    <string name="custom_url_scheme">com.jbcom.illinoisjim</string>
+</resources>
