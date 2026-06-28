@@ -9,6 +9,7 @@
  * On player death the world is rebuilt — and the old world is destroyed (koota
  * caps live worlds at 16, so leaking a world per death would crash the game).
  */
+import { createGameAudio, type GameAudio } from "@audio/gameAudio.ts";
 import { type Clock, createClock } from "@engine/clock.ts";
 import { createInputManager, type InputManager } from "@engine/input/inputManager.ts";
 import { createRngPair, type Rng } from "@engine/rng.ts";
@@ -29,7 +30,7 @@ import {
   scoreSystem,
   spawnBurst,
 } from "@sim/ecs/systems.ts";
-import { Enemy, Player, Position, Score } from "@sim/ecs/traits.ts";
+import { Enemy, Player, Position, Score, Velocity } from "@sim/ecs/traits.ts";
 import { createSimWorld, type SimWorld } from "@sim/ecs/world.ts";
 import { type Camera, createCamera, followCamera } from "@sim/world/camera.ts";
 import { DESCENT } from "@sim/world/gameLevel.ts";
@@ -41,6 +42,8 @@ export interface Game {
   setPaused(paused: boolean): void;
   /** Rebuild the world from scratch and resume (used by the FSM RESTART). */
   restart(): void;
+  /** Resume the AudioContext — call from a user gesture (the PLAY tap). */
+  unlockAudio(): Promise<void>;
   dispose(): void;
 }
 
@@ -95,6 +98,7 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.
   const fx: Rng = createRngPair("shrine-run").fx;
+  const audio: GameAudio = createGameAudio();
 
   let sim: SimWorld = createSimWorld(level);
   // Use the canvas backing-store aspect (matches app.screen the renderer covers).
@@ -147,12 +151,24 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
+    const wasGrounded = sim.world.query(Player)[0]?.get(Player)?.grounded ?? true;
     const combat = combatSystem(sim.world, sim.tuning);
-    potSystem(sim.world, sim.tuning, dt);
+    const pots = potSystem(sim.world, sim.tuning, dt);
     const gained = collectibleSystem(sim.world);
     scoreSystem(sim.world, dt);
     particleSystem(sim.world, dt, sim.tuning.gravity);
     lifetimeSystem(sim.world, dt);
+
+    // Sfx for this step's events (whip/stomp kill, pickup, pot smash, hurt, jump).
+    if (combat.kills > 0) audio.play("whip");
+    if (combat.playerHurt) audio.play("hurt");
+    if (gained > 0) audio.play("pickup");
+    if (pots.smashed > 0) audio.play("potSmash");
+    // Jump = was grounded last step, now airborne moving up.
+    const pl = sim.world.query(Player, Velocity)[0];
+    if (wasGrounded && !(pl?.get(Player)?.grounded ?? true) && (pl?.get(Velocity)?.y ?? 0) < 0) {
+      audio.play("jump");
+    }
 
     // Cosmetic bursts on kills/pickups — FX stream, never touches the sim stream.
     const c = playerCenter();
@@ -198,6 +214,7 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     const pos = sim.world.query(Player, Position)[0]?.get(Position);
     if (!pos || pos.x < level.goalX) return;
     won = true;
+    audio.play("win");
     stop();
     onWin(sim.score.get(Score)?.points ?? 0);
   }
@@ -262,11 +279,15 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
       }
       clock.resync(now());
     },
+    unlockAudio() {
+      return audio.unlock();
+    },
     dispose() {
       stop();
       input.dispose();
       viewport.dispose();
       renderer.destroy();
+      audio.destroy();
       sim.world.destroy();
     },
   };

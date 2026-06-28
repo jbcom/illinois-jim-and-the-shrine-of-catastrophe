@@ -106,7 +106,15 @@ export function App() {
     <main className="relative h-full w-full">
       <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
-      {state === "title" && <TitleScreen onStart={() => send({ type: "START" })} />}
+      {state === "title" && (
+        <TitleScreen
+          onStart={() => {
+            // PLAY is a user gesture — unlock the AudioContext here so sfx play.
+            void gameRef.current?.unlockAudio();
+            send({ type: "START" });
+          }}
+        />
+      )}
       {(state === "won" || state === "lost") && (
         <ResultScreen
           won={state === "won"}
