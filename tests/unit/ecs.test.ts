@@ -6,6 +6,7 @@ import {
   enemySystem,
   lifetimeSystem,
   MAX_COMBO,
+  mineCartSystem,
   physicsSystem,
   playerSystem,
   scoreSystem,
@@ -16,6 +17,7 @@ import {
   Facing,
   Gravity,
   Lifetime,
+  MineCart,
   Player,
   Position,
   Score,
@@ -280,6 +282,37 @@ describe("ECS world + systems", () => {
     expect(gained).toBe(100);
     expect(sim.score.get(Score)?.points).toBe(100);
     expect(sim.score.get(Score)?.combo).toBe(2); // bumped after the pickup
+  });
+
+  it("mine-cart: player rides along a rail at cart speed when grounded on it", () => {
+    // Rail tiles ('~') along the floor row; player spawns on them.
+    const level = parseLevel(["........", "...@....", "~~~~~~~~"], 16);
+    const sim = createSimWorld(level, T);
+    // Settle the player onto the rail floor.
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    // Face right and ride.
+    const f = sim.player.get(Facing);
+    if (f) sim.player.set(Facing, { dir: 1 });
+    const riding = mineCartSystem(sim.world, NEUTRAL_INTENT, level.map);
+    expect(riding).toBe(true);
+    const vel = sim.player.get(Velocity);
+    expect(vel?.x).toBeCloseTo(sim.player.get(MineCart)?.speed ?? 0);
+  });
+
+  it("mine-cart: jumping dismounts the cart", () => {
+    const level = parseLevel(["........", "...@....", "~~~~~~~~"], 16);
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    const riding = mineCartSystem(sim.world, intent({ jumpPressed: true }), level.map);
+    expect(riding).toBe(false);
+    expect(sim.player.get(MineCart)?.riding).toBe(false);
+  });
+
+  it("mine-cart: no ride when not on a rail", () => {
+    const level = flatLevel(); // solid floor, no rails
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    expect(mineCartSystem(sim.world, NEUTRAL_INTENT, level.map)).toBe(false);
   });
 
   it("is deterministic for an identical intent sequence", () => {

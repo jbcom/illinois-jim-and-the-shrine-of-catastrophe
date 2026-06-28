@@ -12,6 +12,7 @@ import {
   Enemy,
   Facing,
   Gravity,
+  MineCart,
   Player,
   Position,
   Score,
@@ -42,6 +43,7 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
     Size({ w: tuning.width, h: tuning.height }),
     Facing({ dir: 1 }),
     Gravity({ scale: 1 }),
+    MineCart({ speed: 180, dir: 1, riding: false }),
     Player({ grounded: false, coyote: 0, buffer: 0, whip: 0, dead: false }),
   );
 

@@ -12,6 +12,7 @@ import {
   Facing,
   Gravity,
   Lifetime,
+  MineCart,
   Player,
   Position,
   Score,
@@ -23,7 +24,7 @@ import { clamp } from "@sim/math/vec2.ts";
 import { aabb, intersects } from "@sim/physics/aabb.ts";
 import { moveAndCollide } from "@sim/physics/collide.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
-import type { TileMap } from "@sim/world/tilemap.ts";
+import { TileKind, type TileMap, tileAtWorld } from "@sim/world/tilemap.ts";
 import type { World } from "koota";
 
 /** Horizontal acceleration toward the intended run speed (player only). */
@@ -351,4 +352,47 @@ export function scoreSystem(world: World, dt: number): void {
       }
     }
   });
+}
+
+/** Is there a Rail tile under this body's feet? */
+function onRail(
+  map: TileMap,
+  pos: { x: number; y: number },
+  size: { w: number; h: number },
+): boolean {
+  const feetY = pos.y + size.h + 1;
+  const left = tileAtWorld(map, pos.x + 2, feetY);
+  const right = tileAtWorld(map, pos.x + size.w - 2, feetY);
+  return left === TileKind.Rail || right === TileKind.Rail;
+}
+
+/**
+ * Mine-cart system (the iconic hook): when the player (with a MineCart trait) is
+ * grounded on a Rail tile, they ride at cart speed in the rail direction,
+ * accelerating the run. Pressing jump dismounts. The cart carries the player's
+ * horizontal velocity; playerSystem still resolves collisions, so rail gaps and
+ * walls behave naturally. Returns whether the player is currently riding.
+ */
+export function mineCartSystem(world: World, intent: PlayerIntent, map: TileMap): boolean {
+  const e = world.query(Player, MineCart, Position, Velocity, Size, Facing)[0];
+  if (!e) return false;
+  const p = e.get(Player);
+  const cart = e.get(MineCart);
+  const pos = e.get(Position);
+  const vel = e.get(Velocity);
+  const size = e.get(Size);
+  const facing = e.get(Facing);
+  if (!p || !cart || !pos || !vel || !size || !facing) return false;
+
+  const railed = p.grounded && onRail(map, pos, size);
+
+  if (railed && !intent.jumpPressed) {
+    const dir = facing.dir; // ride the way the player faces
+    e.set(MineCart, { ...cart, riding: true, dir });
+    e.set(Velocity, { x: cart.speed * dir, y: vel.y });
+    return true;
+  }
+
+  if (cart.riding) e.set(MineCart, { ...cart, riding: false });
+  return false;
 }

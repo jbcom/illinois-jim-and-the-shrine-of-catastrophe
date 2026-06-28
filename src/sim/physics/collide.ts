@@ -29,8 +29,9 @@ const EPSILON = 1e-4;
 /** Whether `kind` blocks movement given vertical velocity (one-way platforms). */
 function blocks(kind: TileKind, movingDown: boolean): boolean {
   if (kind === TK.Solid) return true;
-  // One-way platforms only block a downward (falling) body.
-  if (kind === TK.Platform) return movingDown;
+  // One-way surfaces (platforms + mine-cart rails) only block a falling body, so
+  // you land/ride on top but can jump up through them.
+  if (kind === TK.Platform || kind === TK.Rail) return movingDown;
   return false;
 }
 

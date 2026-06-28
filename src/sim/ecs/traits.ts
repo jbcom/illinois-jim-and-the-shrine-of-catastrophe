@@ -61,3 +61,14 @@ export const Score = trait({
   comboTimer: 0,
   lives: 3,
 });
+
+/**
+ * Mine-cart rider state. When the player boards a cart (on a Rail tile) the cart
+ * carries them along the rail at `speed` until the rail ends or they jump off.
+ * `dir` is the travel direction along the rail (-1 left, 1 right).
+ */
+export const MineCart = trait({
+  speed: 180,
+  dir: 1 as -1 | 1,
+  riding: false,
+});
