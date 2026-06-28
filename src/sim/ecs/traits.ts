@@ -49,3 +49,15 @@ export const Hazard = trait();
 
 /** Lifetime in seconds; entity is removed when it reaches 0 (particles, fx). */
 export const Lifetime = trait({ remaining: 0 });
+
+/**
+ * Run-level score state (one entity per run). `combo` multiplies points while
+ * `comboTimer` is positive; each scoring event refreshes the timer and bumps the
+ * combo, so chained pickups/kills are worth more. `lives` tracks the player.
+ */
+export const Score = trait({
+  points: 0,
+  combo: 1,
+  comboTimer: 0,
+  lives: 3,
+});

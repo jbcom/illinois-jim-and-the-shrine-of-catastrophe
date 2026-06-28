@@ -1,10 +1,14 @@
 import {
+  award,
+  COMBO_WINDOW,
   collectibleSystem,
   combatSystem,
   enemySystem,
   lifetimeSystem,
+  MAX_COMBO,
   physicsSystem,
   playerSystem,
+  scoreSystem,
 } from "@sim/ecs/systems.ts";
 import {
   Collectible,
@@ -14,6 +18,7 @@ import {
   Lifetime,
   Player,
   Position,
+  Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
@@ -229,6 +234,52 @@ describe("ECS world + systems", () => {
     const sim = createSimWorld(level, T);
     const res = combatSystem(sim.world, T);
     expect(res).toEqual({ kills: 0, playerHurt: false });
+  });
+
+  it("award scales points by the combo and raises it", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    expect(award(sim.world, 100)).toBe(100); // combo starts at 1
+    expect(award(sim.world, 100)).toBe(200); // combo now 2
+    const s = sim.score.get(Score);
+    expect(s?.points).toBe(300);
+    expect(s?.combo).toBe(3);
+    expect(s?.comboTimer).toBeCloseTo(COMBO_WINDOW);
+  });
+
+  it("combo multiplier is capped at MAX_COMBO", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 20; i++) award(sim.world, 10);
+    expect(sim.score.get(Score)?.combo).toBe(MAX_COMBO);
+  });
+
+  it("scoreSystem decays the combo timer and resets the multiplier on lapse", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    award(sim.world, 100); // combo 2, timer = COMBO_WINDOW
+    // Advance past the window.
+    const steps = Math.ceil(COMBO_WINDOW / DT) + 2;
+    for (let i = 0; i < steps; i++) scoreSystem(sim.world, DT);
+    const s = sim.score.get(Score);
+    expect(s?.combo).toBe(1);
+    expect(s?.comboTimer).toBe(0);
+  });
+
+  it("collectibleSystem awards through the combo system", () => {
+    const level = parseLevel(["#####", "..@..", "#####"], 16);
+    const sim = createSimWorld(level, T);
+    const pp = sim.player.get(Position);
+    const ps = sim.player.get(Size);
+    sim.world.spawn(
+      Position({ x: pp?.x ?? 0, y: pp?.y ?? 0 }),
+      Size({ w: ps?.w ?? 10, h: ps?.h ?? 10 }),
+      Collectible({ value: 100, taken: false }),
+    );
+    const gained = collectibleSystem(sim.world);
+    expect(gained).toBe(100);
+    expect(sim.score.get(Score)?.points).toBe(100);
+    expect(sim.score.get(Score)?.combo).toBe(2); // bumped after the pickup
   });
 
   it("is deterministic for an identical intent sequence", () => {

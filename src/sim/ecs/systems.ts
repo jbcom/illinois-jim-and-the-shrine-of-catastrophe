@@ -14,6 +14,7 @@ import {
   Lifetime,
   Player,
   Position,
+  Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
@@ -139,15 +140,19 @@ export function collectibleSystem(world: World): number {
   if (!pp || !ps) return 0;
   const playerBox = aabb(pp.x, pp.y, ps.w, ps.h);
 
-  let gained = 0;
+  // Collect first (mutating the query), then award through the combo system so
+  // chained pickups stack the multiplier.
+  const values: number[] = [];
   world.query(Collectible, Position, Size).updateEach(([c, pos, size], entity) => {
     if (c.taken) return;
     if (intersects(playerBox, aabb(pos.x, pos.y, size.w, size.h))) {
       c.taken = true;
-      gained += c.value;
+      values.push(c.value);
       entity.destroy();
     }
   });
+  let gained = 0;
+  for (const v of values) gained += award(world, v);
   return gained;
 }
 
@@ -308,4 +313,42 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
   if (bounce) player.set(Velocity, { x: vel.x, y: -t.jumpSpeed * 0.6 });
   if (playerHurt) player.set(Player, { ...p, dead: true });
   return { kills, playerHurt };
+}
+
+/** How long (seconds) a combo stays alive after the last scoring event. */
+export const COMBO_WINDOW = 2.5;
+/** Combo multiplier ceiling. */
+export const MAX_COMBO = 8;
+
+/**
+ * Award `basePoints` to the run score, scaled by the current combo multiplier,
+ * and refresh/raise the combo. Returns the points actually added (base × combo).
+ * Chained pickups/kills within COMBO_WINDOW stack the multiplier.
+ */
+export function award(world: World, basePoints: number): number {
+  const e = world.query(Score)[0];
+  if (!e) return 0;
+  const s = e.get(Score);
+  if (!s) return 0;
+  const added = basePoints * s.combo;
+  e.set(Score, {
+    ...s,
+    points: s.points + added,
+    combo: Math.min(MAX_COMBO, s.combo + 1),
+    comboTimer: COMBO_WINDOW,
+  });
+  return added;
+}
+
+/** Decay the combo timer; reset the multiplier to 1 when it lapses. */
+export function scoreSystem(world: World, dt: number): void {
+  world.query(Score).updateEach(([s]) => {
+    if (s.comboTimer > 0) {
+      s.comboTimer -= dt;
+      if (s.comboTimer <= 0) {
+        s.comboTimer = 0;
+        s.combo = 1;
+      }
+    }
+  });
 }

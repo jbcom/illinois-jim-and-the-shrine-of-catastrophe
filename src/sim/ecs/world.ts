@@ -14,6 +14,7 @@ import {
   Gravity,
   Player,
   Position,
+  Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
@@ -24,12 +25,16 @@ import { createWorld, type Entity, type World } from "koota";
 export interface SimWorld {
   readonly world: World;
   readonly player: Entity;
+  /** Run-level score/combo/lives state entity. */
+  readonly score: Entity;
   readonly level: Level;
   readonly tuning: PlayerTuning;
 }
 
 export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNING): SimWorld {
   const world = createWorld();
+
+  const score = world.spawn(Score({ points: 0, combo: 1, comboTimer: 0, lives: 3 }));
 
   const player = world.spawn(
     Position({ x: level.spawnX, y: level.spawnY }),
@@ -69,5 +74,5 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
     );
   }
 
-  return { world, player, level, tuning };
+  return { world, player, score, level, tuning };
 }

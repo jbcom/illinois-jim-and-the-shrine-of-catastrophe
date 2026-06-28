@@ -50,7 +50,10 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
   + enemySystem (patrol/chase) + lifetimeSystem (particles); enemies spawned from level
 - [x] Enemies: patrol/chase AI + combatSystem (whip kill, stomp+bounce, side-hit hurts);
   120 tests. NOTE: koota caps 16 live worlds — the loop must world.destroy() on level restart.
-- [ ] Collectibles + scoring: relics/gems, score, combo; wire HUD signals
+- [x] Combat PR #8 MERGED to main (whip/stomp + robust stomp fix from review).
+- [x] Scoring: Score trait (points/combo/comboTimer/lives) + award() (combo-scaled) +
+  scoreSystem (decay) + collectibleSystem awards through combo. 124 tests.
+- [ ] Wire HUD to score: surface points/combo/lives from the ECS into the React HUD (needs ECS-in-loop)
 - [ ] Mine-cart rail segments (the iconic hook): rail-follow physics + speed
 - [ ] Adopt PixiJS 8 renderer: replace canvas2d; sim→Pixi view layer; sprite/tile draw from atlas
 - [ ] Adopt Yuka for enemy steering AI (patrol/chase/path), clock-driven + seeded
