@@ -32,6 +32,9 @@ importers:
       '@pixi/react':
         specifier: ^8.0.5
         version: 8.0.5(@types/react@19.2.17)(pixi.js@8.19.0)(react@19.2.7)
+      '@pixi/tilemap':
+        specifier: ^5.0.2
+        version: 5.0.2(pixi.js@8.19.0)
       '@xstate/react':
         specifier: ^6.1.0
         version: 6.1.0(@types/react@19.2.17)(react@19.2.7)(xstate@5.32.2)
@@ -818,6 +821,11 @@ packages:
     peerDependencies:
       pixi.js: ^8.2.6
       react: '>=19.0.0'
+
+  '@pixi/tilemap@5.0.2':
+    resolution: {integrity: sha512-J+K1eU7uB58WPVD33d7usXrhKA03IGq3IfPvXBFr1027Bb9ScxrGhH0NomR9VpVVUPiHkK7FcTGuOtJMVGAv6A==}
+    peerDependencies:
+      pixi.js: '>=8.5.0'
 
   '@playwright/test@1.61.1':
     resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
@@ -3845,6 +3853,10 @@ snapshots:
       react-reconciler: 0.31.0(react@19.2.7)
     transitivePeerDependencies:
       - '@types/react'
+
+  '@pixi/tilemap@5.0.2(pixi.js@8.19.0)':
+    dependencies:
+      pixi.js: 8.19.0
 
   '@playwright/test@1.61.1':
     dependencies:

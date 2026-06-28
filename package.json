@@ -60,6 +60,7 @@
     "@capacitor/screen-orientation": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@pixi/react": "^8.0.5",
+    "@pixi/tilemap": "^5.0.2",
     "@xstate/react": "^6.1.0",
     "koota": "^0.6.6",
     "nanoid": "^5.1.16",
