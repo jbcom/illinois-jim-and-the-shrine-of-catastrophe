@@ -7,9 +7,30 @@
  */
 import { DIALOGUE } from "@sim/story/dialogue.ts";
 import { dialogueStore, useDialogue } from "@ui/dialogueStore.ts";
+import { useEffect } from "react";
 
 export function DialogueBox() {
   const { promptId, script, line } = useDialogue();
+
+  // Keyboard parity for desktop: Enter/Space opens the prompt or advances the
+  // open conversation, so players never need the mouse to talk.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      if (script) {
+        e.preventDefault();
+        dialogueStore.advance();
+      } else if (promptId) {
+        const s = DIALOGUE[promptId];
+        if (s) {
+          e.preventDefault();
+          dialogueStore.open(s);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [promptId, script]);
 
   // A conversation is open — show the current speech line.
   if (script) {
@@ -38,14 +59,15 @@ export function DialogueBox() {
 
   // An NPC is in range but we're not talking yet — show the talk prompt.
   if (promptId) {
-    const who = DIALOGUE[promptId]?.name ?? "someone";
+    const promptScript = DIALOGUE[promptId];
+    // No registry entry (typo / missing) → no prompt at all, rather than a
+    // dead "Talk to someone" button that opens nothing.
+    if (!promptScript) return null;
+    const who = promptScript.name;
     return (
       <button
         type="button"
-        onClick={() => {
-          const s = DIALOGUE[promptId];
-          if (s) dialogueStore.open(s);
-        }}
+        onClick={() => dialogueStore.open(promptScript)}
         aria-label={`Talk to ${who}`}
         className="pointer-events-auto absolute right-0 bottom-0 left-0 z-30 border-[#c9a14a]/40 border-t-2 bg-[#1a120b]/85 px-6 py-4 text-center"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.25rem)" }}

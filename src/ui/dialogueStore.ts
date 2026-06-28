@@ -57,6 +57,11 @@ export const dialogueStore = {
   },
   /** True while a conversation is open (the game should pause input meanwhile). */
   isTalking: (): boolean => snapshot.script !== null,
+  /** Clear everything — call on game restart / level change so no stale prompt
+   *  or half-finished conversation leaks across worlds. */
+  reset() {
+    set({ promptId: null, script: null, line: 0 });
+  },
 };
 
 /** React hook: subscribe to the dialogue snapshot. */

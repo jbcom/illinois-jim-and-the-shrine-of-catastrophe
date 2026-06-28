@@ -4,9 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 describe("dialogueStore", () => {
   beforeEach(() => {
-    // Reset to a clean closed state between tests.
-    while (dialogueStore.isTalking()) dialogueStore.advance();
-    dialogueStore.setPrompt(null);
+    dialogueStore.reset();
   });
 
   it("shows + clears the talk prompt when no conversation is open", () => {
@@ -32,6 +30,15 @@ describe("dialogueStore", () => {
     dialogueStore.advance();
     expect(dialogueStore.isTalking()).toBe(false);
     expect(dialogueStore.get().script).toBeNull();
+  });
+
+  it("reset() clears a prompt or an open conversation", () => {
+    const script = DIALOGUE["elder-mara"];
+    if (!script) throw new Error("missing elder-mara dialogue");
+    dialogueStore.open(script);
+    dialogueStore.reset();
+    expect(dialogueStore.isTalking()).toBe(false);
+    expect(dialogueStore.get()).toEqual({ promptId: null, script: null, line: 0 });
   });
 
   it("does not let a stray prompt overwrite an open conversation", () => {

@@ -15,7 +15,7 @@ import { gameMachine } from "@ui/gameMachine.ts";
 import { DialogueBox } from "@ui/DialogueBox.tsx";
 import { dialogueStore, useDialogue } from "@ui/dialogueStore.ts";
 import { Hud } from "@ui/Hud.tsx";
-import { hudStore } from "@ui/hudState.ts";
+import { hudStore, useHud } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
 import { RotatePrompt } from "@ui/RotatePrompt.tsx";
@@ -38,6 +38,8 @@ export function App() {
   // Talking pauses the action so the player can read the speech window.
   const dialogue = useDialogue();
   const talking = dialogue.script !== null;
+  // Backgrounded/hidden is recorded in the HUD store; the pause effect composes it.
+  const hudPaused = useHud().paused;
 
   // Device-profile-driven orientation via the UI orientation store (phones lock
   // landscape; tablets / unfolded foldables / desktop stay free). The store owns
@@ -52,6 +54,8 @@ export function App() {
     const host = hostRef.current;
     if (!host) return;
     let disposed = false;
+    // A fresh game (new level / remount) starts with no conversation or prompt.
+    dialogueStore.reset();
 
     const ready = pendingRef.current.then(() =>
       createGame(host, {
@@ -85,14 +89,13 @@ export function App() {
       void StatusBar.hide().catch(() => {});
     }
 
+    // Background/visibility only RECORD the reason in the HUD store; the single
+    // pause effect below composes it with the play-state + dialogue reasons, so
+    // none of them overwrites another (e.g. backgrounding mid-conversation).
     const lifecycle = CapApp.addListener("appStateChange", ({ isActive }) => {
-      gameRef.current?.setPaused(!isActive);
       hudStore.setPaused(!isActive);
     });
-    const onVisibility = () => {
-      gameRef.current?.setPaused(document.hidden);
-      hudStore.setPaused(document.hidden);
-    };
+    const onVisibility = () => hudStore.setPaused(document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
@@ -114,9 +117,11 @@ export function App() {
   useEffect(() => {
     const g = gameRef.current;
     if (!g) return;
-    // Play only while in `playing` AND not mid-conversation (talking pauses).
-    g.setPaused(!(state === "playing" && !talking));
-  }, [state, levelId, talking]);
+    // SINGLE pause source — composes every reason: not in `playing`, mid-
+    // conversation, or the app backgrounded/hidden (hudPaused). None overwrites
+    // another, so e.g. backgrounding during a talk stays paused on resume.
+    g.setPaused(!(state === "playing" && !talking && !hudPaused));
+  }, [state, levelId, talking, hudPaused]);
 
   // Seed the persisted best score once on mount.
   useEffect(() => {
@@ -153,6 +158,7 @@ export function App() {
           score={snapshot.context.score}
           bestScore={snapshot.context.bestScore}
           onRestart={() => {
+            dialogueStore.reset();
             gameRef.current?.restart();
             send({ type: "RESTART" });
           }}
