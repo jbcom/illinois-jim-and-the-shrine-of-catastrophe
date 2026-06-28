@@ -1,6 +1,6 @@
 import { renderTileLayer, tilesetTextures } from "@render/tileLayer.ts";
 import { createTileMap, setTile, TileKind } from "@sim/world/tilemap.ts";
-import { page } from "@vitest/browser/context";
+import { page } from "vitest/browser";
 import { Application, Texture } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -31,7 +31,7 @@ describe("tile layer (@pixi/tilemap)", () => {
 
   it("renders a small tiled level from the Kenney tileset (visual proof)", async () => {
     app = new Application();
-    await app.init({ canvas, width: 320, height: 180, background: "#17110b" });
+    await app.init({ canvas: canvas!, width: 320, height: 180, background: "#17110b" });
 
     // A floor with a couple of raised blocks.
     const map = createTileMap(20, 11, 16);

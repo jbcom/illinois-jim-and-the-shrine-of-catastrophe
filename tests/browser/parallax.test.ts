@@ -1,5 +1,5 @@
 import { CAVE_PARALLAX, createParallax } from "@render/parallax.ts";
-import { page } from "@vitest/browser/context";
+import { page } from "vitest/browser";
 import { Application } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -23,7 +23,7 @@ describe("parallax background", () => {
 
   it("renders the cave parallax stack and scrolls layers by depth (visual proof)", async () => {
     app = new Application();
-    await app.init({ canvas, width: 480, height: 270, background: "#17110b" });
+    await app.init({ canvas: canvas!, width: 480, height: 270, background: "#17110b" });
 
     const parallax = await createParallax(CAVE_PARALLAX);
     parallax.resize(480, 270);

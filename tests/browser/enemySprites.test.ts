@@ -1,5 +1,5 @@
 import { createEnemySprite, type EnemyKind, enemySheetUrl } from "@render/enemySprites.ts";
-import { page } from "@vitest/browser/context";
+import { page } from "vitest/browser";
 import { Application } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -29,7 +29,7 @@ describe("enemy sprites", () => {
 
   it("renders all four enemy kinds (visual proof)", async () => {
     app = new Application();
-    await app.init({ canvas, width: 400, height: 120, background: "#17110b" });
+    await app.init({ canvas: canvas!, width: 400, height: 120, background: "#17110b" });
 
     const kinds: EnemyKind[] = ["goblin", "skeleton", "mushroom", "flyingEye"];
     let x = 10;

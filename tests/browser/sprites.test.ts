@@ -1,5 +1,5 @@
 import { animatedFromStrip, sliceStrip } from "@render/sprites.ts";
-import { page } from "@vitest/browser/context";
+import { page } from "vitest/browser";
 import { Application, Texture } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -37,7 +37,7 @@ describe("sprite-sheet slicing + AnimatedSprite", () => {
 
   it("renders a goblin run frame to the canvas (visual proof)", async () => {
     app = new Application();
-    await app.init({ canvas, width: 200, height: 200, background: "#17110b", antialias: false });
+    await app.init({ canvas: canvas!, width: 200, height: 200, background: "#17110b", antialias: false });
 
     const sprite = await animatedFromStrip({
       url: "/assets/enemies/Goblin/Run.png",
