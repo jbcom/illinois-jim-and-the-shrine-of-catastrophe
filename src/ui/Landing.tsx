@@ -41,14 +41,27 @@ export function Landing(props: { onStart: () => void }) {
           paddingRight: "max(env(safe-area-inset-right), 4vw)",
         }}
       >
-        {/* The curated GenAI wordmark (carved-stone gold, transparent) — used as
-            the title image so we never stack a second wordmark over baked-in art. */}
-        <img
-          src={WORDMARK}
-          alt={TITLE}
-          className="w-[min(86vw,720px)] drop-shadow-[0_6px_16px_rgba(0,0,0,0.7)]"
-          style={{ imageRendering: "pixelated" }}
-        />
+        {/* The curated GenAI wordmark (carved-stone gold, transparent) — pinned in
+            its own scrim panel at the very top so it always reads cleanly and never
+            sits over the hero's FACE across aspects (the portrait art puts the face
+            high). Narrower on tall viewports so it stays in the sky band above Jim. */}
+        <div
+          className="flex w-full justify-center rounded-b-xl bg-gradient-to-b from-[#1a120b]/80 to-transparent px-4 pb-6"
+          style={{
+            // Pull the scrim to the absolute top (cancel the parent's top padding)
+            // and re-add the safe-area inset inside, so the gradient starts at the
+            // very edge with no seam below a notch.
+            marginTop: "calc(-1 * max(env(safe-area-inset-top), 3vh))",
+            paddingTop: "max(env(safe-area-inset-top), 3vh)",
+          }}
+        >
+          <img
+            src={WORDMARK}
+            alt={TITLE}
+            className="w-[min(78vw,640px)] portrait:w-[min(66vw,520px)] drop-shadow-[0_6px_16px_rgba(0,0,0,0.85)]"
+            style={{ imageRendering: "pixelated" }}
+          />
+        </div>
 
         <div className="flex flex-col items-center gap-5 px-6">
           <p
