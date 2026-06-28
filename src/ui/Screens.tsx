@@ -50,7 +50,32 @@ export function TitleScreen(props: { onStart: () => void }) {
       >
         {TITLE}
       </h1>
+      <p
+        className="max-w-xl px-8"
+        style={{
+          color: BRAND.parchment,
+          fontFamily: TYPE.display,
+          fontSize: "clamp(0.85rem, 3.5vw, 1.15rem)",
+          lineHeight: 1.5,
+          opacity: 0.92,
+        }}
+      >
+        A village has feared the mountain for a hundred years. The last seal has
+        cracked — and the Shrine of Catastrophe is waking. Grab the idol. Outrun
+        the dark.
+      </p>
       <PlayButton label="PLAY" onClick={props.onStart} />
+      <p
+        className="px-8"
+        style={{
+          color: BRAND.idolGold,
+          fontFamily: TYPE.display,
+          fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
+          opacity: 0.7,
+        }}
+      >
+        A 16-bit pulp adventure · arrow keys / touch to move · ↑ jump · attack to smash
+      </p>
     </Panel>
   );
 }
