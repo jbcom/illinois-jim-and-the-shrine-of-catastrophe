@@ -19,6 +19,7 @@ import {
   combatSystem,
   enemySystem,
   lifetimeSystem,
+  mineCartSystem,
   particleSystem,
   physicsSystem,
   playerSystem,
@@ -108,6 +109,9 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
   function step(dt: number): void {
     prev = snapshotPositions();
     const intent = input.poll();
+    // Mine-cart sets the player's rail velocity before playerSystem integrates,
+    // so a rider is carried along the rail rather than fighting the run accel.
+    mineCartSystem(sim.world, intent, level.map);
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);

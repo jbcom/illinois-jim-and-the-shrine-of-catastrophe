@@ -6,10 +6,10 @@
 import { App as CapApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
-import { useEffect, useRef } from "react";
 import { createGame, type Game } from "@engine/gameEcs.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
+import { useEffect, useRef } from "react";
 
 export function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,14 +37,21 @@ export function App() {
           hudStore.setScore(score);
           hudStore.setLives(lives);
         },
-      }).then((g) => {
-        if (disposed) {
-          g.dispose(); // unmounted before init finished
-          return;
-        }
-        game = g;
-        game.start();
-      }),
+      })
+        .then((g) => {
+          if (disposed) {
+            g.dispose(); // unmounted before init finished
+            return;
+          }
+          game = g;
+          game.start();
+        })
+        // Pixi/WebGL init can reject (no GL context). Swallow so the promise
+        // chain the next mount waits on never rejects unhandled, and the canvas
+        // stays free for a retry on remount.
+        .catch((err) => {
+          console.error("Game init failed:", err);
+        }),
     );
     pendingRef.current = ready;
 

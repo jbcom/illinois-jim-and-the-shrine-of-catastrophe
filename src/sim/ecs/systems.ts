@@ -120,11 +120,13 @@ export function playerSystem(
   dt: number,
 ): void {
   world
-    .query(Player, Position, Velocity, Size, Facing)
-    .updateEach(([p, pos, vel, size, facing]) => {
+    .query(Player, Position, Velocity, Size, Facing, MineCart)
+    .updateEach(([p, pos, vel, size, facing, cart]) => {
       if (p.dead) return;
       const r: PlayerTraitRefs = { p, pos, vel, size, facing };
-      applyPlayerHorizontal(r, intent, t, dt);
+      // While riding a mine-cart, the cart owns horizontal velocity — don't let
+      // the run-accel decelerate it. Jump/gravity still apply.
+      if (!cart.riding) applyPlayerHorizontal(r, intent, t, dt);
       applyPlayerTimersAndJump(r, intent, t, dt);
       resolvePlayerMove(r, map, t, dt);
     });
