@@ -21,8 +21,15 @@ until then i expect you to be always finding something new to do."**
       phone, tablet portrait+landscape, foldable, desktop, ultrawide) and verify
       ZERO loss of any picture/asset at any stage — landing, each cutscene,
       gameplay. READ each snapshot; fix any clip/letterbox/missing art.
-- [ ] HERO FACE: the landing Jim read as an "evil grimace"; regenerated with a
-      warm friendly smile (done — verify live across all aspects).
+- [x] HERO FACE: regenerated with a warm friendly smile (was an evil grimace).
+- [x] NPC RICHNESS: full paper-doll stack (sword/boots/underwear all used).
+- [x] NPC SCALE: scale by content height (were tiny next to Jim).
+- [ ] FRAMED HUD/UX (user direction): the HUD should FRAME the gameplay area —
+      a cabinet-style border with score/lives in the frame and a DEDICATED BOTTOM
+      TEXT AREA for NPC dialogue + narration (not overlaid on the game). Gameplay
+      renders into a bounded inner viewport; dialogue/narration get their own home.
+- [ ] WORDMARK on portrait overlaps the hero's face — pin it clear of the face
+      (or shrink/scrim) so it never covers Jim across aspects.
 - [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
 - [ ] SHRINE biome + level (third act); build toward ~12-18 levels total.
 - [ ] Audio polish (per-biome music, footsteps, ambience); pot-drop pickups + HUD;
