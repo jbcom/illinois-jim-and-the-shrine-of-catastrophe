@@ -48,7 +48,9 @@ function wrap(prng: seedrandom.StatefulPRNG<seedrandom.State.Arc4>): Rng {
     chance: (p = 0.5) => next() < p,
     pick: <T>(items: readonly T[]): T => {
       if (items.length === 0) throw new Error("Rng.pick: empty array");
-      return items[Math.floor(next() * items.length)] as T;
+      // Clamp the index in case next() ever yields 1.0 at a float boundary.
+      const i = Math.min(items.length - 1, Math.floor(next() * items.length));
+      return items[i] as T;
     },
     state: () => prng.state(),
   };

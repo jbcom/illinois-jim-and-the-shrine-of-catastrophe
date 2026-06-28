@@ -130,16 +130,19 @@ export function playerSystem(
  * the total score gained this step so the caller can update the HUD/score.
  */
 export function collectibleSystem(world: World): number {
-  let gained = 0;
-  let playerBox: ReturnType<typeof aabb> | null = null;
-  world.query(Player, Position, Size).updateEach(([, pos, size]) => {
-    playerBox = aabb(pos.x, pos.y, size.w, size.h);
-  });
-  if (!playerBox) return 0;
+  // Single-player game: the first player entity is the pickup subject. No player
+  // (level transition / menu) → nothing to collect.
+  const player = world.query(Player, Position, Size)[0];
+  if (!player) return 0;
+  const pp = player.get(Position);
+  const ps = player.get(Size);
+  if (!pp || !ps) return 0;
+  const playerBox = aabb(pp.x, pp.y, ps.w, ps.h);
 
+  let gained = 0;
   world.query(Collectible, Position, Size).updateEach(([c, pos, size], entity) => {
     if (c.taken) return;
-    if (intersects(playerBox as ReturnType<typeof aabb>, aabb(pos.x, pos.y, size.w, size.h))) {
+    if (intersects(playerBox, aabb(pos.x, pos.y, size.w, size.h))) {
       c.taken = true;
       gained += c.value;
       entity.destroy();
@@ -175,23 +178,43 @@ export function physicsSystem(world: World, map: TileMap, t: PlayerTuning, dt: n
  * player on the x axis. Velocity is set here; physicsSystem integrates it.
  * (Yuka steering is layered on top of this in a later step.)
  */
+function steerPatrol(
+  e: { minX: number; maxX: number; speed: number },
+  pos: { x: number },
+  vel: { x: number },
+  facing: { dir: -1 | 1 },
+  width: number,
+): void {
+  if (pos.x <= e.minX) facing.dir = 1;
+  else if (pos.x + width >= e.maxX) facing.dir = -1;
+  vel.x = e.speed * facing.dir;
+}
+
+function steerChase(
+  e: { speed: number },
+  pos: { x: number },
+  vel: { x: number },
+  facing: { dir: -1 | 1 },
+  playerX: number | null,
+): void {
+  if (playerX === null) {
+    vel.x = 0; // no player to chase — hold position
+    return;
+  }
+  const dir: -1 | 1 = playerX > pos.x ? 1 : -1;
+  facing.dir = dir;
+  vel.x = e.speed * dir;
+}
+
 export function enemySystem(world: World): void {
-  let playerX = 0;
-  world.query(Player, Position).updateEach(([, pos]) => {
-    playerX = pos.x;
-  });
+  // Chase targets the first player; null when there's no player (so chasers idle
+  // instead of marching toward world origin x=0).
+  const playerX = world.query(Player, Position)[0]?.get(Position)?.x ?? null;
 
   world.query(Enemy, Position, Velocity, Facing, Size).updateEach(([e, pos, vel, facing, size]) => {
     if (!e.alive) return;
-    if (e.kind === "patrol") {
-      if (pos.x <= e.minX) facing.dir = 1;
-      else if (pos.x + size.w >= e.maxX) facing.dir = -1;
-      vel.x = e.speed * facing.dir;
-    } else {
-      const dir = playerX > pos.x ? 1 : -1;
-      facing.dir = dir as -1 | 1;
-      vel.x = e.speed * dir;
-    }
+    if (e.kind === "patrol") steerPatrol(e, pos, vel, facing, size.w);
+    else steerChase(e, pos, vel, facing, playerX);
   });
 }
 

@@ -29,6 +29,15 @@ export const hudStore = {
     return () => listeners.delete(listener);
   },
   set(patch: Partial<HudSnapshot>) {
+    // Skip the notify when nothing actually changed — avoids redundant renders.
+    let changed = false;
+    for (const k of Object.keys(patch) as (keyof HudSnapshot)[]) {
+      if (patch[k] !== snapshot[k]) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
     snapshot = { ...snapshot, ...patch };
     emit();
   },
