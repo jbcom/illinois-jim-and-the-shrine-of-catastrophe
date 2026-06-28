@@ -8,6 +8,7 @@
  */
 
 import { animatedFromStrip } from "@render/sprites.ts";
+import { assetUrl } from "@/assetUrl.ts";
 import type { AnimatedSprite } from "pixi.js";
 
 export type EnemyKind = "goblin" | "skeleton" | "mushroom" | "flyingEye";
@@ -66,7 +67,7 @@ export const ENEMY_FRAME_SIZE = 150;
 export function enemySheetUrl(kind: EnemyKind, state: EnemyState): { url: string; frames: number } {
   const def = SHEETS[kind];
   const sheet = def.states[state];
-  return { url: `/assets/enemies/${def.dir}/${sheet.file}`, frames: sheet.frames };
+  return { url: assetUrl(`assets/enemies/${def.dir}/${sheet.file}`), frames: sheet.frames };
 }
 
 /** Build an animated enemy sprite for the given kind + state. */

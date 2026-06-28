@@ -8,6 +8,7 @@
  * row once (non-looping) to scatter shards, matching the sim's POT_BREAK_TIME.
  */
 import { Assets, Rectangle, Texture } from "pixi.js";
+import { assetUrl } from "@/assetUrl.ts";
 
 export const POT_FRAME = 32;
 export const POT_SMASH_FRAMES = 4;
@@ -23,7 +24,7 @@ const FILE: Record<PotColor, string> = {
 
 /** URL of a pot color's sheet. */
 export function potSheetUrl(color: PotColor): string {
-  return `/assets/breakables/pots/${FILE[color]}`;
+  return assetUrl(`assets/breakables/pots/${FILE[color]}`);
 }
 
 /**

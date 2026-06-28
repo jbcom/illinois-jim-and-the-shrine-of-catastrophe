@@ -10,8 +10,9 @@
  * without distorting the bar's pixels.
  */
 import { Assets, Container, Graphics, Sprite, type Texture, TilingSprite } from "pixi.js";
+import { assetUrl } from "@/assetUrl.ts";
 
-const BASE = "/assets/ux/hp_bar";
+const BASE = assetUrl("assets/ux/hp_bar");
 
 /**
  * Meter rectangle inside the 116×64 frame where the fill bar sits (px). Measured

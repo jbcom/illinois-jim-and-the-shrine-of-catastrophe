@@ -65,3 +65,6 @@ raw-assets/
 # vitest-browser proof screenshots (re-derivable)
 tests/browser/__screenshots__/
 tests/browser/*.png
+
+# Claude task-batch local cache (machine-local, re-derivable)
+.claude/state/

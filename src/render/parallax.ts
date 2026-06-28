@@ -8,6 +8,7 @@
  * so the cave wall repeats seamlessly as the player scrolls.
  */
 import { Assets, Container, type Texture, TilingSprite } from "pixi.js";
+import { assetUrl } from "@/assetUrl.ts";
 
 export interface ParallaxLayerSpec {
   readonly url: string;
@@ -60,8 +61,8 @@ export async function createParallax(specs: readonly ParallaxLayerSpec[]): Promi
 
 /** The cave biome's background depth stack (deepest → nearest). */
 export const CAVE_PARALLAX: readonly ParallaxLayerSpec[] = [
-  { url: "/assets/biomes/caves/background1.png", factor: 0.1 },
-  { url: "/assets/biomes/caves/background2.png", factor: 0.25 },
-  { url: "/assets/biomes/caves/background3.png", factor: 0.45 },
-  { url: "/assets/biomes/caves/background4a.png", factor: 0.7 },
+  { url: assetUrl("assets/biomes/caves/background1.png"), factor: 0.1 },
+  { url: assetUrl("assets/biomes/caves/background2.png"), factor: 0.25 },
+  { url: assetUrl("assets/biomes/caves/background3.png"), factor: 0.45 },
+  { url: assetUrl("assets/biomes/caves/background4a.png"), factor: 0.7 },
 ];
