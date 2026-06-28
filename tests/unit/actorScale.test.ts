@@ -14,7 +14,9 @@ describe("actorScale", () => {
     // height must land within 0.6×–1.1× of the hero's — readable as peers, not
     // specks. (Goblin chest-high ≈ 0.8, skeleton ≈ hero, mushroom/eye smaller.)
     const heroH = TARGET_WORLD_H.player;
-    for (const kind of ["goblin", "skeleton", "mushroom", "flyingEye"] as const) {
+    // NPCs are adult humans — they belong in the same peer band as enemies, not
+    // shrunk to specks next to Jim.
+    for (const kind of ["goblin", "skeleton", "mushroom", "flyingEye", "npc"] as const) {
       const ratio = TARGET_WORLD_H[kind] / heroH;
       expect(ratio).toBeGreaterThanOrEqual(0.6);
       expect(ratio).toBeLessThanOrEqual(1.1);
