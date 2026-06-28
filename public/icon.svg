@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#17110b" />
+  <!-- Temple arch / shrine doorway in tarnished idol gold -->
+  <g fill="none" stroke="#e3b341" stroke-width="20" stroke-linejoin="round">
+    <path d="M120 420 L120 200 Q120 120 256 120 Q392 120 392 200 L392 420" />
+  </g>
+  <!-- Inner doorway shadow -->
+  <path d="M176 420 L176 230 Q176 176 256 176 Q336 176 336 230 L336 420 Z" fill="#0d0905" />
+  <!-- Relic gem glowing in the doorway -->
+  <g>
+    <circle cx="256" cy="312" r="46" fill="#c2402e" />
+    <circle cx="256" cy="312" r="26" fill="#f6d36b" />
+  </g>
+  <!-- Carved glyph accents -->
+  <g fill="#9a7240">
+    <rect x="92" y="200" width="24" height="24" />
+    <rect x="396" y="200" width="24" height="24" />
+    <rect x="92" y="260" width="24" height="24" />
+    <rect x="396" y="260" width="24" height="24" />
+  </g>
+</svg>
