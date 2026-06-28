@@ -27,6 +27,15 @@ DEFERRAL IS HOW PROJECTS FAIL. No "later"/"follow-up"/"wire it up next".
 Browser verify: vitest-browser `page.screenshot({path})` (read the saved PNG) or
 Safari MCP headed GPU. The real game uses SPRITE assets (below), each proven this way.
 
+### 🎬 GAME FLOW (user directive, 2026-06-28, DECISIVE)
+The game is a sequence of hand-PAINTED levels split by full-screen 16-bit-style
+CUTSCENES telling Illinois Jim's story: cutscene → painted level → cutscene →
+painted level → … across overworld (surface) → cave (descent) → shrine. I author
+each level as a composition/painting (custom TSX/TS/koota) from the biome SHAPE
+stamps, and author each between-level cutscene as full-screen GenAI 16-bit art +
+a cutscene player. Figure out CAVE composition first, then OVERWORLD the same way.
+Each level: painted scenery + invisible collision + spawns + a story cutscene before it.
+
 ### 📖 THIS IS A STORY (user directive, 2026-06-28, NON-NEGOTIABLE)
 Not a sprite tech-demo — a 16-bit story-driven adventure in the mold of the best
 late-80s/early-90s SNES/Genesis games. The provided assets ARE the story kit and
@@ -50,11 +59,26 @@ The hero is the real transparent `classes/adventure` pack (no chromakey, no gen)
 - [x] Enemy sprites (goblin/skeleton/mushroom/flying-eye anim) — test + screenshot each
 - [x] Hero = real `classes/adventure` transparent strips (idle/run/attack), NOT Gemini — test + screenshot
 - [x] koota render-layer traits + scene compositor (Layer/ParallaxBg/TileLayerRef/SpriteRef/Anim) — test + screenshot
-- [ ] NPC factory: composite skin+clothing+hair+hand layers → an NPC sprite, + dialogue trait — test + screenshot
-- [ ] Breakable pots: pot entity, smash-on-hit, drop relic/health/secret — test + screenshot
-- [ ] HP/lives UI bar from ux/hp_bar — test + screenshot
+- [x] NPC factory: composite skin+clothing+hair+hand layers → an NPC sprite, + dialogue trait — test + screenshot
+- [x] Breakable pots: pot entity, smash-on-hit, drop relic/health/secret — test + screenshot
+- [x] HP/lives UI bar from ux/hp_bar — test + screenshot
+- [ ] IN-GAME sprite renderer: replace the placeholder-rect pixiRenderer with a sprite scene
+      driven by the sim world — Player→hero, Enemy→enemy-by-kind, parallax bg, pots,
+      HP-bar overlay. Each frame syncs sprite positions from the sim. Safari GPU
+      screenshot of REAL gameplay.
+      ARCHITECTURE (user, 2026-06-28, DECISIVE): it is a SIDE-SCROLLER — NO TILES,
+      NO @pixi/tilemap, NO Kenney (ripped out). I COMPOSE each level as a PAINTING:
+      hand-assembled placement of the organic biome SHAPE stamps (cave ledges,
+      formations, slabs, overworld pieces) arranged by me to TELL THE STORY, like
+      painting a backdrop. Collision is SEPARATE invisible geometry (authored rects)
+      the physics reads. Level = { painting: placed shapes, collision: rects, spawns }.
 - [ ] Tiled .tmj loader + DESIGNED levels: overworld (surface) → cave (descent) → shrine — test + screenshot each
-- [ ] Full layered story scene composited in-game (overworld + NPCs + pots + enemies) — Safari GPU screenshot of real gameplay
+      NOTE (user, 2026-06-28): the cave/overworld biome sheets are NOT a uniform
+      tile grid — they are ORGANIC COMPOSITIONAL SHAPES (rock ledges, stalactite
+      clusters, cliff slabs, brick panels) meant to be PLACED/assembled as scenery,
+      not index-mapped per 16px cell. Tiled image/object layers (irregular stamps)
+      compose the look; a separate clean collision grid (Kenney-style) backs the
+      physics. Two layers: composed organic scenery + invisible/clean collision.
 - [ ] Audio sfx wired to events (jump/coin/hurt/whip/land/pot-smash/dialogue) + music loop
 - [ ] Story: GenAI 16-bit cutscenes (intro → descent → shrine reveal → ending) + React cutscene player
 - [ ] Landing page (title wordmark, story hook, play CTA)
