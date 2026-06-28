@@ -6,6 +6,7 @@
  * No DOM / Math.random / wall-clock — determinism preserved.
  */
 
+import type { Rng } from "@engine/rng.ts";
 import { applySteering, arrive } from "@sim/ai/steering.ts";
 import {
   Collectible,
@@ -14,6 +15,7 @@ import {
   Gravity,
   Lifetime,
   MineCart,
+  Particle,
   Player,
   Position,
   Score,
@@ -412,4 +414,45 @@ export function mineCartSystem(world: World, intent: PlayerIntent, map: TileMap)
 
   if (cart.riding) e.set(MineCart, { ...cart, riding: false });
   return false;
+}
+
+export interface BurstOptions {
+  readonly count: number;
+  readonly color: number;
+  readonly speed: number;
+  readonly size?: number;
+  readonly gravity?: number;
+  readonly lifetime?: number;
+}
+
+/**
+ * Spawn a cosmetic particle burst at (x,y). Uses the FX rng stream so it never
+ * advances the sim stream — cosmetic variety can't desync a gameplay replay.
+ * Each particle gets a random direction + speed jitter, a Lifetime, and motion
+ * the particleSystem integrates.
+ */
+export function spawnBurst(world: World, fx: Rng, x: number, y: number, o: BurstOptions): void {
+  const size = o.size ?? 2;
+  const gravity = o.gravity ?? 0;
+  const lifetime = o.lifetime ?? 0.5;
+  for (let i = 0; i < o.count; i++) {
+    const angle = fx.range(0, Math.PI * 2);
+    const speed = o.speed * fx.range(0.4, 1);
+    world.spawn(
+      Position({ x, y }),
+      Velocity({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }),
+      Particle({ size, color: o.color, gravity }),
+      Lifetime({ remaining: lifetime * fx.range(0.7, 1) }),
+    );
+  }
+}
+
+/** Integrate particle motion (velocity + optional gravity). Lifetime is handled
+ * by lifetimeSystem, which removes expired particles. */
+export function particleSystem(world: World, dt: number, gravityAccel: number): void {
+  world.query(Particle, Position, Velocity).updateEach(([part, pos, vel]) => {
+    if (part.gravity !== 0) vel.y += gravityAccel * part.gravity * dt;
+    pos.x += vel.x * dt;
+    pos.y += vel.y * dt;
+  });
 }

@@ -1,3 +1,4 @@
+import { createRngPair } from "@engine/rng.ts";
 import {
   award,
   COMBO_WINDOW,
@@ -7,9 +8,11 @@ import {
   lifetimeSystem,
   MAX_COMBO,
   mineCartSystem,
+  particleSystem,
   physicsSystem,
   playerSystem,
   scoreSystem,
+  spawnBurst,
 } from "@sim/ecs/systems.ts";
 import {
   Collectible,
@@ -18,6 +21,7 @@ import {
   Gravity,
   Lifetime,
   MineCart,
+  Particle,
   Player,
   Position,
   Score,
@@ -313,6 +317,44 @@ describe("ECS world + systems", () => {
     const sim = createSimWorld(level, T);
     for (let i = 0; i < 30; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
     expect(mineCartSystem(sim.world, NEUTRAL_INTENT, level.map)).toBe(false);
+  });
+
+  it("spawnBurst creates particles using the FX rng (deterministic per seed)", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const fx = createRngPair("seed-A").fx;
+    spawnBurst(sim.world, fx, 50, 50, { count: 8, color: 0xff0000, speed: 80 });
+    expect(sim.world.query(Particle).length).toBe(8);
+  });
+
+  it("particleSystem moves particles and lifetimeSystem removes them", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const fx = createRngPair("seed-B").fx;
+    spawnBurst(sim.world, fx, 50, 50, { count: 4, color: 0xff0000, speed: 80, lifetime: 0.05 });
+    const before = sim.world.query(Particle)[0]?.get(Position);
+    particleSystem(sim.world, DT, T.gravity);
+    const after = sim.world.query(Particle)[0]?.get(Position);
+    // At least one coordinate changed (particles have non-zero velocity).
+    expect(after?.x !== before?.x || after?.y !== before?.y).toBe(true);
+    // Expire them.
+    for (let i = 0; i < 6; i++) lifetimeSystem(sim.world, DT);
+    expect(sim.world.query(Particle).length).toBe(0);
+  });
+
+  it("FX particle stream does not desync the sim stream", () => {
+    // Two identical sim runs; one also spawns FX bursts. Player path must match.
+    const playerX = (withFx: boolean) => {
+      const level = flatLevel();
+      const sim = createSimWorld(level, T);
+      const fx = createRngPair("run").fx;
+      for (let i = 0; i < 30; i++) {
+        playerSystem(sim.world, intent({ moveX: 1 }), level.map, T, DT);
+        if (withFx) spawnBurst(sim.world, fx, 0, 0, { count: 3, color: 1, speed: 50 });
+      }
+      return sim.player.get(Position)?.x;
+    };
+    expect(playerX(true)).toBe(playerX(false));
   });
 
   it("is deterministic for an identical intent sequence", () => {

@@ -11,6 +11,7 @@
  */
 import { type Clock, createClock } from "@engine/clock.ts";
 import { createInputManager, type InputManager } from "@engine/input/inputManager.ts";
+import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
 import { createPixiRenderer, type PixiRenderer } from "@render/pixiRenderer.ts";
 import {
@@ -18,9 +19,11 @@ import {
   combatSystem,
   enemySystem,
   lifetimeSystem,
+  particleSystem,
   physicsSystem,
   playerSystem,
   scoreSystem,
+  spawnBurst,
 } from "@sim/ecs/systems.ts";
 import { Enemy, Player, Position, Score } from "@sim/ecs/traits.ts";
 import { createSimWorld, type SimWorld } from "@sim/ecs/world.ts";
@@ -56,6 +59,9 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
   const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
   const renderer: PixiRenderer = await createPixiRenderer(canvas);
   const clock: Clock = createClock();
+  // FX (cosmetic) PRNG stream — independent of the sim stream so particle
+  // randomness never desyncs a gameplay replay.
+  const fx: Rng = createRngPair("shrine-run").fx;
 
   let sim: SimWorld = createSimWorld(level);
   let camera: Camera = createCamera(
@@ -93,16 +99,32 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
     prev = new Map();
   }
 
+  function playerCenter(): { x: number; y: number } | null {
+    const pl = sim.world.query(Player, Position)[0];
+    const pos = pl?.get(Position);
+    return pos ? { x: pos.x + sim.tuning.width / 2, y: pos.y + sim.tuning.height / 2 } : null;
+  }
+
   function step(dt: number): void {
     prev = snapshotPositions();
     const intent = input.poll();
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
-    combatSystem(sim.world, sim.tuning);
-    collectibleSystem(sim.world);
+    const combat = combatSystem(sim.world, sim.tuning);
+    const gained = collectibleSystem(sim.world);
     scoreSystem(sim.world, dt);
+    particleSystem(sim.world, dt, sim.tuning.gravity);
     lifetimeSystem(sim.world, dt);
+
+    // Cosmetic bursts on kills/pickups — FX stream, never touches the sim stream.
+    const c = playerCenter();
+    if (c && combat.kills > 0) {
+      spawnBurst(sim.world, fx, c.x, c.y, { count: 8, color: 0xc2402e, speed: 90, gravity: 0.4 });
+    }
+    if (c && gained > 0) {
+      spawnBurst(sim.world, fx, c.x, c.y, { count: 6, color: 0xf6d36b, speed: 70, size: 2 });
+    }
   }
 
   function updateCameraAndHud(): void {

@@ -68,7 +68,8 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
   `src/sim/ai/steering.ts` (Yuka is 3D + Math.random — can't run in the pure sim).
   Chase now uses arrive (accel toward player, decel when close) — smoother than
   bang-bang. 6 steering tests, 133 total. Determinism preserved.
-- [ ] Particles: dust, impact, collectible sparkle (deterministic)
+- [x] Particles: Particle trait + spawnBurst (FX rng stream) + particleSystem; bursts
+  on kills (red) + pickups (gold), rendered by pixiRenderer. 3 tests incl. FX-no-desync proof. 136 total.
 - [ ] Game-state machine (xstate): title → play → win/lose → restart; React screens
 - [ ] Persistence: best score / progress via @capacitor/preferences (web localStorage fallback)
 - [ ] Levels: 3+ hand-authored levels + a level-select

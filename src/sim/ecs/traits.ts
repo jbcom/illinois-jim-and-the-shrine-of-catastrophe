@@ -72,3 +72,16 @@ export const MineCart = trait({
   dir: 1 as -1 | 1,
   riding: false,
 });
+
+/**
+ * Cosmetic particle (dust, impact spark, collectible sparkle). Driven by the FX
+ * PRNG stream so its randomness never advances the replay-critical sim stream.
+ * `color` is a packed 0xRRGGBB int (the renderer fills with it). Particles carry
+ * Position + Velocity + Lifetime; this trait adds size + colour + fade.
+ */
+export const Particle = trait({
+  size: 2,
+  color: 0xffffff,
+  /** Gravity scale for the particle (0 = floaty sparkle, 1 = falling dust). */
+  gravity: 0,
+});

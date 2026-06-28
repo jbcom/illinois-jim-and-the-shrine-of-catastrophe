@@ -12,7 +12,7 @@
  */
 
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
-import { Collectible, Enemy, Facing, Player, Position, Size } from "@sim/ecs/traits.ts";
+import { Collectible, Enemy, Facing, Particle, Player, Position, Size } from "@sim/ecs/traits.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
 import type { Camera } from "@sim/world/camera.ts";
@@ -123,6 +123,13 @@ function drawActors(g: Graphics, o: RenderOpts, camX: number, camY: number): voi
 
   // Read-only iteration (readEach) — the renderer never mutates the sim, and
   // updateEach's write-back/change-tracking must not run in the render path.
+
+  // Particles (small squares in their packed colour) — drawn first, behind actors.
+  world.query(Particle, Position).readEach(([part, pos]) => {
+    g.rect(Math.round(pos.x - camX), Math.round(pos.y - camY), part.size, part.size).fill(
+      part.color,
+    );
+  });
 
   // Collectibles (relic gold diamonds).
   world.query(Collectible, Position, Size).readEach(([, pos, size]) => {
