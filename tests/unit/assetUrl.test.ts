@@ -24,7 +24,7 @@ describe("assetUrl", () => {
 
   it("never produces a double slash after the base", () => {
     const url = assetUrl("/assets/x.png");
-    expect(url).not.toMatch(/[^:]\/\/assets/); // no `//assets` (ignoring protocol)
+    expect(url).not.toMatch(/(?<!:)\/\/assets/); // no `//assets` (ignoring protocol)
   });
 
   // Regression guard: a hardcoded "/assets/..." string ignores the app base URL
