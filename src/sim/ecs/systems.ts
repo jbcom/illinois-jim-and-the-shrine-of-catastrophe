@@ -397,6 +397,8 @@ export interface PotResult {
   readonly smashed: number;
   /** Lives gained from "health" drops this step. */
   readonly healthDrops: number;
+  /** World centres of the pots smashed this step (for a debris burst at the pot). */
+  readonly smashedAt: ReadonlyArray<{ x: number; y: number }>;
 }
 
 /**
@@ -445,7 +447,9 @@ export function potSystem(world: World, t: PlayerTuning, dt: number): PotResult 
       world.spawn(Position({ x: d.x - 5, y: d.y - 5 }), Size({ w: 10, h: 10 }), Collectible({ value, taken: false }));
     }
   }
-  return { smashed, healthDrops };
+  // `drops` already carries {x,y,...}; it structurally satisfies the readonly
+  // {x,y}[] of smashedAt, so return it directly (no per-step .map() allocation).
+  return { smashed, healthDrops, smashedAt: drops };
 }
 
 /** Grant the player one life via the Score entity. Returns 1 if applied. */

@@ -173,7 +173,16 @@ export async function createGame(
   }
 
   /** Cosmetic particle bursts on kills/pickups — FX stream, never the sim stream. */
-  function spawnStepBursts(kills: number, gained: number): void {
+  function spawnStepBursts(
+    kills: number,
+    gained: number,
+    potSmashedAt: ReadonlyArray<{ x: number; y: number }>,
+  ): void {
+    // Pot debris bursts at each smashed pot (terracotta shards) — the satisfying
+    // smash juice, spawned at the pot rather than the player.
+    for (const p of potSmashedAt) {
+      spawnBurst(sim.world, fx, p.x, p.y, { count: 10, color: 0xb5651d, speed: 100, gravity: 0.5, size: 2 });
+    }
     const c = playerCenter();
     if (!c) return;
     if (kills > 0) {
@@ -201,7 +210,7 @@ export async function createGame(
     lifetimeSystem(sim.world, dt);
 
     playStepSfx(combat, pots.smashed, gained, wasGrounded);
-    spawnStepBursts(combat.kills, gained);
+    spawnStepBursts(combat.kills, gained, pots.smashedAt);
   }
 
   function followPlayer(): void {

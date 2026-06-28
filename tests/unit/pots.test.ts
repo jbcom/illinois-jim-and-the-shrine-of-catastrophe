@@ -38,6 +38,9 @@ describe("potSystem", () => {
 
     const r = potSystem(w, DEFAULT_TUNING, 1 / 60);
     expect(r.smashed).toBe(1);
+    // The smash position is reported (for the debris-burst at the pot).
+    expect(r.smashedAt).toHaveLength(1);
+    expect(r.smashedAt[0]?.x).toBeCloseTo(16 + 8, 5); // pot x + half-width
     // A relic collectible was spawned at the pot.
     const relics = w.query(Collectible, Position);
     expect(relics.length).toBe(1);
