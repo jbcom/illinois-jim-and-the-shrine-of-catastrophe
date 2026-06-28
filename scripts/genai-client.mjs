@@ -23,12 +23,20 @@ export function readGeminiKey() {
     ?.trim();
 }
 
-/** prompt → PNG bytes (Buffer) or null. Throws without a key. */
+/**
+ * (prompt, aspectRatio?) → PNG bytes (Buffer) or null. Throws without a key.
+ * aspectRatio is an Imagen ratio string ("16:9" | "9:16" | "1:1" | "4:3" | "3:4");
+ * defaults to "1:1" when omitted.
+ */
 export function geminiGenerateImage(apiKey, model = DEFAULT_IMAGE_MODEL) {
   if (!apiKey) throw new Error("geminiGenerateImage: missing GEMINI_API_KEY");
   const ai = new GoogleGenAI({ apiKey });
-  return async (prompt) => {
-    const res = await ai.models.generateImages({ model, prompt, config: { numberOfImages: 1 } });
+  return async (prompt, aspectRatio = "1:1") => {
+    const res = await ai.models.generateImages({
+      model,
+      prompt,
+      config: { numberOfImages: 1, aspectRatio },
+    });
     const b64 = res?.generatedImages?.[0]?.image?.imageBytes;
     return b64 ? Buffer.from(b64, "base64") : null;
   };

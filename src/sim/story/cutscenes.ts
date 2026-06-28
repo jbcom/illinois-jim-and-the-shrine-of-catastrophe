@@ -9,7 +9,7 @@
 
 export interface Cutscene {
   readonly id: string;
-  /** Full-screen scene image (public/assets/cutscenes/…). */
+  /** Base path of the scene image (no extension); the player picks the\n   * aspect variant (-16x9 / -9x16 / -1x1) for the viewport. */
   readonly image: string;
   /** Narration lines shown in sequence over the scene. */
   readonly lines: readonly string[];
@@ -24,7 +24,7 @@ const IMG = assetUrl("assets/cutscenes");
 export const CUTSCENES: readonly Cutscene[] = [
   {
     id: "intro",
-    image: `${IMG}/cut-01-village.png`,
+    image: `${IMG}/cut-01-village`,
     lines: [
       "The village of Halward's Reach has feared the mountain for a hundred years.",
       "Elder Mara says the last seal has cracked. The Shrine of Catastrophe is waking.",
@@ -34,7 +34,7 @@ export const CUTSCENES: readonly Cutscene[] = [
   },
   {
     id: "descent",
-    image: `${IMG}/cut-02-descent.png`,
+    image: `${IMG}/cut-02-descent`,
     lines: [
       "The cave mouth swallows the last of the daylight.",
       "Down Jim goes, rope by rope, into the dark the village will not speak of.",
@@ -43,7 +43,7 @@ export const CUTSCENES: readonly Cutscene[] = [
   },
   {
     id: "ruins",
-    image: `${IMG}/cut-03-ruins.png`,
+    image: `${IMG}/cut-03-ruins`,
     lines: [
       "Older than the village. Older than the kingdom.",
       "Red gems pulse in the walls like a heartbeat. The pots still hold their secrets.",
@@ -52,7 +52,7 @@ export const CUTSCENES: readonly Cutscene[] = [
   },
   {
     id: "shrine",
-    image: `${IMG}/cut-04-shrine.png`,
+    image: `${IMG}/cut-04-shrine`,
     lines: [
       "The Shrine. The idol burns gold atop the cracked steps.",
       '"Turn back," the Warden warned. "The idol is not treasure. It is a door."',
@@ -62,7 +62,7 @@ export const CUTSCENES: readonly Cutscene[] = [
   },
   {
     id: "catastrophe",
-    image: `${IMG}/cut-05-catastrophe.png`,
+    image: `${IMG}/cut-05-catastrophe`,
     lines: [
       "The instant his fingers close on the idol, the shrine answers.",
       "Red light. Splitting stone. The catastrophe the name promised.",
@@ -72,7 +72,7 @@ export const CUTSCENES: readonly Cutscene[] = [
   },
   {
     id: "escape",
-    image: `${IMG}/cut-06-escape.png`,
+    image: `${IMG}/cut-06-escape`,
     lines: [
       "Dawn. Air. The mountain folding in on itself behind him.",
       "Illinois Jim and the Shrine of Catastrophe — and Jim, somehow, still breathing.",

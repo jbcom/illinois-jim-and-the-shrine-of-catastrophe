@@ -12,6 +12,7 @@
  * Cutscenes are presentation, not simulation — wall-clock timing is fine here
  * (they're never part of a deterministic replay).
  */
+import { aspectImagePath, useViewportAspect } from "@ui/aspectImage.ts";
 import type { Cutscene } from "@sim/story/cutscenes.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -34,6 +35,7 @@ function dwellFor(line: string): number {
 export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
   const [line, setLine] = useState(0);
   const [phase, setPhase] = useState<Phase>("in");
+  const aspect = useViewportAspect();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const last = line >= cutscene.lines.length - 1;
@@ -102,10 +104,11 @@ export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
       data-phase={phase}
       className="absolute inset-0 flex h-full w-full flex-col bg-black"
     >
-      {/* Scene image — fills the upper region edge-to-edge (cover, no letterbox). */}
+      {/* Scene image — the aspect variant composed for this viewport, filling the
+          upper region edge-to-edge (so portrait shows the portrait crop, etc.). */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <img
-          src={cutscene.image}
+          src={aspectImagePath(cutscene.image, aspect)}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
           style={{ imageRendering: "pixelated" }}

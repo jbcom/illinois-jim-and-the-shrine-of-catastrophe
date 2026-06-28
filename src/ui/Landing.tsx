@@ -8,16 +8,20 @@
  */
 import { assetUrl } from "@/assetUrl.ts";
 import { TITLE } from "@/brand.ts";
+import { aspectImagePath, useViewportAspect } from "@ui/aspectImage.ts";
 
-const HERO_ART = assetUrl("assets/branding/landing-hero.png");
+const HERO_BASE = assetUrl("assets/branding/landing-hero");
 const WORDMARK = assetUrl("assets/branding/title-wordmark.png");
 
 export function Landing(props: { onStart: () => void }) {
+  const aspect = useViewportAspect();
   return (
     <section className="absolute inset-0 overflow-hidden bg-[#1a120b]">
-      {/* GenAI hero key-art — covers the screen; the hero sits left-of-centre. */}
+      {/* GenAI hero key-art — the aspect variant composed for this viewport, so a
+          portrait phone gets the portrait crop (full-body hero) not a side-cropped
+          landscape. */}
       <img
-        src={HERO_ART}
+        src={aspectImagePath(HERO_BASE, aspect)}
         alt="Illinois Jim raising his relic-lantern toward the shrine on the mountain"
         className="absolute inset-0 h-full w-full object-cover object-center"
         style={{ imageRendering: "pixelated" }}
