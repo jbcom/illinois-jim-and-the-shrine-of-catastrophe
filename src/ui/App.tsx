@@ -12,6 +12,8 @@ import { cutsceneById } from "@sim/story/cutscenes.ts";
 import { CutscenePlayer } from "@ui/CutscenePlayer.tsx";
 import { loadBestScore, saveBestScore } from "@ui/persistence.ts";
 import { gameMachine } from "@ui/gameMachine.ts";
+import { DialogueBox } from "@ui/DialogueBox.tsx";
+import { dialogueStore, useDialogue } from "@ui/dialogueStore.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
@@ -33,6 +35,9 @@ export function App() {
   // `.then` so a freshly-recreated level instance starts unpaused if we're mid-play.
   const playingRef = useRef(false);
   playingRef.current = state === "playing";
+  // Talking pauses the action so the player can read the speech window.
+  const dialogue = useDialogue();
+  const talking = dialogue.script !== null;
 
   // Device-profile-driven orientation via the UI orientation store (phones lock
   // landscape; tablets / unfolded foldables / desktop stay free). The store owns
@@ -56,6 +61,7 @@ export function App() {
         },
         onGameOver: (finalScore) => send({ type: "LOSE", score: finalScore }),
         onWin: (finalScore) => send({ type: "WIN", score: finalScore }),
+        onTalkTarget: (dialogueId) => dialogueStore.setPrompt(dialogueId),
       }, levelId)
         .then((g) => {
           if (disposed) {
@@ -108,9 +114,9 @@ export function App() {
   useEffect(() => {
     const g = gameRef.current;
     if (!g) return;
-    if (state === "playing") g.setPaused(false);
-    else g.setPaused(true);
-  }, [state, levelId]);
+    // Play only while in `playing` AND not mid-conversation (talking pauses).
+    g.setPaused(!(state === "playing" && !talking));
+  }, [state, levelId, talking]);
 
   // Seed the persisted best score once on mount.
   useEffect(() => {
@@ -128,6 +134,7 @@ export function App() {
     <main className="relative h-full w-full">
       <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
+      {state === "playing" && <DialogueBox />}
       {state === "cutscene" && cutscene && (
         <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />
       )}

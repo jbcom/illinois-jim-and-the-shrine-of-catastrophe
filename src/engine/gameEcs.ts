@@ -22,6 +22,7 @@ import {
   enemySystem,
   lifetimeSystem,
   mineCartSystem,
+  npcInteractionSystem,
   particleSystem,
   physicsSystem,
   playerSystem,
@@ -55,6 +56,8 @@ export interface GameDeps {
   readonly onGameOver?: (finalScore: number) => void;
   /** Fired when the player reaches the level goal (final score). */
   readonly onWin?: (finalScore: number) => void;
+  /** Reports the dialogueId of the NPC in talk range each frame (null = none). */
+  readonly onTalkTarget?: (dialogueId: string | null) => void;
 }
 
 export async function createGame(
@@ -68,6 +71,7 @@ export async function createGame(
   const onGameOver = deps.onGameOver ?? (() => {});
   const onWin = deps.onWin ?? (() => {});
   const onHud = deps.onHud ?? (() => {});
+  const onTalkTarget = deps.onTalkTarget ?? (() => {});
   let won = false;
 
   const bundle = levelBundle(levelId);
@@ -243,6 +247,8 @@ export async function createGame(
     followPlayer();
     const s = sim.score.get(Score);
     if (s) onHud({ score: s.points, lives: s.lives, combo: s.combo });
+    // Report the NPC in talk range so the framed dialogue UI can prompt/open it.
+    onTalkTarget(npcInteractionSystem(sim.world)?.dialogueId ?? null);
     checkWin();
     handleDeath();
   }
