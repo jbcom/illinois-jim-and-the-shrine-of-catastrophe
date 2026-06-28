@@ -1,38 +1,53 @@
 /**
- * Engine → HUD signal bridge.
+ * Engine → HUD store. A tiny external store the imperative engine writes to and
+ * React subscribes to via useSyncExternalStore. The engine stays
+ * framework-agnostic — it only calls the setters; it never imports React.
  *
- * The engine writes gameplay state into these Solid signals each frame; HUD
- * components read them and re-render only the exact DOM nodes that changed
- * (fine-grained reactivity, no VDOM diff). The engine never imports Solid
- * components — only this thin signal surface — so it stays framework-agnostic.
+ * (When koota lands, HUD values derive from ECS traits via koota/react hooks;
+ * this store remains the bridge for non-entity globals like paused/deviceClass.)
  */
-import { createSignal } from "solid-js";
+import { useSyncExternalStore } from "react";
 
-export interface HudModel {
-  readonly score: () => number;
-  readonly lives: () => number;
-  readonly paused: () => boolean;
-  readonly deviceClass: () => string;
-  setScore(n: number): void;
-  setLives(n: number): void;
-  setPaused(p: boolean): void;
-  setDeviceClass(c: string): void;
+export interface HudSnapshot {
+  readonly score: number;
+  readonly lives: number;
+  readonly paused: boolean;
+  readonly deviceClass: string;
 }
 
-export function createHudModel(): HudModel {
-  const [score, setScore] = createSignal(0);
-  const [lives, setLives] = createSignal(3);
-  const [paused, setPaused] = createSignal(false);
-  const [deviceClass, setDeviceClass] = createSignal("desktop");
+let snapshot: HudSnapshot = { score: 0, lives: 3, paused: false, deviceClass: "desktop" };
+const listeners = new Set<() => void>();
 
-  return {
-    score,
-    lives,
-    paused,
-    deviceClass,
-    setScore,
-    setLives,
-    setPaused,
-    setDeviceClass,
-  };
+function emit() {
+  for (const l of listeners) l();
+}
+
+export const hudStore = {
+  get: (): HudSnapshot => snapshot,
+  subscribe(listener: () => void): () => void {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  },
+  set(patch: Partial<HudSnapshot>) {
+    // Skip the notify when nothing actually changed — avoids redundant renders.
+    let changed = false;
+    for (const k of Object.keys(patch) as (keyof HudSnapshot)[]) {
+      if (patch[k] !== snapshot[k]) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
+    snapshot = { ...snapshot, ...patch };
+    emit();
+  },
+  setScore: (score: number) => hudStore.set({ score }),
+  setLives: (lives: number) => hudStore.set({ lives }),
+  setPaused: (paused: boolean) => hudStore.set({ paused }),
+  setDeviceClass: (deviceClass: string) => hudStore.set({ deviceClass }),
+};
+
+/** React hook: subscribe to the HUD snapshot. */
+export function useHud(): HudSnapshot {
+  return useSyncExternalStore(hudStore.subscribe, hudStore.get, hudStore.get);
 }

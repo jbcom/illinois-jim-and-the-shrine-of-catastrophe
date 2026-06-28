@@ -86,7 +86,11 @@ function sweep(
   const toCell = edge(target);
   const stepDir = movingPos ? 1 : -1;
 
-  for (let cell = fromCell + stepDir; movingPos ? cell <= toCell : cell >= toCell; cell += stepDir) {
+  for (
+    let cell = fromCell + stepDir;
+    movingPos ? cell <= toCell : cell >= toCell;
+    cell += stepDir
+  ) {
     for (let perp = p0; perp <= p1; perp++) {
       if (blockAt(cell, perp)) {
         // Snap flush against the blocking cell.
@@ -123,7 +127,9 @@ export function moveAndCollide(map: TileMap, body: Aabb, dx: number, dy: number)
   // one-way platforms, so pass movingDown to `blocks`.
   if (dy !== 0) {
     const movingDown = dy > 0;
-    const r = sweep(y, h, dy, x, x + w, ts, (row, col) => blocks(tileAt(map, col, row), movingDown));
+    const r = sweep(y, h, dy, x, x + w, ts, (row, col) =>
+      blocks(tileAt(map, col, row), movingDown),
+    );
     y = r.pos;
     if (r.hit) {
       if (movingDown) grounded = true;

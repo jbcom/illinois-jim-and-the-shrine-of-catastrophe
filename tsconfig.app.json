@@ -13,9 +13,8 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* JSX via SolidJS */
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
+    /* JSX via React 19 */
+    "jsx": "react-jsx",
 
     /* Linting / strictness */
     "strict": true,
