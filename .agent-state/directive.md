@@ -46,7 +46,8 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 - [x] PRNG v2: dual-layer seedrandom (sim + fx streams); createRngPair + restoreRng (16 tests)
 - [x] Adopt ECS (koota): traits + world + playerSystem + collectibleSystem; level
   parses `*`/`o`/`x` for relics/enemies; 7 ECS tests (player feel preserved, pickup, determinism)
-- [ ] Physics v2: momentum, friction, knockback, moving/one-way platforms, triggers (lib-assisted)
+- [x] Physics v2: generic gravity/collision integration system for non-player bodies
+  + enemySystem (patrol/chase) + lifetimeSystem (particles); enemies spawned from level
 - [ ] Enemies: at least 2 types with deterministic AI (patrol, chase) + whip/stomp kills
 - [ ] Collectibles + scoring: relics/gems, score, combo; wire HUD signals
 - [ ] Mine-cart rail segments (the iconic hook): rail-follow physics + speed

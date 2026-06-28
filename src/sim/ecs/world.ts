@@ -7,7 +7,16 @@
  * reads here; systems receive those as arguments.
  */
 
-import { Collectible, Facing, Gravity, Player, Position, Size, Velocity } from "@sim/ecs/traits.ts";
+import {
+  Collectible,
+  Enemy,
+  Facing,
+  Gravity,
+  Player,
+  Position,
+  Size,
+  Velocity,
+} from "@sim/ecs/traits.ts";
 import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
 import type { Level } from "@sim/world/level.ts";
 import { createWorld, type Entity, type World } from "koota";
@@ -38,6 +47,25 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
       Position({ x: c.x, y: c.y }),
       Size({ w: 10, h: 10 }),
       Collectible({ value: c.value, taken: false }),
+    );
+  }
+
+  const ts = level.map.tileSize;
+  for (const e of level.enemies) {
+    // Patrol enemies pace the tile-row they spawn in; chase ignores bounds.
+    world.spawn(
+      Position({ x: e.x, y: e.y }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 14, h: 14 }),
+      Facing({ dir: 1 }),
+      Gravity({ scale: 1 }),
+      Enemy({
+        kind: e.kind,
+        speed: e.kind === "chase" ? 55 : 40,
+        minX: e.x - ts * 3,
+        maxX: e.x + ts * 4,
+        alive: true,
+      }),
     );
   }
 

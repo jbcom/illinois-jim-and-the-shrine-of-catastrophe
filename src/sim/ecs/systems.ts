@@ -6,7 +6,17 @@
  * No DOM / Math.random / wall-clock — determinism preserved.
  */
 
-import { Collectible, Facing, Player, Position, Size, Velocity } from "@sim/ecs/traits.ts";
+import {
+  Collectible,
+  Enemy,
+  Facing,
+  Gravity,
+  Lifetime,
+  Player,
+  Position,
+  Size,
+  Velocity,
+} from "@sim/ecs/traits.ts";
 import type { PlayerIntent } from "@sim/input/intent.ts";
 import { clamp } from "@sim/math/vec2.ts";
 import { aabb, intersects } from "@sim/physics/aabb.ts";
@@ -108,4 +118,59 @@ export function collectibleSystem(world: World): number {
     }
   });
   return gained;
+}
+
+/**
+ * Generic gravity + tile-collision integration for non-player dynamic bodies
+ * (enemies, knocked-back items). The player has its own richer system; this
+ * covers everything else with Gravity + Velocity + Size, applying knockback
+ * carried in Velocity and resolving against the tilemap.
+ */
+export function physicsSystem(world: World, map: TileMap, t: PlayerTuning, dt: number): void {
+  world.query(Gravity, Position, Velocity, Size).updateEach(([g, pos, vel, size], entity) => {
+    // The player entity is handled by playerSystem — skip it here.
+    if (entity.has(Player)) return;
+
+    vel.y += t.gravity * g.scale * dt;
+    if (vel.y > t.maxFall) vel.y = t.maxFall;
+
+    const res = moveAndCollide(map, aabb(pos.x, pos.y, size.w, size.h), vel.x * dt, vel.y * dt);
+    pos.x = res.x;
+    pos.y = res.y;
+    if (res.hitLeft || res.hitRight) vel.x = 0;
+    if (res.grounded || res.hitTop) vel.y = 0;
+  });
+}
+
+/**
+ * Enemy steering: patrol bounces between minX/maxX; chase moves toward the
+ * player on the x axis. Velocity is set here; physicsSystem integrates it.
+ * (Yuka steering is layered on top of this in a later step.)
+ */
+export function enemySystem(world: World): void {
+  let playerX = 0;
+  world.query(Player, Position).updateEach(([, pos]) => {
+    playerX = pos.x;
+  });
+
+  world.query(Enemy, Position, Velocity, Facing, Size).updateEach(([e, pos, vel, facing, size]) => {
+    if (!e.alive) return;
+    if (e.kind === "patrol") {
+      if (pos.x <= e.minX) facing.dir = 1;
+      else if (pos.x + size.w >= e.maxX) facing.dir = -1;
+      vel.x = e.speed * facing.dir;
+    } else {
+      const dir = playerX > pos.x ? 1 : -1;
+      facing.dir = dir as -1 | 1;
+      vel.x = e.speed * dir;
+    }
+  });
+}
+
+/** Decrement lifetimes (particles/fx) and remove expired entities. */
+export function lifetimeSystem(world: World, dt: number): void {
+  world.query(Lifetime).updateEach(([life], entity) => {
+    life.remaining -= dt;
+    if (life.remaining <= 0) entity.destroy();
+  });
 }

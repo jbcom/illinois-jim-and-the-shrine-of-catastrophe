@@ -1,5 +1,21 @@
-import { collectibleSystem, playerSystem } from "@sim/ecs/systems.ts";
-import { Collectible, Player, Position, Size, Velocity } from "@sim/ecs/traits.ts";
+import {
+  collectibleSystem,
+  enemySystem,
+  lifetimeSystem,
+  physicsSystem,
+  playerSystem,
+} from "@sim/ecs/systems.ts";
+import {
+  Collectible,
+  Enemy,
+  Facing,
+  Gravity,
+  Lifetime,
+  Player,
+  Position,
+  Size,
+  Velocity,
+} from "@sim/ecs/traits.ts";
 import { createSimWorld } from "@sim/ecs/world.ts";
 import { NEUTRAL_INTENT, type PlayerIntent } from "@sim/input/intent.ts";
 import { DEFAULT_TUNING } from "@sim/player/tuning.ts";
@@ -77,6 +93,60 @@ describe("ECS world + systems", () => {
     const gained = collectibleSystem(sim.world);
     expect(gained).toBe(250);
     expect(sim.world.query(Collectible).length).toBe(0); // removed
+  });
+
+  it("parses enemies from 'o'/'x' and spawns them", () => {
+    const level = parseLevel(["o..x.", "..@..", "#####"], 16);
+    expect(level.enemies.map((e) => e.kind)).toEqual(["patrol", "chase"]);
+    const sim = createSimWorld(level, T);
+    expect(sim.world.query(Enemy).length).toBe(2);
+  });
+
+  it("physicsSystem applies gravity to non-player bodies and lands them", () => {
+    const level = parseLevel(["....", "....", "####"], 16);
+    const sim = createSimWorld(level, T);
+    const crate = sim.world.spawn(
+      Position({ x: 16, y: 0 }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 12, h: 12 }),
+      Gravity({ scale: 1 }),
+    );
+    for (let i = 0; i < 60; i++) physicsSystem(sim.world, level.map, T, DT);
+    const vel = crate.get(Velocity);
+    const pos = crate.get(Position);
+    expect(vel?.y).toBe(0); // landed
+    expect(pos?.y).toBeLessThanOrEqual(32 - 12 + 0.01); // resting on the floor row (top=32)
+  });
+
+  it("patrol enemy reverses direction at its bounds", () => {
+    const level = parseLevel(["........", "..o.....", "########"], 16);
+    const sim = createSimWorld(level, T);
+    enemySystem(sim.world);
+    const enemy = sim.world.query(Enemy)[0];
+    const vel = enemy?.get(Velocity);
+    expect(Math.abs(vel?.x ?? 0)).toBeGreaterThan(0); // it moves
+  });
+
+  it("chase enemy moves toward the player's x", () => {
+    const level = parseLevel(["..........", "x........@", "##########"], 16);
+    const sim = createSimWorld(level, T);
+    enemySystem(sim.world);
+    const enemy = sim.world.query(Enemy)[0];
+    const vel = enemy?.get(Velocity);
+    const facing = enemy?.get(Facing);
+    expect(vel?.x).toBeGreaterThan(0); // player is to the right
+    expect(facing?.dir).toBe(1);
+  });
+
+  it("lifetimeSystem removes expired entities", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const particle = sim.world.spawn(Position({ x: 0, y: 0 }), Lifetime({ remaining: 0.05 }));
+    expect(sim.world.has(particle)).toBe(true);
+    lifetimeSystem(sim.world, DT); // 1/60 ≈ 0.0167, not yet expired
+    expect(sim.world.has(particle)).toBe(true);
+    for (let i = 0; i < 5; i++) lifetimeSystem(sim.world, DT);
+    expect(sim.world.has(particle)).toBe(false); // expired + destroyed
   });
 
   it("is deterministic for an identical intent sequence", () => {
