@@ -62,10 +62,14 @@ The hero is the real transparent `classes/adventure` pack (no chromakey, no gen)
 - [x] NPC factory: composite skin+clothing+hair+hand layers → an NPC sprite, + dialogue trait — test + screenshot
 - [x] Breakable pots: pot entity, smash-on-hit, drop relic/health/secret — test + screenshot
 - [x] HP/lives UI bar from ux/hp_bar — test + screenshot
-- [ ] IN-GAME sprite renderer: replace the placeholder-rect pixiRenderer with a sprite scene
-      driven by the sim world — Player→hero, Enemy→enemy-by-kind, parallax bg, pots,
-      HP-bar overlay. Each frame syncs sprite positions from the sim. Safari GPU
-      screenshot of REAL gameplay.
+- [x] Composition/painting system + cave shape catalog + first painted level "The Descent"
+      (composition.ts/caveShapes.ts/caveDescent.ts) — screenshot-proven over parallax (caeff75).
+- [ ] IN-GAME painting renderer: replace placeholder-rect pixiRenderer with a renderer that
+      (a) paints the level composition + parallax behind, (b) maps sim entities to sprites
+      (Player→hero, Enemy→enemy-by-kind, pots, relics) synced each frame, (c) camera-scrolls
+      the world layer, (d) HP-bar overlay. Wire into gameEcs loop. Author the level's
+      INVISIBLE COLLISION (separate from the painting) so physics matches the painted ground.
+      Safari GPU screenshot of REAL gameplay.
       ARCHITECTURE (user, 2026-06-28, DECISIVE): it is a SIDE-SCROLLER — NO TILES,
       NO @pixi/tilemap, NO Kenney (ripped out). I COMPOSE each level as a PAINTING:
       hand-assembled placement of the organic biome SHAPE stamps (cave ledges,
