@@ -1,7 +1,33 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** ACTIVE
+**Status:** ACTIVE — ENDLESS (never flips to RELEASED)
 **Owner:** jbogaty
+
+## ♾️ OPERATING MODE — ENDLESS SELF-DISCOVERY (user directive, NON-NEGOTIABLE)
+**"fix your directives to be a loop endlessly of self-discovery. always find new
+features to add or polish. no more 'we released!'. i will tell you when to end,
+until then i expect you to be always finding something new to do."**
+
+- This directive NEVER reaches RELEASED. There is no "done." Only the user ends it.
+- Every turn: pick the next item from the SELF-DISCOVERY BACKLOG, build it, prove
+  it live (Safari snapshots READ + reviewed, zero asset loss at any viewport),
+  commit, merge to main, redeploy, then ADD 1-3 new things discovered while doing
+  it. The backlog grows faster than it drains — that's the point.
+- Quality bar: dense/complex/coherent/challenging/fun; every visual proven live.
+  [[craft-levels-study-palette]] · [[endless-self-discovery-loop]]
+
+## 🔁 SELF-DISCOVERY BACKLOG (always non-empty — append as you go)
+- [ ] PROVE reorientation + scaling: snapshot EVERY viewport (portrait/landscape
+      phone, tablet portrait+landscape, foldable, desktop, ultrawide) and verify
+      ZERO loss of any picture/asset at any stage — landing, each cutscene,
+      gameplay. READ each snapshot; fix any clip/letterbox/missing art.
+- [ ] HERO FACE: the landing Jim read as an "evil grimace"; regenerated with a
+      warm friendly smile (done — verify live across all aspects).
+- [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
+- [ ] SHRINE biome + level (third act); build toward ~12-18 levels total.
+- [ ] Audio polish (per-biome music, footsteps, ambience); pot-drop pickups + HUD;
+      NPC dialogue speech-box; per-biome boss/setpiece; particle + screen-shake
+      juice; accessibility pass (reduced-motion, colorblind-safe, large-text).
 
 ## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
 **User feedback (live mobile bugs):** the deployed game was broken on phones —

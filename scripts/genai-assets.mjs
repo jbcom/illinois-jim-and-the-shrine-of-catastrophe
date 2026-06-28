@@ -39,9 +39,12 @@ const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak an
 // a rakish angle, relaxed confident swagger, the easy charm of a treasure-hunter
 // who's already decided the danger is worth it.
 const HERO =
-  "Illinois Jim, a wiry young rogue explorer with a cocky grin and devil-may-care swagger, " +
-  "in a teal adventurer's vest, a brass-goggle cap worn at a rakish angle, " +
-  "carrying a glowing amber relic-lantern and a coiled grappling hook";
+  "Illinois Jim, a handsome young hero explorer with a WARM, FRIENDLY, GENUINE " +
+  "smile and kind bright eyes — likable and charming, an easygoing adventurer, " +
+  "NOT menacing, NOT sinister, NOT a villain, no evil grimace, no bared teeth, " +
+  "no scowl; relaxed confident heroic posture, in a teal adventurer's vest, a " +
+  "brass-goggle cap worn at a rakish angle, carrying a glowing amber relic-lantern " +
+  "and a coiled grappling hook";
 
 const PROMPTS = [
   // Story beats — one full-screen scene per cutscene, in narrative order. Each is
