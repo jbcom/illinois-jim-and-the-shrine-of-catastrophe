@@ -45,10 +45,25 @@ export function App() {
     readOrientationState(window),
   );
   useEffect(() => {
+    // Only re-render + re-apply the native lock when the orientation state
+    // actually changes — resize fires continuously during a drag and
+    // readOrientationState returns a fresh object each call, which would
+    // otherwise spam React + the native screen-orientation bridge.
+    let first = true;
     const sync = () => {
-      const next = readOrientationState(window);
-      setOrientation(next);
-      void applyNativeOrientationLock(next);
+      setOrientation((prev) => {
+        const next = readOrientationState(window);
+        const changed =
+          first ||
+          prev.deviceClass !== next.deviceClass ||
+          prev.lockLandscape !== next.lockLandscape ||
+          prev.isPortrait !== next.isPortrait ||
+          prev.needsRotatePrompt !== next.needsRotatePrompt;
+        if (!changed) return prev;
+        first = false;
+        void applyNativeOrientationLock(next);
+        return next;
+      });
     };
     sync();
     window.addEventListener("resize", sync);

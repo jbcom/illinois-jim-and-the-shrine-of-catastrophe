@@ -1,4 +1,5 @@
 import { classifyDevice, shouldLockLandscape } from "@engine/viewport/deviceProfile.ts";
+import { readOrientationState } from "@engine/viewport/orientation.ts";
 import { describe, expect, it } from "vitest";
 
 describe("orientation policy", () => {
@@ -34,5 +35,21 @@ describe("orientation policy", () => {
     // Folded cover screen: small min-dim → phone on android.
     const folded = classifyDevice({ width: 360, height: 748, dpr: 3, platform: "android" });
     expect(folded.lockLandscape).toBe(true);
+  });
+
+  it("readOrientationState: web phone in portrait needs the rotate prompt", () => {
+    // In the test env Capacitor reports platform "web" → a phone-size portrait
+    // viewport is lock-required and (being web) surfaces the rotate prompt.
+    const state = readOrientationState({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 });
+    expect(state.isPortrait).toBe(true);
+    expect(state.lockLandscape).toBe(true);
+    expect(state.needsRotatePrompt).toBe(true);
+  });
+
+  it("readOrientationState: a wide desktop viewport is free, no prompt", () => {
+    const state = readOrientationState({ innerWidth: 1440, innerHeight: 900, devicePixelRatio: 1 });
+    expect(state.isPortrait).toBe(false);
+    expect(state.lockLandscape).toBe(false);
+    expect(state.needsRotatePrompt).toBe(false);
   });
 });

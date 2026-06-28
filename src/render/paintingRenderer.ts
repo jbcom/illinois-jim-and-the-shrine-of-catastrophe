@@ -214,12 +214,6 @@ export async function createPaintingRenderer(
     const screenW = app.screen.width;
     const screenH = app.screen.height;
 
-    // Cover by HEIGHT so the authored band fills the canvas top-to-bottom — BUT
-    // on a tall/narrow (portrait phone) canvas pure height-cover zooms in so far
-    // you only see ~1 screen of a side-scroller. Clamp the zoom so at least
-    // MIN_VIEW_W world-px stay visible horizontally; when that kicks in the band
-    // no longer fills the full height (the ground fill + parallax cover the slack)
-    // but the player can actually see ahead.
     // Cover by HEIGHT: the authored band fills the canvas top-to-bottom with no
     // letterbox. Gameplay is landscape-locked on phones (see App orientation
     // guard), so the canvas is always wide enough that this reads correctly.
