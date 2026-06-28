@@ -11,7 +11,15 @@
  * Sheet layout (rows = animations, 0-indexed):
  *   0 idle  1 walk  2 run  3 jump  4 cheer  5 attack  6 crouch/fall
  */
-import { Assets, Container, Rectangle, type Renderer, type Texture } from "pixi.js";
+import {
+  Assets,
+  Container,
+  Rectangle,
+  type Renderer,
+  RenderTexture,
+  Sprite,
+  Texture,
+} from "pixi.js";
 
 export const NPC_FRAME_W = 80;
 export const NPC_FRAME_H = 64;
@@ -85,19 +93,20 @@ export function npcLayerUrls(spec: NpcSpec): string[] {
  * Composite the layer sheets into one flattened texture the size of a single
  * sheet (800×448). Uses the app renderer to bake the stack; the result is sliced
  * per-frame like any other sheet.
+ *
+ * OWNERSHIP: the returned RenderTexture is a GPU allocation (FrameBuffer) the
+ * CALLER owns. Destroy it with `sheet.destroy(true)` when the NPC is torn down,
+ * AFTER its AnimatedSprite (whose frames share `sheet.source`) is destroyed —
+ * else the FrameBuffer leaks across NPC rebuilds.
  */
-export async function composeNpcSheet(renderer: Renderer, spec: NpcSpec): Promise<Texture> {
+export async function composeNpcSheet(renderer: Renderer, spec: NpcSpec): Promise<RenderTexture> {
   const urls = npcLayerUrls(spec);
   const sheets = await Promise.all(urls.map((u) => Assets.load<Texture>(u)));
   const base = sheets[0];
   if (!base) throw new Error("composeNpcSheet: empty layer stack");
 
   const stack = new Container();
-  for (const tex of sheets) {
-    const { Sprite } = await import("pixi.js");
-    stack.addChild(new Sprite(tex));
-  }
-  const { RenderTexture } = await import("pixi.js");
+  for (const tex of sheets) stack.addChild(new Sprite(tex));
   const rt = RenderTexture.create({ width: base.width, height: base.height });
   renderer.render({ container: stack, target: rt });
   stack.destroy({ children: true });
@@ -105,14 +114,13 @@ export async function composeNpcSheet(renderer: Renderer, spec: NpcSpec): Promis
 }
 
 /** Slice one animation row of a composite NPC sheet into frame textures. */
-export async function npcAnimFrames(sheet: Texture, anim: NpcAnim): Promise<Texture[]> {
-  const { Texture: Tex } = await import("pixi.js");
+export function npcAnimFrames(sheet: Texture, anim: NpcAnim): Texture[] {
   const row = NPC_ROW[anim];
   const frames = NPC_ANIM_FRAMES[anim];
   const out: Texture[] = [];
   for (let col = 0; col < frames; col++) {
     out.push(
-      new Tex({
+      new Texture({
         source: sheet.source,
         frame: new Rectangle(col * NPC_FRAME_W, row * NPC_FRAME_H, NPC_FRAME_W, NPC_FRAME_H),
       }),

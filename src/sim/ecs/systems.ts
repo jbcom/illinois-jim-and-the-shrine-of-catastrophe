@@ -19,6 +19,7 @@ import {
   Particle,
   Player,
   Position,
+  Pot,
   Score,
   Size,
   Velocity,
@@ -370,6 +371,88 @@ export function combatSystem(world: World, t: PlayerTuning): CombatResult {
   if (bounce) player.set(Velocity, { x: vel.x, y: -t.jumpSpeed * 0.6 });
   if (playerHurt) player.set(Player, { ...p, dead: true });
   return { kills, playerHurt };
+}
+
+/** Seconds the smash animation plays before the pot entity is removed. */
+export const POT_BREAK_TIME = 0.4;
+/** Points a relic dropped from a pot is worth; a "secret" relic is worth more. */
+export const POT_RELIC_VALUE = 50;
+export const POT_SECRET_VALUE = 250;
+
+export interface PotResult {
+  /** Pots smashed this step. */
+  readonly smashed: number;
+  /** Lives gained from "health" drops this step. */
+  readonly healthDrops: number;
+}
+
+/**
+ * Breakable pots. An active whip overlapping an intact pot smashes it: the pot
+ * latches `broken`, starts its break-animation timer, and spawns its drop —
+ * a relic (Collectible worth POT_RELIC_VALUE), a secret (a higher-value relic),
+ * or health (a +1 life applied to Score here). Broken pots count down and are
+ * removed when the animation finishes. Pure: returns counts for sfx/particles.
+ */
+export function potSystem(world: World, t: PlayerTuning, dt: number): PotResult {
+  let smashed = 0;
+  let healthDrops = 0;
+
+  const player = world.query(Player, Position, Size, Facing)[0];
+  const whip = player ? playerWhipBox(player, t) : null;
+
+  // Pass 1 (read-only): decide which pots smash + age broken ones. Collect
+  // mutations so spawning drops mid-iteration can't perturb the query.
+  const drops: Array<{ x: number; y: number; drop: "relic" | "health" | "secret" }> = [];
+  const toBreak: Entity[] = [];
+  const toExpire: Entity[] = [];
+  world.query(Pot, Position, Size).updateEach(([pot, pos, size], entity) => {
+    if (pot.broken) {
+      const remaining = pot.breakTimer - dt;
+      if (remaining <= 0) toExpire.push(entity);
+      else entity.set(Pot, { ...pot, breakTimer: remaining });
+      return;
+    }
+    if (!whip || !intersects(whip, aabb(pos.x, pos.y, size.w, size.h))) return;
+    toBreak.push(entity);
+    smashed++;
+    drops.push({ x: pos.x + size.w / 2, y: pos.y + size.h / 2, drop: pot.drop });
+  });
+
+  for (const e of toExpire) e.destroy();
+  for (const e of toBreak) {
+    const pot = e.get(Pot);
+    if (pot) e.set(Pot, { ...pot, broken: true, breakTimer: POT_BREAK_TIME });
+  }
+
+  for (const d of drops) {
+    if (d.drop === "health") {
+      healthDrops += addLife(world);
+    } else {
+      const value = d.drop === "secret" ? POT_SECRET_VALUE : POT_RELIC_VALUE;
+      world.spawn(Position({ x: d.x - 5, y: d.y - 5 }), Size({ w: 10, h: 10 }), Collectible({ value, taken: false }));
+    }
+  }
+  return { smashed, healthDrops };
+}
+
+/** Grant the player one life via the Score entity. Returns 1 if applied. */
+function addLife(world: World): number {
+  const e = world.query(Score)[0];
+  if (!e) return 0;
+  const s = e.get(Score);
+  if (!s) return 0;
+  e.set(Score, { ...s, lives: s.lives + 1 });
+  return 1;
+}
+
+/** The whip hitbox for a player entity (snapshot-safe wrapper around whipBox). */
+function playerWhipBox(player: Entity, t: PlayerTuning): ReturnType<typeof aabb> | null {
+  const p = player.get(Player);
+  const pos = player.get(Position);
+  const size = player.get(Size);
+  const facing = player.get(Facing);
+  if (!p || !pos || !size || !facing) return null;
+  return whipBox(p, pos, size, facing, t);
 }
 
 /** How long (seconds) a combo stays alive after the last scoring event. */

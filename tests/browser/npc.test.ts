@@ -79,7 +79,7 @@ describe("NPC factory (paper-doll composite)", () => {
     let prevOpaque = -1;
     for (const spec of stages) {
       const sheet = await composeNpcSheet(app.renderer, spec);
-      const frames = await npcAnimFrames(sheet, "idle");
+      const frames = npcAnimFrames(sheet, "idle");
       // Diagnostic: each added layer should add opaque coverage to the idle pose.
       const px = app.renderer.extract.pixels(frames[0]!);
       let opaque = 0;
@@ -111,7 +111,7 @@ describe("NPC factory (paper-doll composite)", () => {
     let x = 60;
     for (const spec of TOWNSFOLK) {
       const sheet = await composeNpcSheet(app.renderer, spec);
-      const frames = await npcAnimFrames(sheet, "idle");
+      const frames = npcAnimFrames(sheet, "idle");
       expect(frames.length).toBe(NPC_ANIM_FRAMES.idle);
       expect(frames[0]?.frame.width).toBe(NPC_FRAME_W);
       expect(frames[0]?.frame.height).toBe(NPC_FRAME_H);

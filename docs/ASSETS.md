@@ -97,6 +97,32 @@ The narrative half lives in the sim: the `Npc` trait (`dialogueId`, `range`,
 + `npcInteractionSystem` (nearest in-range NPC → talk prompt). This is how the
 overworld→cave→shrine story is told between the platforming.
 
+## Breakable pots (`src/render/pots.ts` + sim `Pot`)
+
+Classic 16-bit pot-smashing. Each color sheet (`breakable pots (<color>).png`) is
+a 4×4 grid of 32×32 frames; row 0 is the smash sequence (frame 0 = intact →
+frames 1-3 = shattering). `loadPotFrames(color)` slices that row.
+
+The sim `Pot` trait (`color`, `drop`, `broken`, `breakTimer`) + `potSystem` drive
+behaviour: an active whip overlapping an intact pot smashes it and spawns its
+`drop` — a relic (Collectible), a secret (higher-value relic), or health (+1
+life). Broken pots play the smash once (POT_BREAK_TIME) then vanish. Proven:
+`pots-colors-and-smash.png` (4 colors + the red smash sequence) + 6 unit tests.
+
+> koota note: `potSystem` collects smashes/expiries during the `Pot` query and
+> applies them AFTER, because `updateEach`'s change-tracking re-enters on a
+> mid-iteration `entity.set`, which double-dropped relics.
+
+## HP / lives bar (`src/render/hpBar.ts`)
+
+The `ux/hp_bar` status gauge: `Hp bar.png` (frame: portrait ring + segmented
+meter), `red bar.png` (the orb that fills the ring), `Blue`/`yellow bar.png`
+(meter fill). `createHpBar(color)` composites orb→frame→fill, with the fill
+**masked** (not scaled) to the HP fraction so the meter empties cleanly from the
+right; lives show as gold pips. `setHp(0..1)` / `setLives(n)`. Meter + ring rects
+were measured from the frame art, not guessed. Proven: `hpbar-states.png`
+(full/half/low + 3/2/1 lives).
+
 ## Render-layer model (`src/render/layers.ts`)
 
 The scene is composited through a **render koota world** — a world separate from

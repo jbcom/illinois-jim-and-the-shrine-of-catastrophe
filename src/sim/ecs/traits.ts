@@ -54,6 +54,20 @@ export const Npc = trait({
 /** A collectible (relic/gem) worth `value` points. */
 export const Collectible = trait({ value: 100, taken: false });
 
+/**
+ * A breakable pot (classic 16-bit pot-smashing). When the whip/attack hits it,
+ * it smashes and spawns its `drop`: a relic (points), health (a life), or a
+ * secret (a hidden relic worth more). `color` selects the sprite sheet; `broken`
+ * latches once smashed (so the break animation plays once and it can't re-drop).
+ */
+export const Pot = trait({
+  color: "gray" as "gray" | "red" | "white" | "yellow",
+  drop: "relic" as "relic" | "health" | "secret",
+  broken: false,
+  /** Break-animation timer (seconds remaining) once smashed; entity removed at 0. */
+  breakTimer: 0,
+});
+
 /** Subject to gravity + tile collision in the physics system. */
 export const Gravity = trait({ scale: 1 });
 

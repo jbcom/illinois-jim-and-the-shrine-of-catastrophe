@@ -110,7 +110,15 @@ async function spawnActor(
       Anim({ state, fps: TIMING[state].fps, ticks: 0 }),
     );
     // dispose frees the pre-loaded textures for all states on scene teardown.
-    store.set(e, { kind: "sprite", sprite: player.sprite, dispose: () => player.destroy() });
+    // Detach from the parent first so root.destroy({children}) doesn't re-destroy.
+    store.set(e, {
+      kind: "sprite",
+      sprite: player.sprite,
+      dispose: () => {
+        player.sprite.parent?.removeChild(player.sprite);
+        player.destroy();
+      },
+    });
     return;
   }
   const state = actor.state ?? "idle";
@@ -120,5 +128,12 @@ async function spawnActor(
   sprite.height = 64;
   parent.addChild(sprite);
   const e = world.spawn(SpriteRef({ sim: actor.sim ?? -1 }), Anim({ state, fps: 10, ticks: 0 }));
-  store.set(e, { kind: "sprite", sprite, dispose: () => sprite.destroy() });
+  store.set(e, {
+    kind: "sprite",
+    sprite,
+    dispose: () => {
+      sprite.parent?.removeChild(sprite);
+      sprite.destroy();
+    },
+  });
 }
