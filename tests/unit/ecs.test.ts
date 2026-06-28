@@ -1,5 +1,6 @@
 import {
   collectibleSystem,
+  combatSystem,
   enemySystem,
   lifetimeSystem,
   physicsSystem,
@@ -16,15 +17,27 @@ import {
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
-import { createSimWorld } from "@sim/ecs/world.ts";
+import { createSimWorld as createSimWorldRaw } from "@sim/ecs/world.ts";
 import { NEUTRAL_INTENT, type PlayerIntent } from "@sim/input/intent.ts";
 import { DEFAULT_TUNING } from "@sim/player/tuning.ts";
 import { parseLevel } from "@sim/world/level.ts";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 const DT = 1 / 60;
 const T = DEFAULT_TUNING;
 const intent = (over: Partial<PlayerIntent> = {}): PlayerIntent => ({ ...NEUTRAL_INTENT, ...over });
+
+// koota caps live worlds at 16; track + destroy each test's worlds so the suite
+// doesn't exhaust the pool.
+const liveWorlds: ReturnType<typeof createSimWorldRaw>[] = [];
+function createSimWorld(...args: Parameters<typeof createSimWorldRaw>) {
+  const sim = createSimWorldRaw(...args);
+  liveWorlds.push(sim);
+  return sim;
+}
+afterEach(() => {
+  for (const sim of liveWorlds.splice(0)) sim.world.destroy();
+});
 
 /** Flat floor on the bottom row with a player spawn near the left. */
 function flatLevel(rows = ["............", "...@........", "############"]) {
@@ -147,6 +160,75 @@ describe("ECS world + systems", () => {
     expect(sim.world.has(particle)).toBe(true);
     for (let i = 0; i < 5; i++) lifetimeSystem(sim.world, DT);
     expect(sim.world.has(particle)).toBe(false); // expired + destroyed
+  });
+
+  it("combat: stomping an enemy from above kills it and bounces the player", () => {
+    const level = parseLevel(["......", "..@...", "######"], 16);
+    const sim = createSimWorld(level, T);
+    const pp = sim.player.get(Position);
+    // Enemy overlapping the player's feet (2px up) so the boxes intersect and
+    // the stomp margin applies; player falling.
+    sim.world.spawn(
+      Position({ x: pp?.x ?? 0, y: (pp?.y ?? 0) + (sim.player.get(Size)?.h ?? 16) - 2 }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 14, h: 14 }),
+      Facing({ dir: 1 }),
+      Enemy({ kind: "patrol", speed: 40, minX: 0, maxX: 80, alive: true }),
+    );
+    sim.player.set(Velocity, { x: 0, y: 100 }); // falling (set: get returns a snapshot)
+    const before = sim.world.query(Enemy).length;
+    const res = combatSystem(sim.world, T);
+    expect(before).toBe(1);
+    expect(res.kills).toBe(1);
+    expect(sim.world.query(Enemy).length).toBe(0);
+    expect(sim.player.get(Player)?.dead).toBe(false); // survived (stomp)
+    expect(sim.player.get(Velocity)?.y).toBeLessThan(0); // bounced up
+  });
+
+  it("combat: an active whip kills an enemy in front of the player", () => {
+    const level = parseLevel(["......", "..@...", "######"], 16);
+    const sim = createSimWorld(level, T);
+    const pp = sim.player.get(Position);
+    const ps = sim.player.get(Size);
+    // Enemy directly to the player's right, within whip reach.
+    sim.world.spawn(
+      Position({ x: (pp?.x ?? 0) + (ps?.w ?? 12) + 4, y: pp?.y ?? 0 }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 12, h: 14 }),
+      Facing({ dir: 1 }),
+      Enemy({ kind: "patrol", speed: 40, minX: 0, maxX: 80, alive: true }),
+    );
+    const p0 = sim.player.get(Player);
+    if (p0) sim.player.set(Player, { ...p0, whip: T.whipDuration }); // whip active, facing right
+    const res = combatSystem(sim.world, T);
+    expect(res.kills).toBe(1);
+    expect(res.playerHurt).toBe(false);
+  });
+
+  it("combat: a side collision with no stomp/whip hurts (kills) the player", () => {
+    const level = parseLevel(["......", "..@...", "######"], 16);
+    const sim = createSimWorld(level, T);
+    const pp = sim.player.get(Position);
+    const ps = sim.player.get(Size);
+    // Enemy overlapping the player's side; player not falling, no whip.
+    sim.world.spawn(
+      Position({ x: (pp?.x ?? 0) + (ps?.w ?? 12) - 2, y: pp?.y ?? 0 }),
+      Velocity({ x: 0, y: 0 }),
+      Size({ w: 14, h: 14 }),
+      Facing({ dir: 1 }),
+      Enemy({ kind: "patrol", speed: 40, minX: 0, maxX: 80, alive: true }),
+    );
+    // Player velocity defaults to 0 (not falling) → side hit, not a stomp.
+    const res = combatSystem(sim.world, T);
+    expect(res.playerHurt).toBe(true);
+    expect(sim.player.get(Player)?.dead).toBe(true);
+  });
+
+  it("combat: no-op when there are no enemies", () => {
+    const level = flatLevel();
+    const sim = createSimWorld(level, T);
+    const res = combatSystem(sim.world, T);
+    expect(res).toEqual({ kills: 0, playerHurt: false });
   });
 
   it("is deterministic for an identical intent sequence", () => {

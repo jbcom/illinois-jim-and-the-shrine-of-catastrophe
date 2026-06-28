@@ -48,14 +48,15 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
   parses `*`/`o`/`x` for relics/enemies; 7 ECS tests (player feel preserved, pickup, determinism)
 - [x] Physics v2: generic gravity/collision integration system for non-player bodies
   + enemySystem (patrol/chase) + lifetimeSystem (particles); enemies spawned from level
-- [ ] Enemies: at least 2 types with deterministic AI (patrol, chase) + whip/stomp kills
+- [x] Enemies: patrol/chase AI + combatSystem (whip kill, stomp+bounce, side-hit hurts);
+  120 tests. NOTE: koota caps 16 live worlds — the loop must world.destroy() on level restart.
 - [ ] Collectibles + scoring: relics/gems, score, combo; wire HUD signals
 - [ ] Mine-cart rail segments (the iconic hook): rail-follow physics + speed
 - [ ] Adopt PixiJS 8 renderer: replace canvas2d; sim→Pixi view layer; sprite/tile draw from atlas
 - [ ] Adopt Yuka for enemy steering AI (patrol/chase/path), clock-driven + seeded
 - [ ] Particles: dust, impact, collectible sparkle (deterministic)
-- [ ] Game-state machine: title → play → win/lose → restart; SolidJS screens
-- [ ] Persistence: best score / progress via localStorage (Capacitor Preferences on native)
+- [ ] Game-state machine (xstate): title → play → win/lose → restart; React screens
+- [ ] Persistence: best score / progress via @capacitor/preferences (web localStorage fallback)
 - [ ] Levels: 3+ hand-authored levels + a level-select
 - [ ] Audio: wire sfx to events (jump/coin/hurt/whip), simple music loop
 - [x] Pivot stack to React: SolidJS → React 19 + Tailwind v4; @pixi/react + koota wired next
@@ -66,6 +67,19 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 - [ ] Tests at every step (unit for sim, browser for render, e2e for flows)
 - [ ] Docs kept in lockstep (ARCHITECTURE/STATE/CHANGELOG)
 - [ ] Self-improve: refine this directive + capture decisions as work surfaces
+
+### Learnings captured this milestone
+- **Run `pnpm lint` (not just `pnpm check`/build) before every commit** — `check`
+  auto-fixes and can mask hard lint errors (Tailwind `@theme` tripped CI lint
+  while local build was green). Lint is the CI gate; reproduce it locally.
+- **Biome needs `css.parser.tailwindDirectives: true`** for Tailwind v4 at-rules.
+- **Cognitive-complexity max is 15** — keep `updateEach` bodies thin by extracting
+  per-entity helpers (applyPlayer*, steerPatrol/steerChase, recordActor).
+- **koota**: `world.query(...)` returns `readonly Entity[]` + `.updateEach((state,
+  entity)=>)`; `entity.destroy()` / `entity.get(Trait)` / `entity.has(Trait)`.
+  Single-subject lookups: `world.query(T)[0]?.get(T)` — guard null (no player on menus).
+- **Determinism preserved through the lib swaps**: seedrandom dual-stream + koota
+  plain-trait entities + fixed-step systems = replayable. No lib reads wall-clock.
 
 ## ✅ Scaffold milestone SHIPPED (2026-06-27)
 PR #1 (scaffold) + PR #3 (PWA icons) squash-merged to main. **Live in
