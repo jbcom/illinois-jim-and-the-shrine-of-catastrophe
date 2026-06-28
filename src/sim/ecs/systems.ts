@@ -225,3 +225,85 @@ export function lifetimeSystem(world: World, dt: number): void {
     if (life.remaining <= 0) entity.destroy();
   });
 }
+
+export interface CombatResult {
+  /** Enemies killed this step (for scoring/sfx/particles). */
+  readonly kills: number;
+  /** True if an enemy killed the player this step. */
+  readonly playerHurt: boolean;
+}
+
+/** The player's whip hitbox while active, in the facing direction (or null). */
+function whipBox(
+  p: { whip: number; dead: boolean },
+  pos: { x: number; y: number },
+  size: { w: number; h: number },
+  facing: { dir: -1 | 1 },
+  t: PlayerTuning,
+): ReturnType<typeof aabb> | null {
+  if (p.whip <= 0) return null;
+  const reach = t.whipReach;
+  const x = facing.dir > 0 ? pos.x + size.w : pos.x - reach;
+  return aabb(x, pos.y, reach, size.h);
+}
+
+/**
+ * Combat: the player kills an enemy by stomping it (landing on its top while
+ * falling) or whipping it (active whip overlaps it). A live enemy touching the
+ * player otherwise hurts the player. Returns kills + whether the player was hurt
+ * so the caller can update score, spawn particles, and play sfx.
+ *
+ * STOMP_MARGIN is how far into the enemy's top the player's feet must be, and a
+ * downward velocity is required, so brushing the side doesn't count as a stomp.
+ */
+const STOMP_MARGIN = 6;
+
+export function combatSystem(world: World, t: PlayerTuning): CombatResult {
+  const player = world.query(Player, Position, Velocity, Size, Facing)[0];
+  if (!player) return { kills: 0, playerHurt: false };
+  const p = player.get(Player);
+  const pos = player.get(Position);
+  const vel = player.get(Velocity);
+  const size = player.get(Size);
+  const facing = player.get(Facing);
+  if (!p || !pos || !vel || !size || !facing || p.dead) {
+    return { kills: 0, playerHurt: false };
+  }
+
+  const playerBox = aabb(pos.x, pos.y, size.w, size.h);
+  const whip = whipBox(p, pos, size, facing, t);
+  const playerFeet = pos.y + size.h;
+
+  let kills = 0;
+  let playerHurt = false;
+  let bounce = false;
+
+  // koota get() yields snapshots, so writes go through entity.set(); collect the
+  // effects here, then apply once after the query.
+  world.query(Enemy, Position, Size).updateEach(([e, epos, esize], entity) => {
+    if (!e.alive) return;
+    const enemyBox = aabb(epos.x, epos.y, esize.w, esize.h);
+
+    // Whip kill
+    if (whip && intersects(whip, enemyBox)) {
+      kills++;
+      entity.destroy();
+      return;
+    }
+
+    if (!intersects(playerBox, enemyBox)) return;
+
+    // Stomp: player's feet near the enemy's top while moving down.
+    if (vel.y > 0 && playerFeet <= epos.y + STOMP_MARGIN) {
+      kills++;
+      entity.destroy();
+      bounce = true;
+    } else {
+      playerHurt = true;
+    }
+  });
+
+  if (bounce) player.set(Velocity, { x: vel.x, y: -t.jumpSpeed * 0.6 });
+  if (playerHurt) player.set(Player, { ...p, dead: true });
+  return { kills, playerHurt };
+}
