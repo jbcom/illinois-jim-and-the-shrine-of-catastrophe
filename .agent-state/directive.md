@@ -30,10 +30,29 @@ until then i expect you to be always finding something new to do."**
 - [x] FRAMED HUD/UX: top status STRIP (score+lives) frames the upper edge; a
       DEDICATED BOTTOM TEXT BAR shows NPC dialogue (DialogueBox + dialogueStore +
       onTalkTarget). Talking pauses the action. Live-verified with Elder Mara.
-- [ ] WORDMARK on portrait overlaps the hero's face — pin it clear of the face
-      (or shrink/scrim) so it never covers Jim across aspects.
+- [x] WORDMARK on portrait — pinned clear of the hero's face (own top scrim panel,
+      narrower on portrait, gradient to the true top edge). Shipped PR #21.
 - [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
-- [ ] SHRINE biome + level (third act); build toward ~12-18 levels total.
+- [x] SHRINE biome + level (third act): `shrine-approach` — a ruined inner sanctum
+      built from the cave masonry catalog + 4 GenAI shrine props (idol-altar=goal,
+      cracked staircase, blood-flamed braziers, broken pillars; generated on a
+      magenta field + isolated by scripts/prep-props.mjs incl. a two-key flood +
+      edge-defringe for AA halos). Gatehall colonnade → beam-bridged broken nave →
+      grand staircase to the golden idol. Wired into LEVEL_ORDER after the cave so
+      the data-driven FSM chains cave → ruins-cutscene → shrine → escape-ending with
+      NO machine edits. SHRINE GameLevel (6 enemies, ≥2 chasers — the hardest level),
+      gameLevel.test + gameMachine 3-level-chain tests + a 3-stop shrineRenderer
+      browser test. PROVEN live: gatehall/sanctum/altar screenshots READ — zero asset
+      loss, props in proportion with actors, idol crowns the climb.
+      BACKWARD SWEEP: prop scales were 3-4× too big on first paint (439-717px native
+      props at >1.0 scale overflowed the 390px frame, hid the idol) — recalibrated to
+      scenery weight (~130-190px on screen). The archway prop was dropped after 2
+      regens + 2 isolation passes (debug-loop stop) left a stubborn AA halo / baked
+      ground; the steps prop covers the "cracked staircase" beat better anyway.
+      FORWARD SWEEP: the cutscene script already chains shrine→shrine-heart→
+      catastrophe→escape-run→escape; shrine-heart + escape-run are the two levels
+      that complete the planned arc (added below). The idol sits BESIDE the steps,
+      not atop them — a composition polish item (below).
 - [ ] Audio polish (per-biome music, footsteps, ambience); per-biome boss/setpiece;
       particle + screen-shake juice; accessibility pass (reduced-motion,
       colorblind-safe, large-text).
@@ -46,6 +65,18 @@ until then i expect you to be always finding something new to do."**
 - [ ] (discovered) BOUNDED inner viewport: the HUD frames the edges but the canvas
       is still full-bleed behind it; consider a true bordered cabinet frame so the
       play area is visually inset from the HUD strips.
+- [ ] (discovered) SHRINE-HEART level (`shrine-heart`): the cutscene script chains
+      the `shrine` beat into it — the idol chamber's deepest room where Jim takes
+      the idol (triggers the `catastrophe` cutscene). Author it like shrine-approach.
+- [ ] (discovered) ESCAPE-RUN level (`escape-run`): the `catastrophe` cutscene
+      chains into it — the collapsing-shrine flight back out (the iconic chase). A
+      right-to-left or forced-scroll panic level; ends → the `escape` ending cutscene.
+- [ ] (discovered) IDOL-ON-STEPS composition: in shrine-approach the golden idol
+      sits beside/above the staircase rather than centered atop its landing — nudge
+      the idol/steps x+scale so the idol visibly crowns the steps as one tableau.
+- [ ] (discovered) prep-props.mjs is now a reusable GenAI-prop isolation pipeline
+      (two-key flood + despill + edge-defringe + drop-shadow clear + tight trim) —
+      use it for future biome props; document it in docs/ASSETS.md.
 
 ## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
 **User feedback (live mobile bugs):** the deployed game was broken on phones —

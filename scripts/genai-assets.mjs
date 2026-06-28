@@ -32,6 +32,20 @@ const CUT =
 // The hero as he appears in cutscenes (matches the in-game red-cloaked adventurer).
 const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak and travel boots";
 
+// Shrine PROP style — single transparent-ready set pieces for the third-act shrine
+// level. Unlike cutscenes (full painted scenes) these are ONE object on a FLAT
+// MAGENTA (#FF00FF) field so prep-sprites.mjs flood-fills the backdrop to alpha,
+// matching the green-stone / tarnished-gold / blood-red shrine cutscene (cut-04).
+// The level composes them as ShapeStamps over the cave masonry catalog.
+const SHRINE_PROP =
+  "16-bit SNES-era pixel-art game prop, a single object centred on a background " +
+  "that is FLAT SOLID MAGENTA (#FF00FF) filling the ENTIRE frame edge to edge " +
+  "with NO border, NO frame, NO parchment margin — pure magenta right to all four " +
+  "image edges; no other objects, no scenery, no ground, no cast shadow, crisp " +
+  "dark outline; carved ancient-temple style in weathered green-grey stone with " +
+  "tarnished gold and blood-red accents, the look of a forgotten underground " +
+  "shrine in an early-90s pulp adventure game";
+
 // The hero for full key-art — the original in-game Illinois Jim (teal explorer
 // vest, brass-goggle cap, amber relic-lantern, coiled grappling hook), so the
 // landing illustration matches the sprite the player actually controls. He's
@@ -57,6 +71,15 @@ const PROMPTS = [
   { name: "cut-04-shrine", multiAspect: true, prompt: `${CUT}; a towering ancient shrine deep underground, a single glowing idol on an altar atop cracked steps, ${JIM} small in the foreground gazing up in awe and dread` },
   { name: "cut-05-catastrophe", multiAspect: true, prompt: `${CUT}; the shrine cracking and erupting with red light as ${JIM} grabs the idol and flees, the cavern collapsing behind him, debris and dust` },
   { name: "cut-06-escape", multiAspect: true, prompt: `${CUT}; ${JIM} bursting out of the cave mouth into dawn light clutching the glowing idol, the mountain crumbling behind him, triumphant and exhausted` },
+  // Shrine set pieces — the third-act level's signature props (transparent after
+  // prep-sprites). These give the shrine its OWN identity over the reused cave
+  // masonry: the idol-altar is the goal, the brazier + broken pillar + archway
+  // dress the ruined inner sanctum to match cut-04-shrine.
+  { name: "shrine-idol-altar", prompt: `${SHRINE_PROP}; a glowing golden idol statue of a robed figure with arms raised, standing on a cracked stone altar pedestal, faint warm radiance` },
+  { name: "shrine-brazier", prompt: `${SHRINE_PROP}; a tall stone candle-brazier on a slender pedestal with a single bright blood-red flame, dripping wax` },
+  { name: "shrine-pillar-broken", prompt: `${SHRINE_PROP}; a tall broken carved stone temple pillar, fluted column snapped near the top with rubble, vines clinging to it` },
+  { name: "shrine-archway", prompt: `${SHRINE_PROP}; a grand carved stone temple archway doorway, weathered green-grey blocks, hanging vines and roots draping over the top` },
+  { name: "shrine-steps", prompt: `${SHRINE_PROP}; a wide cracked ancient stone staircase of several worn steps rising to a landing, carved temple masonry` },
   // Branding.
   {
     name: "title-wordmark",

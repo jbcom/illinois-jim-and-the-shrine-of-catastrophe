@@ -47,11 +47,25 @@ describe("gameMachine", () => {
     expect(a.getSnapshot().context.levelId).toBe("cave-descent");
   });
 
-  it("WIN on the LAST level → ending cutscene → won, records score + bestScore", () => {
+  it("clearing the cave plays the ruins beat and leads into the shrine", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 800); // → cave
-    a.send({ type: "WIN", score: 1200 }); // clear the cave (last level)
+    a.send({ type: "WIN", score: 1000 }); // clear the cave
+    expect(a.getSnapshot().value).toBe("cutscene");
+    // The cave leads into the ruins cutscene → the shrine (the climax), NOT the end.
+    expect(a.getSnapshot().context.cutsceneId).toBe("ruins");
+    a.send({ type: "CUTSCENE_DONE" });
+    expect(a.getSnapshot().value).toBe("playing");
+    expect(a.getSnapshot().context.levelId).toBe("shrine-approach");
+  });
+
+  it("WIN on the LAST level (shrine) → ending cutscene → won, records score + bestScore", () => {
+    const a = boot();
+    toPlaying(a); // village
+    clearLevel(a, 800); // → cave
+    clearLevel(a, 1000); // → shrine
+    a.send({ type: "WIN", score: 1200 }); // clear the shrine (last level)
     expect(a.getSnapshot().value).toBe("cutscene");
     expect(a.getSnapshot().context.cutsceneId).toBe("escape");
     a.send({ type: "CUTSCENE_DONE" });
@@ -65,7 +79,8 @@ describe("gameMachine", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 900); // → cave
-    a.send({ type: "WIN", score: 900 }); // clear the cave (last) → ending cutscene
+    clearLevel(a, 0); // → shrine
+    a.send({ type: "WIN", score: 900 }); // clear the shrine (last) → ending cutscene
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "RESTART" });
     a.send({ type: "LOSE", score: 300 });
@@ -87,7 +102,8 @@ describe("gameMachine", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 500); // → cave
-    a.send({ type: "WIN", score: 500 }); // clear the cave (last) → ending cutscene
+    clearLevel(a, 500); // → shrine
+    a.send({ type: "WIN", score: 500 }); // clear the shrine (last) → ending cutscene
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "TO_TITLE" });
     expect(a.getSnapshot().value).toBe("title");

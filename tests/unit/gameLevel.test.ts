@@ -1,4 +1,4 @@
-import { DESCENT, VILLAGE } from "@sim/world/gameLevel.ts";
+import { DESCENT, SHRINE, VILLAGE } from "@sim/world/gameLevel.ts";
 import { TileKind, tileAt } from "@sim/world/tilemap.ts";
 import { describe, expect, it } from "vitest";
 
@@ -54,5 +54,42 @@ describe("game levels", () => {
     expect(VILLAGE.npcs.length).toBeGreaterThanOrEqual(3);
     for (const n of VILLAGE.npcs) expect(n.dialogueId).toBeTruthy();
     expect(VILLAGE.goalX).toBeGreaterThan(2000);
+  });
+
+  it("the shrine is the climax level: a bridged sanctum chasm and the idol goal", () => {
+    const m = SHRINE.map;
+    // ~2400px wide at 16px tiles ≈ 150 cols (a meaty climax level).
+    expect(m.width).toBeGreaterThanOrEqual(145);
+    expect(m.tileSize).toBe(16);
+
+    // A broken-floor chasm the beams bridge.
+    let gap = 0;
+    for (let c = 1; c < m.width - 1; c++) {
+      if (tileAt(m, c, FLOOR_ROW) !== TileKind.Solid) gap++;
+    }
+    expect(gap).toBeGreaterThan(8);
+    let platforms = 0;
+    for (let r = 0; r < FLOOR_ROW; r++) {
+      for (let c = 0; c < m.width; c++) {
+        if (tileAt(m, c, r) === TileKind.Platform) platforms++;
+      }
+    }
+    expect(platforms).toBeGreaterThan(0);
+
+    // The idol goal sits deep in the level.
+    expect(SHRINE.goalX).toBeGreaterThan(1800);
+  });
+
+  it("the shrine is the hardest level: most enemies, several chasers, spread out", () => {
+    expect(SHRINE.enemies.length).toBeGreaterThanOrEqual(6);
+    expect(SHRINE.pots.length).toBeGreaterThanOrEqual(3);
+    // The climax leans on relentless CHASE guardians (the cave only had one).
+    const chasers = SHRINE.enemies.filter((e) => e.kind === "chase");
+    expect(chasers.length).toBeGreaterThanOrEqual(2);
+    for (const e of SHRINE.enemies) {
+      expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+    }
+    const xs = SHRINE.enemies.map((e) => e.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(1400);
   });
 });

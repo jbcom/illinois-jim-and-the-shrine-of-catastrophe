@@ -9,10 +9,11 @@
  * "level as a painting" are paired.
  */
 import { CAVE_DESCENT, CAVE_DESCENT_FRAME } from "@render/levels/caveDescent.ts";
+import { SHRINE_APPROACH, SHRINE_APPROACH_FRAME } from "@render/levels/shrineApproach.ts";
 import { VILLAGE_APPROACH, VILLAGE_APPROACH_FRAME } from "@render/levels/villageApproach.ts";
 import { CAVE_PARALLAX, OVERWORLD_PARALLAX, type ParallaxLayerSpec } from "@render/parallax.ts";
 import type { Placement } from "@render/composition.ts";
-import { type GameLevel, DESCENT, VILLAGE } from "@sim/world/gameLevel.ts";
+import { type GameLevel, DESCENT, SHRINE, VILLAGE } from "@sim/world/gameLevel.ts";
 
 export interface LevelBundle {
   readonly id: string;
@@ -46,6 +47,15 @@ const REGISTRY: Record<string, LevelBundle> = {
     parallax: CAVE_PARALLAX,
     frame: CAVE_DESCENT_FRAME,
   },
+  "shrine-approach": {
+    id: "shrine-approach",
+    sim: SHRINE,
+    painting: SHRINE_APPROACH,
+    // The shrine is deep underground — the cave depth stack reads as deep stone
+    // behind the carved sanctum (the red glow comes from the props, not the bg).
+    parallax: CAVE_PARALLAX,
+    frame: SHRINE_APPROACH_FRAME,
+  },
 };
 
 /** The level the story opens on (the overworld village, NOT the cave). */
@@ -59,7 +69,7 @@ export function levelBundle(id: string): LevelBundle {
 }
 
 /** The play order of the story's levels (drives "next level" after a cutscene). */
-export const LEVEL_ORDER: readonly string[] = ["village-approach", "cave-descent"];
+export const LEVEL_ORDER: readonly string[] = ["village-approach", "cave-descent", "shrine-approach"];
 
 /** The level that follows `id` in the story (undefined if it's the last). */
 export function nextLevelId(id: string): string | undefined {
