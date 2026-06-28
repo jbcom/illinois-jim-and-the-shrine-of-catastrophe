@@ -447,7 +447,9 @@ export function potSystem(world: World, t: PlayerTuning, dt: number): PotResult 
       world.spawn(Position({ x: d.x - 5, y: d.y - 5 }), Size({ w: 10, h: 10 }), Collectible({ value, taken: false }));
     }
   }
-  return { smashed, healthDrops, smashedAt: drops.map((d) => ({ x: d.x, y: d.y })) };
+  // `drops` already carries {x,y,...}; it structurally satisfies the readonly
+  // {x,y}[] of smashedAt, so return it directly (no per-step .map() allocation).
+  return { smashed, healthDrops, smashedAt: drops };
 }
 
 /** Grant the player one life via the Score entity. Returns 1 if applied. */
