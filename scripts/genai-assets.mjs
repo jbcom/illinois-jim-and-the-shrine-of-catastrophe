@@ -38,10 +38,15 @@ const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak an
 // DEVIL-MAY-CARE: a roguish, swashbuckling pulp adventurer — cocky grin, hat at
 // a rakish angle, relaxed confident swagger, the easy charm of a treasure-hunter
 // who's already decided the danger is worth it.
+// Purely POSITIVE description (image models handle negation poorly — describing
+// the warm expression directly works better than "not menacing"): a friendly,
+// approachable young hero with an open, gentle, joyful smile.
 const HERO =
-  "Illinois Jim, a wiry young rogue explorer with a cocky grin and devil-may-care swagger, " +
-  "in a teal adventurer's vest, a brass-goggle cap worn at a rakish angle, " +
-  "carrying a glowing amber relic-lantern and a coiled grappling hook";
+  "Illinois Jim, a handsome friendly young hero explorer with a warm open joyful " +
+  "smile, soft kind eyes, gentle approachable expression, cheerful and likable, " +
+  "the easy charm of a good-natured adventurer; relaxed confident heroic posture, " +
+  "in a teal adventurer's vest, a brass-goggle cap worn at a rakish angle, carrying " +
+  "a glowing amber relic-lantern and a coiled grappling hook";
 
 const PROMPTS = [
   // Story beats — one full-screen scene per cutscene, in narrative order. Each is

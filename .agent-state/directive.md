@@ -1,7 +1,40 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** ACTIVE
+**Status:** ACTIVE — ENDLESS (never flips to RELEASED)
 **Owner:** jbogaty
+
+## ♾️ OPERATING MODE — ENDLESS SELF-DISCOVERY (user directive, NON-NEGOTIABLE)
+**"fix your directives to be a loop endlessly of self-discovery. always find new
+features to add or polish. no more 'we released!'. i will tell you when to end,
+until then i expect you to be always finding something new to do."**
+
+- This directive NEVER reaches RELEASED. There is no "done." Only the user ends it.
+- Every turn: pick the next item from the SELF-DISCOVERY BACKLOG, build it, prove
+  it live (Safari snapshots READ + reviewed, zero asset loss at any viewport),
+  commit, merge to main, redeploy, then ADD 1-3 new things discovered while doing
+  it. The backlog grows faster than it drains — that's the point.
+- Quality bar: dense/complex/coherent/challenging/fun; every visual proven live.
+  [[craft-levels-study-palette]] · [[endless-self-discovery-loop]]
+
+## 🔁 SELF-DISCOVERY BACKLOG (always non-empty — append as you go)
+- [ ] PROVE reorientation + scaling: snapshot EVERY viewport (portrait/landscape
+      phone, tablet portrait+landscape, foldable, desktop, ultrawide) and verify
+      ZERO loss of any picture/asset at any stage — landing, each cutscene,
+      gameplay. READ each snapshot; fix any clip/letterbox/missing art.
+- [x] HERO FACE: regenerated with a warm friendly smile (was an evil grimace).
+- [x] NPC RICHNESS: full paper-doll stack (sword/boots/underwear all used).
+- [x] NPC SCALE: scale by content height (were tiny next to Jim).
+- [ ] FRAMED HUD/UX (user direction): the HUD should FRAME the gameplay area —
+      a cabinet-style border with score/lives in the frame and a DEDICATED BOTTOM
+      TEXT AREA for NPC dialogue + narration (not overlaid on the game). Gameplay
+      renders into a bounded inner viewport; dialogue/narration get their own home.
+- [ ] WORDMARK on portrait overlaps the hero's face — pin it clear of the face
+      (or shrink/scrim) so it never covers Jim across aspects.
+- [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
+- [ ] SHRINE biome + level (third act); build toward ~12-18 levels total.
+- [ ] Audio polish (per-biome music, footsteps, ambience); pot-drop pickups + HUD;
+      NPC dialogue speech-box; per-biome boss/setpiece; particle + screen-shake
+      juice; accessibility pass (reduced-motion, colorblind-safe, large-text).
 
 ## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
 **User feedback (live mobile bugs):** the deployed game was broken on phones —

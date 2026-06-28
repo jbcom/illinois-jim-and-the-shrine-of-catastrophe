@@ -17,7 +17,7 @@
  * changes. Pure data; no DOM.
  */
 
-export type ActorKind = "player" | "goblin" | "skeleton" | "mushroom" | "flyingEye";
+export type ActorKind = "player" | "goblin" | "skeleton" | "mushroom" | "flyingEye" | "npc";
 
 /**
  * Measured visible-content height (px) of each actor's canonical standing pose,
@@ -29,6 +29,7 @@ export const CONTENT_H: Record<ActorKind, number> = {
   skeleton: 51, // 150² frame
   mushroom: 37, // 150² frame
   flyingEye: 31, // 150² frame
+  npc: 45, // composited paper-doll, 80×64 frame (idle)
 };
 
 /**
@@ -44,6 +45,7 @@ export const TARGET_WORLD_H: Record<ActorKind, number> = {
   skeleton: 62,
   mushroom: 46,
   flyingEye: 48,
+  npc: 60, // villagers are adult humans — roughly the hero's height
 };
 
 /** The uniform sprite scale that renders `kind` at its target world height. */

@@ -9,46 +9,64 @@
  */
 import type { NpcSpec } from "@render/npc.ts";
 
-/** Each storyline NPC, dressed distinctly so the village reads as real people. */
+/**
+ * Each storyline NPC, dressed HEAD-TO-TOE through the full paper-doll stack
+ * (skin → underwear → legs → socks → feet → torso → hair → hand) so every
+ * villager reads as a distinct, fully-clothed person — not a half-dressed
+ * placeholder. The factory paints in NPC_SLOTS order regardless of key order.
+ */
 export const NPC_ROSTER: Record<string, NpcSpec> = {
-  // Elder Mara — robed village elder (female, muted corset + long hair).
+  // Elder Mara — the village elder. Fair-skinned, purple corset over a base
+  // layer, long socks + boots, long grey-styled hair. Fully robed, dignified.
   "elder-mara": {
     skin: "Female Skin2.png",
-    legs: "Female Clothing/Green Socks.png",
-    torso: "Female Clothing/Corset.png",
+    underwear: "Female Clothing/Purple Panties and Bra.png",
+    socks: "Female Clothing/Purple Socks.png",
+    feet: "Female Clothing/Boots.png",
+    torso: "Female Clothing/Purple Corset v2.png",
     hair: "Female Hair/Female Hair3.png",
   },
-  // Watchman Pell — a guard (male, blue shirt + boots + short hair).
+  // Watchman Pell — the village GUARD. Weathered, full uniform, boots, and he
+  // HOLDS A SWORD (hand slot) — the watch on duty.
   "watchman-pell": {
     skin: "Male Skin3.png",
+    underwear: "Male Clothing/Underwear.png",
     legs: "Male Clothing/Blue Pants.png",
     feet: "Male Clothing/Boots.png",
     torso: "Male Clothing/Blue Shirt v2.png",
     hair: "Male Hair/Male Hair1.png",
+    hand: "Male Hand/Male Sword.png",
   },
-  // Ferryman Cole — weathered boatman (male, green shirt + orange pants).
+  // Ferryman Cole — weathered boatman. Tanned, green shirt + orange work pants,
+  // worn shoes, short hair. A working man, fully kitted.
   "ferryman-cole": {
     skin: "Male Skin4.png",
+    underwear: "Male Clothing/Orange Underwear.png",
     legs: "Male Clothing/Orange Pants.png",
-    feet: "Male Clothing/Boots.png",
+    feet: "Male Clothing/Shoes.png",
     torso: "Male Clothing/Green Shirt v2.png",
     hair: "Male Hair/Male Hair2.png",
   },
-  // The Warden — pale shrine-keeper (male, dark, gaunt).
+  // The Warden — the gaunt shrine-keeper. Pale, dark purple shirt + plain pants,
+  // boots, long hair. Severe and complete.
   "shrine-warden": {
     skin: "Male Skin1.png",
+    underwear: "Male Clothing/Purple Underwear.png",
     legs: "Male Clothing/Pants.png",
-    torso: "Male Clothing/orange Shirt v2.png",
+    feet: "Male Clothing/Boots.png",
+    torso: "Male Clothing/Purple Shirt v2.png",
     hair: "Male Hair/Male Hair4.png",
   },
 };
 
-/** A plain villager — the fallback when a dialogueId has no roster entry. */
+/** A plain villager — the fallback, still fully dressed (skin→torso→hair+feet). */
 const DEFAULT_NPC: NpcSpec = {
   skin: "Male Skin3.png",
+  underwear: "Male Clothing/Underwear.png",
   legs: "Male Clothing/Pants.png",
-  torso: "Male Clothing/Blue Shirt v2.png",
-  hair: "Male Hair/Male Hair1.png",
+  feet: "Male Clothing/Shoes.png",
+  torso: "Male Clothing/Shirt.png",
+  hair: "Male Hair/Male Hair5.png",
 };
 
 /** Resolve an NPC's paper-doll spec by dialogueId (a sane default if unknown). */

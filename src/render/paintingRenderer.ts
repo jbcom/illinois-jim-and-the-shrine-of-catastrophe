@@ -328,7 +328,7 @@ function ensureNpc(
         npc.destroy();
         return;
       }
-      npc.sprite.scale.set(0.6);
+      npc.sprite.scale.set(scaleFor("npc"));
       layer.addChild(npc.sprite);
       ph.parent?.removeChild(ph);
       ph.destroy();
