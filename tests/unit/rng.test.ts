@@ -1,4 +1,4 @@
-import { createRng, seedFromString } from "@engine/rng.ts";
+import { createRng, createRngPair, restoreRng, seedFromString } from "@engine/rng.ts";
 import { describe, expect, it } from "vitest";
 
 describe("createRng", () => {
@@ -77,14 +77,51 @@ describe("createRng", () => {
     }
   });
 
-  it("state() lets a sequence be resumed identically", () => {
+  it("state() + restoreRng resume a sequence identically", () => {
     const r = createRng(2024);
     for (let i = 0; i < 10; i++) r.next();
-    const resumed = createRng(r.state());
+    const resumed = restoreRng(r.state());
     // Resuming from the snapshot state reproduces forward values.
     const a = Array.from({ length: 20 }, () => r.next());
     const b = Array.from({ length: 20 }, () => resumed.next());
     expect(b).toEqual(a);
+  });
+
+  it("accepts string seeds", () => {
+    const a = createRng("shrine");
+    const b = createRng("shrine");
+    expect(a.next()).toBe(b.next());
+    expect(createRng("a").next()).not.toBe(createRng("b").next());
+  });
+});
+
+describe("createRngPair (dual-layer)", () => {
+  it("sim and fx streams are independent (different sequences)", () => {
+    const { sim, fx } = createRngPair(777);
+    const simSeq = Array.from({ length: 30 }, () => sim.next());
+    const fxSeq = Array.from({ length: 30 }, () => fx.next());
+    expect(simSeq).not.toEqual(fxSeq);
+  });
+
+  it("advancing fx does not change the sim stream (no desync)", () => {
+    const a = createRngPair(42);
+    const b = createRngPair(42);
+    // Drain fx on `a` only; sim must still match b's untouched sim.
+    for (let i = 0; i < 100; i++) a.fx.next();
+    const aSim = Array.from({ length: 20 }, () => a.sim.next());
+    const bSim = Array.from({ length: 20 }, () => b.sim.next());
+    expect(aSim).toEqual(bSim);
+  });
+
+  it("same seed → same sim and fx streams", () => {
+    const a = createRngPair("run-1");
+    const b = createRngPair("run-1");
+    expect(Array.from({ length: 10 }, () => a.sim.next())).toEqual(
+      Array.from({ length: 10 }, () => b.sim.next()),
+    );
+    expect(Array.from({ length: 10 }, () => a.fx.next())).toEqual(
+      Array.from({ length: 10 }, () => b.fx.next()),
+    );
   });
 });
 
