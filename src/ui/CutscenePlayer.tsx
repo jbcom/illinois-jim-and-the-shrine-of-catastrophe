@@ -114,8 +114,12 @@ export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
         <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t from-[#1a120b] to-transparent" />
       </div>
 
-      {/* Narration BAR — solid, prominent, pinned to the bottom. */}
-      <div className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] px-6 py-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+      {/* Narration BAR — solid, prominent, pinned to the bottom. Safe-area
+          padding so the text + hint never clip under the home bar on phones. */}
+      <div
+        className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] px-6 pt-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 1.75rem)" }}
+      >
         <p
           className="cutscene-text mx-auto max-w-3xl text-[#f4e4c1] text-lg leading-relaxed transition-opacity md:text-2xl"
           style={{ opacity: textVisible ? 1 : 0, transitionDuration: `${FADE_MS}ms` }}

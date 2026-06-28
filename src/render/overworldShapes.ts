@@ -43,8 +43,12 @@ export const OVERWORLD = {
   house: { sheet: `${OW}/House Tiles.png`, x: 0, y: 0, w: 224, h: 224 },
   tentLarge: whole("Large Tent.png", 96, 128),
   tentSmall: whole("Small Tent.png", 64, 64),
-  cookfire: whole("Cooking area.png", 768, 64),
-  torch: whole("Torch.png", 192, 128),
+  // Cooking area.png is a REPEATING strip of cook-setups (cauldron + logs) — one
+  // setup is ~62px wide; slice a SINGLE one, not the whole 768px row.
+  cookfire: { sheet: `${OW}/Cooking area.png`, x: 1, y: 0, w: 62, h: 64 },
+  // Torch.png is a 6×4 grid of 32×32 animation frames — slice ONE lit torch
+  // (row 1, col 0), NOT the whole sheet (which renders a wall of torches).
+  torch: { sheet: `${OW}/Torch.png`, x: 0, y: 32, w: 32, h: 32 },
 
   // --- GROUND FLAVOR: grass, statue, garden ---
   grass: whole("Tall Grass.png", 96, 32),
@@ -86,7 +90,7 @@ export const DECOR_SHAPES = {
   // Road-to-the-shrine atmosphere (foreshadowing the dark). NOTE: in the atlas
   // the statue and brick-wall art sit at each other's "obvious" rects — verified
   // by eye, the classical statue is here and the masonry wall below it.
-  statue: decor(385, 263, 30, 59),
+  statue: decor(375, 265, 38, 55),
   brickWall: decor(357, 139, 54, 55),
 } as const;
 

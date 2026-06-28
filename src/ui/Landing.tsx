@@ -25,8 +25,15 @@ export function Landing(props: { onStart: () => void }) {
       {/* Legibility scrim — darkens the top + bottom so text reads over the art. */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a120b]/85 via-transparent to-[#1a120b]/90" />
 
-      {/* Content column — wordmark up top, hook + PLAY anchored to the bottom. */}
-      <div className="relative flex h-full w-full flex-col items-center justify-between py-[6vh]">
+      {/* Content column — wordmark up top, hook + PLAY anchored to the bottom.
+          Safe-area padding so the controls line never clips under the home bar. */}
+      <div
+        className="relative flex h-full w-full flex-col items-center justify-between"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top), 3vh)",
+          paddingBottom: "max(env(safe-area-inset-bottom), 3vh)",
+        }}
+      >
         {/* The curated GenAI wordmark (carved-stone gold, transparent) — used as
             the title image so we never stack a second wordmark over baked-in art. */}
         <img
