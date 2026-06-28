@@ -1,32 +1,37 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
-## 🎯 Milestone 3 — The REAL coherent narrative (ACTIVE, branch feat/cutscenes-landing-scaling)
+## 🎯 Milestone 3 — The REAL coherent narrative (SHIPPED 2026-06-28)
 **User directive (2026-06-28, NON-NEGOTIABLE):** Milestone 2 shipped ONE cave + a
 stub flow — NOT the planned game. The plan was always: the SAME level of authoring
 effort into BOTH overworld AND cave, a REAL coherent STORY using the NPC factory,
 BIG elaborate painted levels with parallax backgrounds, told through fade in/out
 cutscenes. Build that now. No re-asking what was already decided — execute the plan.
 
-### M3 bug fixes (live-verified broken on Pages, measured)
-- [ ] SPRITE SCALE: Jim content is 83px tall (96² frame) scaled 0.5 → ~41px; goblin
-      content 36px (150² frame) scaled 0.28 → ~10px. Jim is 4× too big. FIX: scale
-      every actor by its MEASURED content-height to a target world height (per-kind
-      target), not an arbitrary frame-size factor. Hero ≈ reference; goblin chest-
-      high, skeleton ≈ hero, mushroom small, flyingEye mid. Measure bboxes, bake a
-      table, scale = targetH / contentH. Browser screenshot proving the ratio.
-- [ ] FLICKER: adventurer flickers back-and-forth — facing/anim state thrash. Find
-      the per-frame state oscillation (facing flip vs anim re-apply) and stabilise.
-- [ ] DEATH PLANE: Jim falls past the floor and just sits at the bottom instead of
-      dying. Add a kill-plane / out-of-bounds-below death so falling kills + respawns.
-- [ ] CUTSCENE IMAGE FILL: cutscene images don't scale to fill the screen (cover, not
-      letterbox), with a proper prominent bottom TEXT BAR for narration.
-- [ ] CUTSCENE TIMING: fade IN → hold an appropriate period → fade OUT, tap to advance
-      immediately. Not the current instant cut.
-- [ ] TYPOGRAPHY: real curated game-themed fonts (display face for wordmark/headers,
-      readable pixel/serif for narration) — not system defaults. Self-host, licensed.
+SHIPPED via PR #11 (asset paths), #12 (the real narrative), #13 (death-loop fix),
+all squash-merged to `main`, deployed to GitHub Pages, and live-verified on
+jonbogaty.com with Safari GPU screenshots READ + reviewed. NEXT MILESTONE (fresh
+branch + directive when started): the SHRINE biome + level, more overworld/cave
+levels to the ~12-18 total in docs/LEVEL_DESIGN.md, and continued density/fun
+refinement per the standing quality bar below.
+
+### M3 bug fixes (live-verified broken on Pages, measured) — ALL FIXED
+- [x] SPRITE SCALE: scale by MEASURED content-height to a per-kind target world
+      height (src/render/actorScale.ts + scripts/measure-actors.mjs); renderer pulls
+      from it. Jim/enemies now proportional. Live-verified.
+- [x] FLICKER: render-interpolation `prev` was snapshotted per sub-step; now once
+      per frame in gameEcs (+ interpolationTiming.test.ts). Jitter gone.
+- [x] DEATH PLANE: closed-world floor made the map bottom a phantom floor; added a
+      kill-plane death when feet reach the map bottom in a pit (systems.ts + tests).
+- [x] CUTSCENE IMAGE FILL: CutscenePlayer covers the screen + prominent bottom bar.
+- [x] CUTSCENE TIMING: fade in → hold → fade out, tap to skip. Live-verified.
+- [x] TYPOGRAPHY: self-hosted Cinzel / EB Garamond / Jersey 15 (@fontsource).
+- [x] DEATH-LOOP (surfaced in playtest): lost `pointerup` leaked a phantom joystick
+      pointer across the cutscene→play unmount → walked Jim into an enemy → chain-
+      kill. Fixed: input.clear() on pause→play + invuln frames + patrol-only intro
+      (PR #13). Live-verified: 12s idle in the village, lives held at ♦♦♦.
 
 ### M3 standing quality bar (user directive, 2026-06-28)
 - KEEP REFINING every level until it reads as DENSE, COMPLEX, narratively
@@ -39,18 +44,20 @@ cutscenes. Build that now. No re-asking what was already decided — execute the
   art carry the wordmark, or generate a CLEAN (textless) illustration + a
   dedicated transparent wordmark asset — never double up.
 
-### M3 narrative build (the planned game)
-- [ ] OVERWORLD authoring: the SAME composition/painting engine as the cave, an
-      overworld shape catalog from biomes/overworld (measured connected components),
-      and a real BIG painted overworld level with the full parallax stack.
-- [ ] LANDING = separate static .tsx (decided): GenAI hero key-art of Illinois Jim +
-      overworld backdrop, curated wordmark, story hook, PLAY. NOT the live engine.
-- [ ] STORY STARTS IN THE OVERWORLD (village of Halward's Reach), not a cave. Flow:
-      landing → intro cutscene → OVERWORLD level → descent cutscene → CAVE level →
-      … → shrine. A real coherent narrative, multiple painted levels.
-- [ ] NPCs in the world: use the paper-doll factory to place real townsfolk/quest-
-      givers Jim talks to (dialogue) — they carry the story (hooks, warnings).
-- [ ] Each level proven live (Safari GPU screenshot READ + measured), tests updated.
+### M3 narrative build (the planned game) — ALL SHIPPED
+- [x] OVERWORLD authoring: same composition engine as the cave (overworldShapes.ts
+      + DECOR_SHAPES catalog, OVERWORLD_PARALLAX), a crafted ~2240px village level
+      (villageApproach.ts) with depth layers + ground fill. docs/LEVEL_DESIGN.md.
+- [x] LANDING = separate static Landing.tsx: textless devil-may-care GenAI hero
+      key-art + keyed-transparent generated wordmark + story hook + PLAY. Not the
+      live engine.
+- [x] STORY STARTS IN THE OVERWORLD: landing → intro cutscene → village → descent
+      cutscene → cave → ending. FSM tracks levelId; App recreates per level.
+- [x] NPCs: GameLevel.npcs + world spawns + npcRoster.ts paper-doll specs +
+      renderer ensureNpc. Elder Mara / watchman / ferryman stand in the village.
+- [x] Cave RE-CRAFTED (props1/props2): ~2600px, stalactites (flipY), layered rock
+      masses, cavern trees, beam-bridged chasm, ramped spawns. gameLevel.test.ts.
+- [x] Each level proven live (Safari GPU screenshot READ + measured), tests updated.
 
 ---
 ## (archived) Milestone 2 SHIPPED (2026-06-28)
