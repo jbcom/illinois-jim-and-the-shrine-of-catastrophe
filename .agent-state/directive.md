@@ -82,7 +82,9 @@ placed PER-LEVEL by design via Enemy.visual (goblin/skeleton/mushroom/flyingEye)
 - [x] Audio sfx wired to events (whip/hurt/pickup/pot-smash/jump/win) + looping cave music.
 - [x] Story: GenAI 16-bit cutscenes (intro→descent→ruins→shrine→catastrophe→escape) +
       React CutscenePlayer + FSM flow (title→cutscene→playing→cutscene→won). Live-verified.
-- [ ] [WAIT-REVIEW] Milestone-boundary integration review of PR #9 — fold findings, then merge.
+- [x] Milestone-boundary integration review of PR #9 — 2 blockers folded (renderer
+      readEach not updateEach; flushViews on rebuildWorld so actors aren't invisible
+      after death) + pot-texture cleanup. Re-verified live. (9e4b846)
 - [x] Milestone-2 SCOPE = the complete playable cave game (this PR). Overworld + shrine
       painted levels + a level-select are explicitly the NEXT milestone (open a fresh
       branch + directive after this merges). NOTE for then: cave/overworld sheets are
