@@ -24,17 +24,25 @@ until then i expect you to be always finding something new to do."**
 - [x] HERO FACE: regenerated with a warm friendly smile (was an evil grimace).
 - [x] NPC RICHNESS: full paper-doll stack (sword/boots/underwear all used).
 - [x] NPC SCALE: scale by content height (were tiny next to Jim).
-- [ ] FRAMED HUD/UX (user direction): the HUD should FRAME the gameplay area —
-      a cabinet-style border with score/lives in the frame and a DEDICATED BOTTOM
-      TEXT AREA for NPC dialogue + narration (not overlaid on the game). Gameplay
-      renders into a bounded inner viewport; dialogue/narration get their own home.
+- [x] FRAMED HUD/UX: top status STRIP (score+lives) frames the upper edge; a
+      DEDICATED BOTTOM TEXT BAR shows NPC dialogue (DialogueBox + dialogueStore +
+      onTalkTarget). Talking pauses the action. Live-verified with Elder Mara.
 - [ ] WORDMARK on portrait overlaps the hero's face — pin it clear of the face
       (or shrink/scrim) so it never covers Jim across aspects.
 - [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
 - [ ] SHRINE biome + level (third act); build toward ~12-18 levels total.
-- [ ] Audio polish (per-biome music, footsteps, ambience); pot-drop pickups + HUD;
-      NPC dialogue speech-box; per-biome boss/setpiece; particle + screen-shake
-      juice; accessibility pass (reduced-motion, colorblind-safe, large-text).
+- [ ] Audio polish (per-biome music, footsteps, ambience); per-biome boss/setpiece;
+      particle + screen-shake juice; accessibility pass (reduced-motion,
+      colorblind-safe, large-text).
+- [ ] (discovered) POT-SMASHING drops: pots break but the relic/health/secret drop
+      isn't wired to a pickup + HUD feedback — finish the loop.
+- [ ] (discovered) NARRATION in the dialogue bar: now that the bottom bar exists,
+      route in-level story beats (not just NPC talk) through it too.
+- [ ] (discovered) DESCENT cutscene → CAVE: verify the full village→descent→cave
+      chain live end-to-end on the deployed build (cutscene fades, level load).
+- [ ] (discovered) BOUNDED inner viewport: the HUD frames the edges but the canvas
+      is still full-bleed behind it; consider a true bordered cabinet frame so the
+      play area is visually inset from the HUD strips.
 
 ## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
 **User feedback (live mobile bugs):** the deployed game was broken on phones —
