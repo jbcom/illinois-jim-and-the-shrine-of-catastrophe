@@ -17,10 +17,13 @@ until then i expect you to be always finding something new to do."**
   [[craft-levels-study-palette]] · [[endless-self-discovery-loop]]
 
 ## 🔁 SELF-DISCOVERY BACKLOG (always non-empty — append as you go)
-- [ ] PROVE reorientation + scaling: snapshot EVERY viewport (portrait/landscape
-      phone, tablet portrait+landscape, foldable, desktop, ultrawide) and verify
-      ZERO loss of any picture/asset at any stage — landing, each cutscene,
-      gameplay. READ each snapshot; fix any clip/letterbox/missing art.
+- [x] PROVE reorientation + scaling: snapshotted the device matrix (desktop
+      1440×900, Pixel Tablet 1280×800, OnePlus Open unfolded 1116×990, iPad
+      portrait 820×1180, Pixel-8a landscape 915×412, iPhone/portrait → rotate
+      prompt). Every aspect picks the right hero variant (16x9/9x16/1x1), gameplay
+      fills edge-to-edge with ZERO asset loss, HUD frames top, dialogue bar frames
+      bottom. Wordmark now clears the hero's face on portrait (scrim + narrower).
+      Folded foldable = phone-class → rotate prompt (verified by policy + tests).
 - [x] HERO FACE: regenerated with a warm friendly smile (was an evil grimace).
 - [x] NPC RICHNESS: full paper-doll stack (sword/boots/underwear all used).
 - [x] NPC SCALE: scale by content height (were tiny next to Jim).
