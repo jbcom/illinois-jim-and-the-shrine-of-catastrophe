@@ -1,6 +1,6 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** jbogaty
 
 ## ✅ Scaffold milestone SHIPPED (2026-06-27)
