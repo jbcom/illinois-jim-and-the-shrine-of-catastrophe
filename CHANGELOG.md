@@ -14,6 +14,38 @@ do not edit version numbers manually.
 
 ---
 
+## 1.0.0 (2026-06-28)
+
+
+### Features
+
+* asset pipeline — CC0 Kenney sprites + atlas + itch/Gemini scripts ([e40371f](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/e40371fd754ae19ca156ea3be62b41ea99bd2870))
+* canvas2d renderer with camera + interpolation ([839b64c](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/839b64c9e3f645372e478a8e48ccac4a50ea081e))
+* deterministic engine foundation — RNG + fixed-timestep clock ([15500f6](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/15500f67b6c801a3058e988f50dcc40b7a253e14))
+* device-aware responsive viewport scaler ([88010af](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/88010af503e2fae86a0a2924b5d6440fdc4b8b46))
+* game loop + SolidJS HUD — first playable build ([c9d1aca](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/c9d1acabb4ca07f5829337613e81d1f18c9995c0))
+* mobile-first input — virtual touch controls + keyboard, merged to intent ([585b671](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/585b6712156e3b41fd4183a4befe7cc34f6f91f8))
+* original brand identity — palette + typography ([cac6c16](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/cac6c1666a1a7b52c7857af0af604843c0a799cf))
+* player controller — run/jump/whip with platformer feel ([bf0e59e](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/bf0e59e22e291df75dc2fa96115a237acae2ac00))
+* side-scroll camera with deadzone follow + level clamping ([3ab36ee](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/3ab36ee0152300f35443949510a1cd2ef58eb533))
+* sim physics core — vec2, AABB, tilemap, swept tile collision ([b20e7e5](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/b20e7e5cbf17c577ad2876d6a521293b650e4e0c))
+* Web Audio engine with procedural SFX bank ([f8922bf](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/f8922bf30ad9c1f7e40796fdfcee1f89d62c5d21))
+
+
+### Bug Fixes
+
+* address PR review — release APK, RNG bounds guards, key parsing ([f107b70](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/f107b70977e83ff65f06efc7ace0a3d97fa19e41))
+
+
+### Refactors
+
+* simplify collision sweep + player step; clear all lint warnings ([2ce04a1](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/2ce04a1dbca9f5b854d91c6b74f5d2249ff6e146))
+
+
+### Documentation
+
+* standard-repo docs + asset-pipeline art direction ([c390133](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/c39013360f8858b3d72abbd923621dba6c026160))
+
 ## [Unreleased]
 
 ### Added
