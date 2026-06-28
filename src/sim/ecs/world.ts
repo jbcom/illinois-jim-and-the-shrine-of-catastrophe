@@ -1,0 +1,45 @@
+/**
+ * Sim world construction + spawning, built on koota.
+ *
+ * Builds a fresh ECS world from a parsed level: spawns the player, hazards, and
+ * collectibles as entities. The tilemap stays a plain grid (queried by the
+ * physics system) — only dynamic actors are entities. Pure: no DOM, no rng/clock
+ * reads here; systems receive those as arguments.
+ */
+
+import { Collectible, Facing, Gravity, Player, Position, Size, Velocity } from "@sim/ecs/traits.ts";
+import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
+import type { Level } from "@sim/world/level.ts";
+import { createWorld, type Entity, type World } from "koota";
+
+export interface SimWorld {
+  readonly world: World;
+  readonly player: Entity;
+  readonly level: Level;
+  readonly tuning: PlayerTuning;
+}
+
+export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNING): SimWorld {
+  const world = createWorld();
+
+  const player = world.spawn(
+    Position({ x: level.spawnX, y: level.spawnY }),
+    Velocity({ x: 0, y: 0 }),
+    Size({ w: tuning.width, h: tuning.height }),
+    Facing({ dir: 1 }),
+    Gravity({ scale: 1 }),
+    Player({ grounded: false, coyote: 0, buffer: 0, whip: 0, dead: false }),
+  );
+
+  // Collectibles authored on the level (relics) — placed where the level marks
+  // them; for now seed a few above the spawn so there's something to grab.
+  for (const c of level.collectibles) {
+    world.spawn(
+      Position({ x: c.x, y: c.y }),
+      Size({ w: 10, h: 10 }),
+      Collectible({ value: c.value, taken: false }),
+    );
+  }
+
+  return { world, player, level, tuning };
+}

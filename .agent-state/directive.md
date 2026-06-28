@@ -44,7 +44,8 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 ### Queue
 - [x] Research: pick the concrete libs (miniplex/seedrandom/xstate/popmotion/nanoid/preferences)
 - [x] PRNG v2: dual-layer seedrandom (sim + fx streams); createRngPair + restoreRng (16 tests)
-- [ ] Adopt ECS (miniplex): port player + tiles into entities/components/systems
+- [x] Adopt ECS (koota): traits + world + playerSystem + collectibleSystem; level
+  parses `*`/`o`/`x` for relics/enemies; 7 ECS tests (player feel preserved, pickup, determinism)
 - [ ] Physics v2: momentum, friction, knockback, moving/one-way platforms, triggers (lib-assisted)
 - [ ] Enemies: at least 2 types with deterministic AI (patrol, chase) + whip/stomp kills
 - [ ] Collectibles + scoring: relics/gems, score, combo; wire HUD signals

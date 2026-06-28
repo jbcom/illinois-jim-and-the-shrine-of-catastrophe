@@ -9,10 +9,23 @@
  */
 import { createTileMap, setTile, TileKind, type TileMap } from "@sim/world/tilemap.ts";
 
+export interface SpawnPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface CollectibleSpawn extends SpawnPoint {
+  readonly value: number;
+}
+
 export interface Level {
   readonly map: TileMap;
   readonly spawnX: number;
   readonly spawnY: number;
+  /** Relic/gem pickup positions (world px). */
+  readonly collectibles: readonly CollectibleSpawn[];
+  /** Enemy spawn positions (world px) with a kind tag. */
+  readonly enemies: readonly (SpawnPoint & { kind: "patrol" | "chase" })[];
 }
 
 const CHAR_TO_KIND: Record<string, TileKind> = {
@@ -23,6 +36,9 @@ const CHAR_TO_KIND: Record<string, TileKind> = {
   H: TileKind.Ladder,
   "~": TileKind.Rail,
   "@": TileKind.Empty,
+  "*": TileKind.Empty, // collectible (relic)
+  o: TileKind.Empty, // patrol enemy
+  x: TileKind.Empty, // chase enemy
 };
 
 export function parseLevel(rows: readonly string[], tileSize = 16): Level {
@@ -33,14 +49,24 @@ export function parseLevel(rows: readonly string[], tileSize = 16): Level {
 
   let spawnCol = 1;
   let spawnRow = 1;
+  const collectibles: CollectibleSpawn[] = [];
+  const enemies: (SpawnPoint & { kind: "patrol" | "chase" })[] = [];
 
   for (let row = 0; row < height; row++) {
     const line = rows[row] ?? "";
     for (let col = 0; col < width; col++) {
       const ch = line[col] ?? ".";
+      const x = col * tileSize;
+      const y = row * tileSize;
       if (ch === "@") {
         spawnCol = col;
         spawnRow = row;
+      } else if (ch === "*") {
+        collectibles.push({ x, y, value: 100 });
+      } else if (ch === "o") {
+        enemies.push({ x, y, kind: "patrol" });
+      } else if (ch === "x") {
+        enemies.push({ x, y, kind: "chase" });
       }
       const kind = CHAR_TO_KIND[ch];
       if (kind !== undefined && kind !== TileKind.Empty) {
@@ -53,6 +79,8 @@ export function parseLevel(rows: readonly string[], tileSize = 16): Level {
     map,
     spawnX: spawnCol * tileSize,
     spawnY: spawnRow * tileSize,
+    collectibles,
+    enemies,
   };
 }
 
