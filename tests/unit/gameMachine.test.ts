@@ -14,16 +14,28 @@ describe("gameMachine", () => {
     expect(a.getSnapshot().value).toBe("title");
   });
 
-  it("START → playing", () => {
+  /** START shows the intro cutscene; CUTSCENE_DONE enters the level. */
+  const toPlaying = (a: ReturnType<typeof boot>) => {
+    a.send({ type: "START" });
+    a.send({ type: "CUTSCENE_DONE" });
+  };
+
+  it("START → intro cutscene → playing", () => {
     const a = boot();
     a.send({ type: "START" });
+    expect(a.getSnapshot().value).toBe("cutscene");
+    expect(a.getSnapshot().context.cutsceneId).toBe("intro");
+    a.send({ type: "CUTSCENE_DONE" });
     expect(a.getSnapshot().value).toBe("playing");
   });
 
-  it("WIN → won and records score + bestScore", () => {
+  it("WIN → ending cutscene → won, records score + bestScore", () => {
     const a = boot();
-    a.send({ type: "START" });
+    toPlaying(a);
     a.send({ type: "WIN", score: 1200 });
+    expect(a.getSnapshot().value).toBe("cutscene");
+    expect(a.getSnapshot().context.cutsceneId).toBe("escape");
+    a.send({ type: "CUTSCENE_DONE" });
     const s = a.getSnapshot();
     expect(s.value).toBe("won");
     expect(s.context.score).toBe(1200);
@@ -32,8 +44,9 @@ describe("gameMachine", () => {
 
   it("LOSE → lost; bestScore keeps the max across runs", () => {
     const a = boot();
-    a.send({ type: "START" });
+    toPlaying(a);
     a.send({ type: "WIN", score: 900 });
+    a.send({ type: "CUTSCENE_DONE" }); // through the ending cutscene
     a.send({ type: "RESTART" });
     a.send({ type: "LOSE", score: 300 });
     const s = a.getSnapshot();
@@ -44,7 +57,7 @@ describe("gameMachine", () => {
 
   it("RESTART from a result screen returns to playing", () => {
     const a = boot();
-    a.send({ type: "START" });
+    toPlaying(a);
     a.send({ type: "LOSE", score: 100 });
     a.send({ type: "RESTART" });
     expect(a.getSnapshot().value).toBe("playing");
@@ -52,8 +65,9 @@ describe("gameMachine", () => {
 
   it("TO_TITLE returns to the title screen", () => {
     const a = boot();
-    a.send({ type: "START" });
+    toPlaying(a);
     a.send({ type: "WIN", score: 500 });
+    a.send({ type: "CUTSCENE_DONE" });
     a.send({ type: "TO_TITLE" });
     expect(a.getSnapshot().value).toBe("title");
   });

@@ -8,6 +8,8 @@ import { App as CapApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { createGame, type Game } from "@engine/gameEcs.ts";
+import { cutsceneById } from "@sim/story/cutscenes.ts";
+import { CutscenePlayer } from "@ui/CutscenePlayer.tsx";
 import { loadBestScore, saveBestScore } from "@ui/persistence.ts";
 import { gameMachine } from "@ui/gameMachine.ts";
 import { Hud } from "@ui/Hud.tsx";
@@ -22,6 +24,7 @@ export function App() {
   const pendingRef = useRef<Promise<void>>(Promise.resolve());
   const [snapshot, send] = useMachine(gameMachine);
   const state = snapshot.value as string;
+  const cutscene = cutsceneById(snapshot.context.cutsceneId);
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -106,6 +109,9 @@ export function App() {
     <main className="relative h-full w-full">
       <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
+      {state === "cutscene" && cutscene && (
+        <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />
+      )}
       {state === "title" && (
         <TitleScreen
           onStart={() => {
