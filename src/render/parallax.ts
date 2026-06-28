@@ -66,3 +66,18 @@ export const CAVE_PARALLAX: readonly ParallaxLayerSpec[] = [
   { url: assetUrl("assets/biomes/caves/background3.png"), factor: 0.45 },
   { url: assetUrl("assets/biomes/caves/background4a.png"), factor: 0.7 },
 ];
+
+/**
+ * The overworld biome's background depth stack (GandalfHardcore "Normal BG",
+ * deepest sky → nearest hills). Layer 1 is the far sky/sun; each nearer layer
+ * scrolls a little faster, so the surface world has real travelling depth as Jim
+ * walks the road to the mountain.
+ */
+const OW_BG = assetUrl("assets/biomes/overworld/GandalfHardcore Background layers/Normal BG");
+export const OVERWORLD_PARALLAX: readonly ParallaxLayerSpec[] = [
+  { url: `${OW_BG}/GandalfHardcore Background layers_layer 1.png`, factor: 0.08 },
+  { url: `${OW_BG}/GandalfHardcore Background layers_layer 2.png`, factor: 0.2 },
+  { url: `${OW_BG}/GandalfHardcore Background layers_layer 3.png`, factor: 0.35 },
+  { url: `${OW_BG}/GandalfHardcore Background layers_layer 4.png`, factor: 0.55 },
+  { url: `${OW_BG}/GandalfHardcore Background layers_layer 5.png`, factor: 0.75 },
+];

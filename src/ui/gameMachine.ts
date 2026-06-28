@@ -5,6 +5,8 @@
  * engine loop; this machine governs which SCREEN is shown and when the engine
  * is allowed to run. Context tracks the final score for the result screens.
  */
+import { CUTSCENES, cutsceneById } from "@sim/story/cutscenes.ts";
+import { FIRST_LEVEL_ID, nextLevelId } from "@render/levels/registry.ts";
 import { assign, createMachine } from "xstate";
 
 export interface GameContext {
@@ -12,6 +14,8 @@ export interface GameContext {
   bestScore: number;
   /** The cutscene to show while in the `cutscene` state. */
   cutsceneId: string;
+  /** The level to load when entering `playing` (set from the cutscene's nextLevel). */
+  levelId: string;
 }
 
 export type GameEvent =
@@ -25,10 +29,28 @@ export type GameEvent =
   /** Seed the persisted best score (loaded from storage on mount). */
   | { type: "SET_BEST"; bestScore: number };
 
+/** The level a finished cutscene leads into (its `nextLevel`, or the first). */
+function levelAfterCutscene(cutsceneId: string): string {
+  return cutsceneById(cutsceneId)?.nextLevel ?? FIRST_LEVEL_ID;
+}
+
+/**
+ * The cutscene to play AFTER clearing a level — the next story beat. It's the
+ * cutscene whose `nextLevel` is the level that FOLLOWS the one just cleared, so
+ * the sequence cutscene → level → cutscene → level chains automatically. Falls
+ * back to the "escape" ending when the cleared level is the last one.
+ */
+function cutsceneAfterLevel(levelId: string): string {
+  const next = nextLevelId(levelId);
+  if (!next) return "escape";
+  const beat = CUTSCENES.find((c) => c.nextLevel === next);
+  return beat?.id ?? "escape";
+}
+
 export const gameMachine = createMachine({
   id: "game",
   initial: "title",
-  context: { score: 0, bestScore: 0, cutsceneId: "intro" },
+  context: { score: 0, bestScore: 0, cutsceneId: "intro", levelId: FIRST_LEVEL_ID },
   types: {} as { context: GameContext; events: GameEvent },
   // Available in any state: seed the best score from persistence on mount.
   on: {
@@ -49,7 +71,11 @@ export const gameMachine = createMachine({
       on: {
         CUTSCENE_DONE: [
           { guard: ({ context }) => context.cutsceneId === "escape", target: "won" },
-          { target: "playing" },
+          {
+            target: "playing",
+            // Load the level this cutscene leads into (intro→village, descent→cave…).
+            actions: assign({ levelId: ({ context }) => levelAfterCutscene(context.cutsceneId) }),
+          },
         ],
       },
     },
@@ -61,7 +87,8 @@ export const gameMachine = createMachine({
           actions: assign({
             score: ({ event }) => event.score,
             bestScore: ({ context, event }) => Math.max(context.bestScore, event.score),
-            cutsceneId: () => "escape",
+            // Play the next story beat (or the "escape" ending after the last level).
+            cutsceneId: ({ context }) => cutsceneAfterLevel(context.levelId),
           }),
         },
         LOSE: {

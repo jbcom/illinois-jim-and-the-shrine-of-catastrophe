@@ -13,6 +13,7 @@ import {
   Facing,
   Gravity,
   MineCart,
+  Npc,
   Player,
   Position,
   Pot,
@@ -21,7 +22,7 @@ import {
   Velocity,
 } from "@sim/ecs/traits.ts";
 import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
-import type { PotSpawn } from "@sim/world/gameLevel.ts";
+import type { NpcSpawn, PotSpawn } from "@sim/world/gameLevel.ts";
 import type { Level } from "@sim/world/level.ts";
 import { createWorld, type Entity, type World } from "koota";
 
@@ -88,6 +89,16 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
         maxX: e.x + ts * 4,
         alive: true,
       }),
+    );
+  }
+
+  // Story NPCs the level authors (GameLevel) — villagers Jim can talk to.
+  for (const n of (level as { npcs?: readonly NpcSpawn[] }).npcs ?? []) {
+    world.spawn(
+      Position({ x: n.x, y: n.y }),
+      Size({ w: 18, h: 24 }),
+      Facing({ dir: 1 }),
+      Npc({ dialogueId: n.dialogueId, range: 36, talked: false }),
     );
   }
 

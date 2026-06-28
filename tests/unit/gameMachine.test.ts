@@ -29,10 +29,29 @@ describe("gameMachine", () => {
     expect(a.getSnapshot().value).toBe("playing");
   });
 
-  it("WIN → ending cutscene → won, records score + bestScore", () => {
+  /** Clear a level: WIN advances to the next story cutscene, then into its level. */
+  const clearLevel = (a: ReturnType<typeof boot>, score: number) => {
+    a.send({ type: "WIN", score });
+    a.send({ type: "CUTSCENE_DONE" });
+  };
+
+  it("WIN on the first level plays the NEXT story beat, not the ending", () => {
     const a = boot();
-    toPlaying(a);
+    toPlaying(a); // in the village (first level)
     a.send({ type: "WIN", score: 1200 });
+    expect(a.getSnapshot().value).toBe("cutscene");
+    // The village leads into the descent cutscene → the cave, NOT the ending.
+    expect(a.getSnapshot().context.cutsceneId).toBe("descent");
+    a.send({ type: "CUTSCENE_DONE" });
+    expect(a.getSnapshot().value).toBe("playing");
+    expect(a.getSnapshot().context.levelId).toBe("cave-descent");
+  });
+
+  it("WIN on the LAST level → ending cutscene → won, records score + bestScore", () => {
+    const a = boot();
+    toPlaying(a); // village
+    clearLevel(a, 800); // → cave
+    a.send({ type: "WIN", score: 1200 }); // clear the cave (last level)
     expect(a.getSnapshot().value).toBe("cutscene");
     expect(a.getSnapshot().context.cutsceneId).toBe("escape");
     a.send({ type: "CUTSCENE_DONE" });
@@ -44,9 +63,10 @@ describe("gameMachine", () => {
 
   it("LOSE → lost; bestScore keeps the max across runs", () => {
     const a = boot();
-    toPlaying(a);
-    a.send({ type: "WIN", score: 900 });
-    a.send({ type: "CUTSCENE_DONE" }); // through the ending cutscene
+    toPlaying(a); // village
+    clearLevel(a, 900); // → cave
+    a.send({ type: "WIN", score: 900 }); // clear the cave (last) → ending cutscene
+    a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "RESTART" });
     a.send({ type: "LOSE", score: 300 });
     const s = a.getSnapshot();
@@ -65,9 +85,10 @@ describe("gameMachine", () => {
 
   it("TO_TITLE returns to the title screen", () => {
     const a = boot();
-    toPlaying(a);
-    a.send({ type: "WIN", score: 500 });
-    a.send({ type: "CUTSCENE_DONE" });
+    toPlaying(a); // village
+    clearLevel(a, 500); // → cave
+    a.send({ type: "WIN", score: 500 }); // clear the cave (last) → ending cutscene
+    a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "TO_TITLE" });
     expect(a.getSnapshot().value).toBe("title");
   });

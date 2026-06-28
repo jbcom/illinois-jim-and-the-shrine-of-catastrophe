@@ -13,15 +13,25 @@ import { scaleFor } from "@render/actorScale.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
+import { createNpcSprite } from "@render/npc.ts";
+import { npcSpecFor } from "@render/npcRoster.ts";
 import { createParallax, type Parallax } from "@render/parallax.ts";
 import { createPlayerSprite } from "@render/playerSprite.ts";
 import { loadPotFrames } from "@render/pots.ts";
-import { Collectible, Enemy, Facing, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
+import { Collectible, Enemy, Facing, Npc, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { Camera } from "@sim/world/camera.ts";
 import type { ParallaxLayerSpec } from "@render/parallax.ts";
 import type { Entity, World } from "koota";
-import { AnimatedSprite, Application, Container, Graphics, Sprite, type Texture } from "pixi.js";
+import {
+  AnimatedSprite,
+  Application,
+  Container,
+  Graphics,
+  type Renderer,
+  Sprite,
+  type Texture,
+} from "pixi.js";
 
 export interface PaintingRenderOpts {
   readonly world: World;
@@ -61,6 +71,14 @@ export interface PaintingRendererSpec {
    */
   readonly frameTop: number;
   readonly frameBottom: number;
+  /**
+   * Optional solid ground fill — a colored band painted BEHIND the composition,
+   * from `groundY` down past `frameBottom`, spanning the level width. Biomes
+   * whose ground brushes are partly transparent (the overworld grass-topped
+   * dirt tiles) need this so the sky parallax doesn't show through the floor;
+   * the cave's opaque rock masses don't (omit it there).
+   */
+  readonly groundFill?: { readonly color: number; readonly groundY: number; readonly width: number };
 }
 
 
@@ -123,6 +141,16 @@ export async function createPaintingRenderer(
   const worldLayer = new Container();
   app.stage.addChild(parallax.container, worldLayer);
 
+  // Solid ground fill behind the painting (biomes with transparent ground
+  // brushes). Drawn from groundY down well past the frame so the floor is opaque.
+  if (spec.groundFill) {
+    const { color, groundY, width } = spec.groundFill;
+    const fill = new Graphics()
+      .rect(-200, groundY, width + 400, spec.frameBottom - groundY + 400)
+      .fill(color);
+    worldLayer.addChild(fill);
+  }
+
   const painting: Painting = await paintComposition(spec.painting);
   worldLayer.addChild(painting.container);
 
@@ -145,6 +173,12 @@ export async function createPaintingRenderer(
     o.world.query(Enemy, Position, Size, Facing).readEach(([enemy, pos, size, facing], e) => {
       seen.add(e);
       ensureEnemy(e, enemy.visual, views, actorsLayer);
+      place(views.get(e), e, o, pos, size);
+      faceView(views.get(e), facing.dir);
+    });
+    o.world.query(Npc, Position, Size, Facing).readEach(([npc, pos, size, facing], e) => {
+      seen.add(e);
+      ensureNpc(e, npc.dialogueId, app.renderer, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
       faceView(views.get(e), facing.dir);
     });
@@ -272,6 +306,41 @@ function ensureEnemy(e: Entity, visual: EnemyKind, views: Map<Entity, ActorView>
   }).catch((err) => {
     console.error("[render] enemy sprite failed to load:", err);
   });
+}
+
+function ensureNpc(
+  e: Entity,
+  dialogueId: string,
+  renderer: Renderer,
+  views: Map<Entity, ActorView>,
+  layer: Container,
+): void {
+  if (views.has(e)) return;
+  const ph = placeholder(0x6f9a4a);
+  layer.addChild(ph);
+  views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
+  void createNpcSprite(renderer, npcSpecFor(dialogueId))
+    .then((npc) => {
+      if (!views.has(e)) {
+        npc.destroy();
+        return;
+      }
+      npc.sprite.scale.set(0.6);
+      layer.addChild(npc.sprite);
+      ph.parent?.removeChild(ph);
+      ph.destroy();
+      views.set(e, {
+        display: npc.sprite,
+        anim: npc.sprite,
+        acc: 0,
+        fps: 5,
+        faceable: true,
+        dispose: () => npc.destroy(),
+      });
+    })
+    .catch((err) => {
+      console.error("[render] npc sprite failed to compose:", err);
+    });
 }
 
 function ensureRelic(e: Entity, tex: Texture, views: Map<Entity, ActorView>, layer: Container): void {

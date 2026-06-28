@@ -12,6 +12,7 @@
  *   0 idle  1 walk  2 run  3 jump  4 cheer  5 attack  6 crouch/fall
  */
 import {
+  type AnimatedSprite,
   Assets,
   Container,
   Rectangle,
@@ -112,6 +113,34 @@ export async function composeNpcSheet(renderer: Renderer, spec: NpcSpec): Promis
   renderer.render({ container: stack, target: rt });
   stack.destroy({ children: true });
   return rt;
+}
+
+/** A composed NPC sprite + the GPU sheet it owns (destroy both on teardown). */
+export interface NpcSprite {
+  readonly sprite: AnimatedSprite;
+  destroy(): void;
+}
+
+/**
+ * Build a ready-to-place idle NPC sprite from a spec: composite the paper-doll
+ * layers, slice the idle row, and return an AnimatedSprite (autoUpdate off — the
+ * scene's frame loop advances it). The returned object OWNS the composite sheet;
+ * `destroy()` tears down the sprite then the sheet (order matters — the sprite's
+ * frames share the sheet source).
+ */
+export async function createNpcSprite(renderer: Renderer, spec: NpcSpec): Promise<NpcSprite> {
+  const { AnimatedSprite } = await import("pixi.js");
+  const sheet = await composeNpcSheet(renderer, spec);
+  const sprite = new AnimatedSprite(npcAnimFrames(sheet, "idle"));
+  sprite.autoUpdate = false;
+  sprite.anchor.set(0.5, 1);
+  return {
+    sprite,
+    destroy() {
+      sprite.destroy();
+      sheet.destroy(true);
+    },
+  };
 }
 
 /** Slice one animation row of a composite NPC sheet into frame textures. */

@@ -25,6 +25,11 @@ export interface EnemySpawn extends GameLevelSpawn {
   readonly visual: "goblin" | "skeleton" | "mushroom" | "flyingEye";
 }
 
+/** A story NPC placed by design; `dialogueId` keys src/sim/story/dialogue.ts. */
+export interface NpcSpawn extends GameLevelSpawn {
+  readonly dialogueId: string;
+}
+
 export interface GameLevel {
   readonly id: string;
   readonly map: TileMap;
@@ -33,6 +38,8 @@ export interface GameLevel {
   readonly collectibles: readonly (GameLevelSpawn & { value: number })[];
   readonly enemies: readonly EnemySpawn[];
   readonly pots: readonly PotSpawn[];
+  /** Story NPCs the player can talk to (empty on levels with none). */
+  readonly npcs: readonly NpcSpawn[];
   /** World-x past which the level is "won" (reaching the relic block). */
   readonly goalX: number;
 }
@@ -90,5 +97,60 @@ export const DESCENT: GameLevel = {
     { x: 620, y: 288, color: "yellow", drop: "health" },
     { x: 820, y: 288, color: "white", drop: "secret" },
   ],
+  npcs: [],
   goalX: 900,
+};
+
+/**
+ * "Halward's Reach" collision — a continuous solid road across the bottom (the
+ * overworld is a walkable surface, no chasm), side walls at the ends. Matches the
+ * painting in render/levels/villageApproach.ts (GROUND_Y 300, ~2240px wide).
+ */
+function villageMap(): TileMap {
+  const cols = 140; // ~2240px
+  const rows = 22; // ~352px
+  const map = createTileMap(cols, rows, TS);
+  const floorRow = 19; // 19*16 = 304 ≈ painted GROUND_Y 300
+  for (let c = 0; c < cols; c++) {
+    setTile(map, c, floorRow, TileKind.Solid);
+    setTile(map, c, floorRow + 1, TileKind.Solid);
+    setTile(map, c, floorRow + 2, TileKind.Solid);
+  }
+  // Left wall closes the village edge; the right edge is open onto the trail end.
+  for (let r = 0; r < rows; r++) setTile(map, 0, r, TileKind.Solid);
+  return map;
+}
+
+/**
+ * "Halward's Reach" — the OPENING overworld level. The story starts here: Jim
+ * talks to the villagers (Elder Mara, the ferryman, the watchman), then walks the
+ * forest road east to the cave-mouth trailhead (goal) — reaching it triggers the
+ * descent cutscene into the cave. Its painting is render/levels/villageApproach.ts.
+ */
+export const VILLAGE: GameLevel = {
+  id: "village-approach",
+  map: villageMap(),
+  spawnX: 80,
+  spawnY: 260,
+  collectibles: [
+    { x: 980, y: 250, value: 100 },
+    { x: 1520, y: 250, value: 100 },
+  ],
+  enemies: [
+    // The forest road is where the first threats appear — easing in (1–2/screen).
+    { x: 1080, y: 280, kind: "patrol", visual: "goblin" },
+    { x: 1620, y: 280, kind: "patrol", visual: "mushroom" },
+    { x: 1980, y: 280, kind: "chase", visual: "goblin" },
+  ],
+  pots: [
+    { x: 360, y: 288, color: "white", drop: "secret" }, // by the cooking fire
+    { x: 1240, y: 288, color: "yellow", drop: "health" }, // mid-road
+  ],
+  npcs: [
+    // The villagers of Halward's Reach — the story's opening voices.
+    { x: 160, y: 276, dialogueId: "elder-mara" }, // by the house
+    { x: 430, y: 276, dialogueId: "watchman-pell" }, // by the small tent
+    { x: 620, y: 276, dialogueId: "ferryman-cole" }, // by the statue / water's edge
+  ],
+  goalX: 2120,
 };
