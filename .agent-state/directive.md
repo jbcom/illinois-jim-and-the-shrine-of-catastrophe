@@ -28,6 +28,17 @@ cutscenes. Build that now. No re-asking what was already decided — execute the
 - [ ] TYPOGRAPHY: real curated game-themed fonts (display face for wordmark/headers,
       readable pixel/serif for narration) — not system defaults. Self-host, licensed.
 
+### M3 standing quality bar (user directive, 2026-06-28)
+- KEEP REFINING every level until it reads as DENSE, COMPLEX, narratively
+  coherent, CHALLENGING, and FUN. Not one-and-done — iterate each (village, cave,
+  shrine) to that bar, live-verified each pass.
+- The hero is DEVIL-MAY-CARE — a roguish, swashbuckling pulp adventurer (cocky
+  grin, rakish hat, relaxed confident swagger), not a stiff workman. Bake this
+  into the hero art + sprite direction.
+- Don't stack a CSS wordmark over GenAI art that already has one. Either let the
+  art carry the wordmark, or generate a CLEAN (textless) illustration + a
+  dedicated transparent wordmark asset — never double up.
+
 ### M3 narrative build (the planned game)
 - [ ] OVERWORLD authoring: the SAME composition/painting engine as the cave, an
       overworld shape catalog from biomes/overworld (measured connected components),

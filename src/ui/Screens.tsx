@@ -4,7 +4,7 @@
  * other states. Buttons are real pointer targets (pointer-events on).
  */
 import type { ReactNode } from "react";
-import { BRAND, TITLE, TITLE_SHORT, TYPE } from "@/brand.ts";
+import { BRAND, TITLE_SHORT, TYPE } from "@/brand.ts";
 
 function Panel(props: { children: ReactNode }) {
   return (
@@ -32,51 +32,6 @@ function PlayButton(props: { label: string; onClick: () => void }) {
     >
       {props.label}
     </button>
-  );
-}
-
-export function TitleScreen(props: { onStart: () => void }) {
-  return (
-    <Panel>
-      <h1
-        className="px-6 font-extrabold"
-        style={{
-          color: BRAND.idolGold,
-          fontSize: "clamp(1.5rem, 9vw, 4rem)",
-          fontFamily: TYPE.display,
-          lineHeight: 1.05,
-          textShadow: "0 2px 8px rgba(0,0,0,0.6)",
-        }}
-      >
-        {TITLE}
-      </h1>
-      <p
-        className="max-w-xl px-8"
-        style={{
-          color: BRAND.parchment,
-          fontFamily: TYPE.display,
-          fontSize: "clamp(0.85rem, 3.5vw, 1.15rem)",
-          lineHeight: 1.5,
-          opacity: 0.92,
-        }}
-      >
-        A village has feared the mountain for a hundred years. The last seal has
-        cracked — and the Shrine of Catastrophe is waking. Grab the idol. Outrun
-        the dark.
-      </p>
-      <PlayButton label="PLAY" onClick={props.onStart} />
-      <p
-        className="px-8"
-        style={{
-          color: BRAND.idolGold,
-          fontFamily: TYPE.display,
-          fontSize: "clamp(0.7rem, 2.5vw, 0.9rem)",
-          opacity: 0.7,
-        }}
-      >
-        A 16-bit pulp adventure · arrow keys / touch to move · ↑ jump · attack to smash
-      </p>
-    </Panel>
   );
 }
 

@@ -14,7 +14,8 @@ import { loadBestScore, saveBestScore } from "@ui/persistence.ts";
 import { gameMachine } from "@ui/gameMachine.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
-import { ResultScreen, TitleScreen } from "@ui/Screens.tsx";
+import { Landing } from "@ui/Landing.tsx";
+import { ResultScreen } from "@ui/Screens.tsx";
 import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
 
@@ -124,7 +125,7 @@ export function App() {
         <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />
       )}
       {state === "title" && (
-        <TitleScreen
+        <Landing
           onStart={() => {
             // PLAY is a user gesture — unlock the AudioContext here so sfx play.
             void gameRef.current?.unlockAudio();
