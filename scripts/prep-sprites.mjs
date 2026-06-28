@@ -74,9 +74,31 @@ function clearBackground(data, width, height, threshold) {
 }
 
 /**
- * Despill — kill the magenta fringe on anti-aliased character edges. Where red
- * and blue both exceed green (a magenta tint) on a still-opaque pixel, pull red
- * and blue down to green and fade alpha proportionally to the spill removed.
+ * Global magenta kill — fully clear any strongly-magenta pixel anywhere, not
+ * just corner-connected ones. Catches enclosed background pockets (between legs,
+ * under an arm) that the corner flood-fill can't reach. Uses a stricter test
+ * than the flood-fill threshold so it never eats the character's own colours.
+ */
+function killMagenta(data, width, height) {
+  for (let p = 0; p < width * height; p++) {
+    const o = p * 4;
+    if (data[o + 3] === 0) continue;
+    const r = data[o];
+    const g = data[o + 1];
+    const b = data[o + 2];
+    // Pure-ish magenta: red & blue high, green low, and the magenta dominance
+    // (min(r,b) − g) is large. Character pixels (skin, teal, gold) never qualify.
+    if (Math.min(r, b) >= 150 && g <= 110 && Math.min(r, b) - g >= 70) {
+      data[o + 3] = 0;
+    }
+  }
+}
+
+/**
+ * Despill — kill the magenta fringe on anti-aliased character edges. Only touches
+ * genuine fringe (strong magenta dominance) so it desaturates the halo without
+ * eating into the character; pulls red/blue down to green and fades alpha by the
+ * spill removed.
  */
 function despillMagenta(data, width, height) {
   for (let p = 0; p < width * height; p++) {
@@ -86,7 +108,7 @@ function despillMagenta(data, width, height) {
     const g = data[o + 1];
     const b = data[o + 2];
     const spill = Math.min(r, b) - g;
-    if (spill <= 12) continue;
+    if (spill <= 40) continue; // only strong fringe, not bulk character pixels
     data[o] = g;
     data[o + 2] = g;
     data[o + 3] = Math.max(0, data[o + 3] - spill);
@@ -101,6 +123,7 @@ async function prep(file, outDir, frame, threshold, heightFraction) {
     .toBuffer({ resolveWithObject: true });
 
   clearBackground(data, info.width, info.height, threshold);
+  killMagenta(data, info.width, info.height);
   despillMagenta(data, info.width, info.height);
 
   // Trim the now-transparent margin to the character bbox.

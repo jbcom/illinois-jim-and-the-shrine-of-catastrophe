@@ -44,6 +44,7 @@ export async function animatedFromStrip(spec: StripSpec): Promise<AnimatedSprite
   const sprite = new AnimatedSprite(textures);
   sprite.animationSpeed = (spec.fps ?? 12) / 60; // frames advanced per 60fps tick
   sprite.autoUpdate = false;
-  sprite.play();
+  // No play() — autoUpdate is off; the caller drives frame advance from the
+  // fixed sim clock, so play() (a Ticker registration) would be a no-op.
   return sprite;
 }

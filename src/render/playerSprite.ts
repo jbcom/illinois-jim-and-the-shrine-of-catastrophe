@@ -1,42 +1,31 @@
 /**
- * Illinois Jim — the player sprite. Original side-view hero (teal explorer vest,
- * brass-goggle cap, amber relic-lantern, coiled grappling hook), authored as one
- * transparent PNG per pose under /assets/player/ and assembled into named
- * animations through the unified frame-source layer.
- *
- * Demonstrates the single-image-frames path: each state lists its pose files in
- * play order; the renderer treats them exactly like a sliced strip. Facing is a
- * horizontal scale flip (art is drawn facing right).
+ * Illinois Jim — the player sprite. Uses the real `classes/adventure` sprite
+ * pack: clean, fully-transparent directional strips (96×80 frames, 8 per clip)
+ * authored for a top-down/side hybrid. For our side-scroller we drive the
+ * left/right facing strips and flip via scale; no chromakey, no prep — the pack
+ * already ships proper alpha, loaded straight through the frame-source layer.
  *
  * Browser-only.
  */
 import type { AnimatedSprite, Texture } from "pixi.js";
-import { type FrameSource, frames, loadFrames } from "@render/frameSource.ts";
+import { type FrameSource, loadFrames, strip } from "@render/frameSource.ts";
 
-export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
+export type PlayerState = "idle" | "run" | "attack";
 
-const BASE = "/assets/player";
+const BASE = "/assets/classes/adventure";
+const FRAMES = 8;
 
-/** Named animations → ordered pose files (single transparent images). */
+/** Right-facing source strip per state (left is the same art, scale-flipped). */
 export const PLAYER_ANIMS: Record<PlayerState, FrameSource> = {
-  idle: frames([`${BASE}/illinois-jim-idle-1.png`, `${BASE}/illinois-jim-idle-2.png`]),
-  run: frames([
-    `${BASE}/illinois-jim-run-1.png`,
-    `${BASE}/illinois-jim-run-2.png`,
-    `${BASE}/illinois-jim-run-3.png`,
-    `${BASE}/illinois-jim-run-4.png`,
-  ]),
-  jump: frames([`${BASE}/illinois-jim-jump-1.png`, `${BASE}/illinois-jim-jump-2.png`]),
-  fall: frames([`${BASE}/illinois-jim-fall.png`]),
-  attack: frames([`${BASE}/illinois-jim-attack-1.png`, `${BASE}/illinois-jim-attack-2.png`]),
+  idle: strip(`${BASE}/IDLE/idle_right.png`, FRAMES),
+  run: strip(`${BASE}/RUN/run_right.png`, FRAMES),
+  attack: strip(`${BASE}/ATTACK 1/attack1_right.png`, FRAMES),
 };
 
 /** Per-state playback speed (fps) and looping. */
 const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
-  idle: { fps: 3, loop: true },
+  idle: { fps: 6, loop: true },
   run: { fps: 12, loop: true },
-  jump: { fps: 8, loop: false },
-  fall: { fps: 1, loop: false },
   attack: { fps: 14, loop: false },
 };
 
@@ -46,7 +35,7 @@ export interface PlayerSprite {
   setState(state: PlayerState): void;
   /** Face left (true) or right (false) via horizontal flip. */
   setFacing(faceLeft: boolean): void;
-  /** Advance animation by `frames` 60fps ticks (deterministic). */
+  /** Advance animation by `ticks` 60fps ticks (deterministic). */
   update(ticks: number): void;
   readonly state: PlayerState;
   destroy(): void;
@@ -70,15 +59,20 @@ export async function createPlayerSprite(initial: PlayerState = "idle"): Promise
 
   const sprite = new AnimatedSprite(textures[initial]);
   sprite.autoUpdate = false;
-  sprite.anchor.set(0.5, 1); // feet-anchored (frames are bottom-aligned)
+  sprite.anchor.set(0.5, 1); // feet-anchored
   let current: PlayerState = initial;
   let faceLeft = false;
+  // Sub-frame accumulator. Pixi 8's `currentFrame` getter floors internally, so
+  // reading it back would discard fractional progress and freeze any sub-60fps
+  // animation at frame 0 — track elapsed frames ourselves.
+  let acc = 0;
 
   const apply = (state: PlayerState) => {
     sprite.textures = textures[state];
     sprite.animationSpeed = TIMING[state].fps / 60;
     sprite.loop = TIMING[state].loop;
-    sprite.gotoAndPlay(0);
+    acc = 0;
+    sprite.currentFrame = 0;
     current = state;
   };
   apply(initial);
@@ -97,16 +91,12 @@ export async function createPlayerSprite(initial: PlayerState = "idle"): Promise
       sprite.scale.x = Math.abs(sprite.scale.x) * (left ? -1 : 1);
     },
     update(ticks) {
-      // Deterministic manual advance: Pixi 8's update() wants a Ticker, so we
-      // step frames ourselves from the fixed sim tick count.
       const count = sprite.textures.length;
       if (count <= 1) return;
-      const next = sprite.currentFrame + sprite.animationSpeed * ticks;
-      if (TIMING[current].loop) {
-        sprite.currentFrame = ((next % count) + count) % count;
-      } else {
-        sprite.currentFrame = Math.min(count - 1, Math.max(0, Math.floor(next)));
-      }
+      acc += sprite.animationSpeed * ticks;
+      sprite.currentFrame = TIMING[current].loop
+        ? Math.floor(((acc % count) + count) % count)
+        : Math.min(count - 1, Math.floor(Math.max(0, acc)));
     },
     destroy() {
       sprite.destroy();

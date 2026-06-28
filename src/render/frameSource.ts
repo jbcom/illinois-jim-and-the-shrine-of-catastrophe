@@ -74,6 +74,7 @@ export async function animatedFrom(
   sprite.animationSpeed = (opts.fps ?? 12) / 60;
   sprite.autoUpdate = false;
   sprite.loop = opts.loop ?? true;
-  sprite.play();
+  // No play() — autoUpdate is off, so frame advance is driven by the caller's
+  // update()/currentFrame from the fixed sim clock; play() would be a no-op.
   return sprite;
 }

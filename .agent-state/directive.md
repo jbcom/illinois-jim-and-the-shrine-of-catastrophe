@@ -27,21 +27,40 @@ DEFERRAL IS HOW PROJECTS FAIL. No "later"/"follow-up"/"wire it up next".
 Browser verify: vitest-browser `page.screenshot({path})` (read the saved PNG) or
 Safari MCP headed GPU. The real game uses SPRITE assets (below), each proven this way.
 
+### 📖 THIS IS A STORY (user directive, 2026-06-28, NON-NEGOTIABLE)
+Not a sprite tech-demo — a 16-bit story-driven adventure in the mold of the best
+late-80s/early-90s SNES/Genesis games. The provided assets ARE the story kit and
+must all be used for narrative purpose, not decoration:
+- **Overworld biome** (`biomes/overworld`) = the surface world Jim explores +
+  travels FROM (town/forest/statues/boats) → a journey INTO the cave/shrine.
+- **Cave biome** (`biomes/caves`) = the descent toward the Shrine of Catastrophe.
+- **NPC factory** (`classes/npcs`: skin/clothing/hair/hand layers, M/F) = real
+  NPCs Jim talks to (dialogue) — they give the story, hooks, warnings, quests.
+- **Breakable pots** (`breakables/pots`) = pots that smash to reveal relics /
+  health / secrets (classic 16-bit pot-smashing), not just score blocks.
+- **GenAI 16-bit cutscenes** = story beats between levels (Imagen art + a React
+  cutscene player), the way 16-bit games told their story. THIS is what Gemini is
+  for (cutscene backplates/branding), NOT the gameplay sprites.
+The hero is the real transparent `classes/adventure` pack (no chromakey, no gen).
+
 ### Build checklist (the FULL game — keep going until ALL done + proven)
-- [ ] AnimatedSprite component — browser test + screenshot REVIEWED
-- [ ] Parallax background (bg1-4 stack) — browser test + screenshot REVIEWED
-- [ ] Cave tile layer (@pixi/tilemap from mainlev_build) — test + screenshot REVIEWED
-- [ ] Enemy sprites (goblin/skeleton/mushroom/flying-eye anim) — test + screenshot each
-- [ ] Side-view hero (Gemini-generated, idle/run/jump/attack) — gen + test + screenshot
-- [ ] Breakable pots (drop relics) — test + screenshot
+- [x] AnimatedSprite component — browser test + screenshot REVIEWED
+- [x] Parallax background (bg1-4 stack) — browser test + screenshot REVIEWED
+- [x] Cave tile layer (@pixi/tilemap from mainlev_build) — test + screenshot REVIEWED
+- [x] Enemy sprites (goblin/skeleton/mushroom/flying-eye anim) — test + screenshot each
+- [x] Hero = real `classes/adventure` transparent strips (idle/run/attack), NOT Gemini — test + screenshot
+- [x] koota render-layer traits + scene compositor (Layer/ParallaxBg/TileLayerRef/SpriteRef/Anim) — test + screenshot
+- [ ] NPC factory: composite skin+clothing+hair+hand layers → an NPC sprite, + dialogue trait — test + screenshot
+- [ ] Breakable pots: pot entity, smash-on-hit, drop relic/health/secret — test + screenshot
 - [ ] HP/lives UI bar from ux/hp_bar — test + screenshot
-- [ ] Tiled .tmj loader + designed cave levels — test + screenshot
-- [ ] Full layered scene composited in-game — Safari GPU screenshot of real gameplay
-- [ ] Audio sfx wired to events (jump/coin/hurt/whip/land) + music loop
-- [ ] Landing page + GenAI cutscenes
-- [ ] Persistence (best score), level-select, win condition (reach idol)
-- [ ] Docs (ARCHITECTURE/STATE/CHANGELOG) fully aligned
-- [ ] Final: whole game proven end-to-end (play it, screenshot every screen), then land
+- [ ] Tiled .tmj loader + DESIGNED levels: overworld (surface) → cave (descent) → shrine — test + screenshot each
+- [ ] Full layered story scene composited in-game (overworld + NPCs + pots + enemies) — Safari GPU screenshot of real gameplay
+- [ ] Audio sfx wired to events (jump/coin/hurt/whip/land/pot-smash/dialogue) + music loop
+- [ ] Story: GenAI 16-bit cutscenes (intro → descent → shrine reveal → ending) + React cutscene player
+- [ ] Landing page (title wordmark, story hook, play CTA)
+- [ ] Persistence (best score + story progress), level-select, win condition (reach the idol/shrine)
+- [ ] Docs (ARCHITECTURE/STATE/CHANGELOG + ASSETS) fully aligned
+- [ ] Final: whole game proven end-to-end (play it start→ending, screenshot every screen + cutscene), then land
 
 ## 🎨 Asset pipeline — Tiled + sprites (DECIDED, replaces ASCII levels + flat rects)
 Assets live in `public/assets/` (user-provided, side-view platformer set). Read +
