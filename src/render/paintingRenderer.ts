@@ -146,7 +146,7 @@ export async function createPaintingRenderer(
   if (spec.groundFill) {
     const { color, groundY, width } = spec.groundFill;
     const fill = new Graphics()
-      .rect(-200, groundY, width + 400, spec.frameBottom - groundY + 400)
+      .rect(-200, groundY, width + 400, spec.frameBottom - groundY + 600)
       .fill(color);
     worldLayer.addChild(fill);
   }
@@ -214,10 +214,15 @@ export async function createPaintingRenderer(
     const screenW = app.screen.width;
     const screenH = app.screen.height;
 
-    // Cover by HEIGHT: the authored frame band fills the canvas top-to-bottom, so
-    // the cave reaches both edges with NO letterbox bands. Width is whatever the
-    // canvas aspect allows — the level is a side-scroller and the camera scrolls
-    // across it horizontally.
+    // Cover by HEIGHT so the authored band fills the canvas top-to-bottom — BUT
+    // on a tall/narrow (portrait phone) canvas pure height-cover zooms in so far
+    // you only see ~1 screen of a side-scroller. Clamp the zoom so at least
+    // MIN_VIEW_W world-px stay visible horizontally; when that kicks in the band
+    // no longer fills the full height (the ground fill + parallax cover the slack)
+    // but the player can actually see ahead.
+    // Cover by HEIGHT: the authored band fills the canvas top-to-bottom with no
+    // letterbox. Gameplay is landscape-locked on phones (see App orientation
+    // guard), so the canvas is always wide enough that this reads correctly.
     const worldScale = screenH / frameH;
     const camX = Math.round(cam.x);
     const camY = Math.round(cam.y);

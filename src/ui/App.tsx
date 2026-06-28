@@ -16,8 +16,14 @@ import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
+import { RotatePrompt } from "@ui/RotatePrompt.tsx";
+import {
+  applyNativeOrientationLock,
+  type OrientationState,
+  readOrientationState,
+} from "@engine/viewport/orientation.ts";
 import { useMachine } from "@xstate/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function App() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -31,6 +37,27 @@ export function App() {
   // `.then` so a freshly-recreated level instance starts unpaused if we're mid-play.
   const playingRef = useRef(false);
   playingRef.current = state === "playing";
+
+  // Device-profile-driven orientation: phones lock to landscape; tablets,
+  // unfolded foldables, and desktop stay free. Re-evaluated on resize so a
+  // foldable unfolding (or a rotation) updates the lock + the web rotate prompt.
+  const [orientation, setOrientation] = useState<OrientationState>(() =>
+    readOrientationState(window),
+  );
+  useEffect(() => {
+    const sync = () => {
+      const next = readOrientationState(window);
+      setOrientation(next);
+      void applyNativeOrientationLock(next);
+    };
+    sync();
+    window.addEventListener("resize", sync);
+    window.addEventListener("orientationchange", sync);
+    return () => {
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
+    };
+  }, []);
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -145,6 +172,8 @@ export function App() {
           onTitle={() => send({ type: "TO_TITLE" })}
         />
       )}
+      {/* Topmost: web phones held in portrait get a rotate-to-landscape prompt. */}
+      {orientation.needsRotatePrompt && <RotatePrompt />}
     </main>
   );
 }
