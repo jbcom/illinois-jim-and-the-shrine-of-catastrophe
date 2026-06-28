@@ -73,31 +73,26 @@ placed PER-LEVEL by design via Enemy.visual (goblin/skeleton/mushroom/flyingEye)
 - [x] HP/lives UI bar from ux/hp_bar — test + screenshot
 - [x] Composition/painting system + cave shape catalog + first painted level "The Descent"
       (composition.ts/caveShapes.ts/caveDescent.ts) — screenshot-proven over parallax (caeff75).
-- [ ] IN-GAME painting renderer: replace placeholder-rect pixiRenderer with a renderer that
-      (a) paints the level composition + parallax behind, (b) maps sim entities to sprites
-      (Player→hero, Enemy→enemy-by-kind, pots, relics) synced each frame, (c) camera-scrolls
-      the world layer, (d) HP-bar overlay. Wire into gameEcs loop. Author the level's
-      INVISIBLE COLLISION (separate from the painting) so physics matches the painted ground.
-      Safari GPU screenshot of REAL gameplay.
-      ARCHITECTURE (user, 2026-06-28, DECISIVE): it is a SIDE-SCROLLER — NO TILES,
-      NO @pixi/tilemap, NO Kenney (ripped out). I COMPOSE each level as a PAINTING:
-      hand-assembled placement of the organic biome SHAPE stamps (cave ledges,
-      formations, slabs, overworld pieces) arranged by me to TELL THE STORY, like
-      painting a backdrop. Collision is SEPARATE invisible geometry (authored rects)
-      the physics reads. Level = { painting: placed shapes, collision: rects, spawns }.
-- [ ] Tiled .tmj loader + DESIGNED levels: overworld (surface) → cave (descent) → shrine — test + screenshot each
-      NOTE (user, 2026-06-28): the cave/overworld biome sheets are NOT a uniform
-      tile grid — they are ORGANIC COMPOSITIONAL SHAPES (rock ledges, stalactite
-      clusters, cliff slabs, brick panels) meant to be PLACED/assembled as scenery,
-      not index-mapped per 16px cell. Tiled image/object layers (irregular stamps)
-      compose the look; a separate clean collision grid (Kenney-style) backs the
-      physics. Two layers: composed organic scenery + invisible/clean collision.
-- [ ] Audio sfx wired to events (jump/coin/hurt/whip/land/pot-smash/dialogue) + music loop
-- [ ] Story: GenAI 16-bit cutscenes (intro → descent → shrine reveal → ending) + React cutscene player
-- [ ] Landing page (title wordmark, story hook, play CTA)
-- [ ] Persistence (best score + story progress), level-select, win condition (reach the idol/shrine)
-- [ ] Docs (ARCHITECTURE/STATE/CHANGELOG + ASSETS) fully aligned
-- [ ] Final: whole game proven end-to-end (play it start→ending, screenshot every screen + cutscene), then land
+- [x] IN-GAME painting renderer (paintingRenderer.ts): parallax + painted composition +
+      sim-driven sprites (GenAI hero, all-4 enemies via Enemy.visual, pots, relics),
+      camera cover-fill, wired into gameEcs. Invisible collision in gameLevel.ts.
+      Safari GPU screenshot of REAL gameplay. StrictMode canvas-per-Application fix.
+- [x] GenAI Illinois Jim hero (teal vest/goggles/lantern/hook) — generated + isolated
+      (corner-distance key + foot-shadow clear) + screenshot-proven, in-game.
+- [x] Audio sfx wired to events (whip/hurt/pickup/pot-smash/jump/win) + looping cave music.
+- [x] Story: GenAI 16-bit cutscenes (intro→descent→ruins→shrine→catastrophe→escape) +
+      React CutscenePlayer + FSM flow (title→cutscene→playing→cutscene→won). Live-verified.
+- [ ] [WAIT-REVIEW] Milestone-boundary integration review of PR #9 — fold findings, then merge.
+- [ ] Overworld + shrine painted levels + Tiled loader — FUTURE (next milestone, after merge).
+      NOTE: cave/overworld sheets are ORGANIC COMPOSITIONAL SHAPES, placed/assembled
+      as scenery (not a tile grid); separate invisible collision backs the physics.
+- [x] Landing page (wordmark + story hook + PLAY CTA over the full-bleed live scene).
+- [x] Persistence (best score via @capacitor/preferences) + win condition (reach the relic).
+      Level-select deferred to the next milestone (only one level exists yet).
+- [x] Docs (ARCHITECTURE/STATE/TESTING/CHANGELOG + ASSETS) aligned to the shipped game.
+- [x] Whole game proven end-to-end: landing → intro cutscene → live gameplay (all systems
+      composited, viewport edge-to-edge), production build green, 160 unit + browser tests pass.
+- [ ] [WAIT-CI] PR #9 — CI green (build-test SUCCESS); squash-merge once review folded + threads resolved.
 
 ## 🎨 Asset pipeline — Tiled + sprites (DECIDED, replaces ASCII levels + flat rects)
 Assets live in `public/assets/` (user-provided, side-view platformer set). Read +
