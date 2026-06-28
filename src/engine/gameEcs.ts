@@ -97,7 +97,7 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
     prev = snapshotPositions();
     const intent = input.poll();
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
-    enemySystem(sim.world);
+    enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
     combatSystem(sim.world, sim.tuning);
     collectibleSystem(sim.world);

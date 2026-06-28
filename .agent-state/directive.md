@@ -63,7 +63,11 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
   evaluate confirms responsive + canvas present + HUD renders; pixiStrictMode browser
   test passes. NOTE: chrome-devtools-mcp hung; Safari MCP screenshot targets wrong
   window but evaluate works — use safari_evaluate for verification, not screenshot.
-- [ ] Adopt Yuka for enemy steering AI (patrol/chase/path), clock-driven + seeded
+- [ ] [WAIT-CI] PR #9 (renderer) — merge once build-test green
+- [x] Enemy steering AI: ported Yuka's force-based seek/flee/arrive into pure 2D
+  `src/sim/ai/steering.ts` (Yuka is 3D + Math.random — can't run in the pure sim).
+  Chase now uses arrive (accel toward player, decel when close) — smoother than
+  bang-bang. 6 steering tests, 133 total. Determinism preserved.
 - [ ] Particles: dust, impact, collectible sparkle (deterministic)
 - [ ] Game-state machine (xstate): title → play → win/lose → restart; React screens
 - [ ] Persistence: best score / progress via @capacitor/preferences (web localStorage fallback)
@@ -88,6 +92,17 @@ wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 - **koota**: `world.query(...)` returns `readonly Entity[]` + `.updateEach((state,
   entity)=>)`; `entity.destroy()` / `entity.get(Trait)` / `entity.has(Trait)`.
   Single-subject lookups: `world.query(T)[0]?.get(T)` — guard null (no player on menus).
+- **koota `entity.get()` returns a SNAPSHOT copy** — mutating it is lost; persist
+  via `entity.set(Trait, {...})`. `updateEach`/`readEach` are the in-place paths
+  (updateEach writes back, readEach is read-only — use readEach in the renderer).
+- **PixiJS v8 + React**: `app.destroy(true)` removes the canvas from the DOM
+  (removeView:true) — when React owns the `<canvas>`, use `app.destroy({removeView:false},...)`.
+  Under StrictMode, serialize async create/dispose on a `useRef` promise so one
+  Pixi Application owns the canvas at a time (else a shared GL context infinite-loops
+  in checkMaxIfStatementsInShader → silent main-thread hang, no console error).
+- **Browser verification: chrome-devtools-mcp hung on the WebGL page; Safari MCP
+  works** — but `safari_screenshot` targeted the wrong window. Use `safari_evaluate`
+  (responsive check + DOM/canvas/HUD assertions) for headed-GPU verification.
 - **Determinism preserved through the lib swaps**: seedrandom dual-stream + koota
   plain-trait entities + fixed-step systems = replayable. No lib reads wall-clock.
 

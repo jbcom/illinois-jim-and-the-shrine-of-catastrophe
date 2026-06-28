@@ -141,7 +141,7 @@ describe("ECS world + systems", () => {
   it("patrol enemy reverses direction at its bounds", () => {
     const level = parseLevel(["........", "..o.....", "########"], 16);
     const sim = createSimWorld(level, T);
-    enemySystem(sim.world);
+    enemySystem(sim.world, DT);
     const enemy = sim.world.query(Enemy)[0];
     const vel = enemy?.get(Velocity);
     expect(Math.abs(vel?.x ?? 0)).toBeGreaterThan(0); // it moves
@@ -150,7 +150,7 @@ describe("ECS world + systems", () => {
   it("chase enemy moves toward the player's x", () => {
     const level = parseLevel(["..........", "x........@", "##########"], 16);
     const sim = createSimWorld(level, T);
-    enemySystem(sim.world);
+    enemySystem(sim.world, DT);
     const enemy = sim.world.query(Enemy)[0];
     const vel = enemy?.get(Velocity);
     const facing = enemy?.get(Facing);

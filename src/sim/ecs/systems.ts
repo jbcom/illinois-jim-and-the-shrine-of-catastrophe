@@ -6,6 +6,7 @@
  * No DOM / Math.random / wall-clock — determinism preserved.
  */
 
+import { applySteering, arrive } from "@sim/ai/steering.ts";
 import {
   Collectible,
   Enemy,
@@ -20,7 +21,7 @@ import {
   Velocity,
 } from "@sim/ecs/traits.ts";
 import type { PlayerIntent } from "@sim/input/intent.ts";
-import { clamp } from "@sim/math/vec2.ts";
+import { approach, clamp } from "@sim/math/vec2.ts";
 import { aabb, intersects } from "@sim/physics/aabb.ts";
 import { moveAndCollide } from "@sim/physics/collide.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
@@ -180,9 +181,9 @@ export function physicsSystem(world: World, map: TileMap, t: PlayerTuning, dt: n
 }
 
 /**
- * Enemy steering: patrol bounces between minX/maxX; chase moves toward the
- * player on the x axis. Velocity is set here; physicsSystem integrates it.
- * (Yuka steering is layered on top of this in a later step.)
+ * Enemy steering: patrol bounces between minX/maxX; chase uses arrive-style
+ * steering (Yuka model, src/sim/ai/steering.ts) toward the player on the x axis.
+ * Velocity is set here; physicsSystem integrates it against the tilemap.
  */
 function steerPatrol(
   e: { minX: number; maxX: number; speed: number },
@@ -196,31 +197,47 @@ function steerPatrol(
   vel.x = e.speed * facing.dir;
 }
 
+/**
+ * Chase uses arrive-style steering on the x-axis (Yuka model): accelerate toward
+ * the player and decelerate when close, so the chaser settles rather than
+ * jittering on top of the target. Enemies are ground-bound (y is gravity), so we
+ * steer in 1D and project the 2D force onto x.
+ */
 function steerChase(
-  e: { speed: number },
-  pos: { x: number },
-  vel: { x: number },
+  e: { speed: number; accel: number },
+  pos: { x: number; y: number },
+  vel: { x: number; y: number },
   facing: { dir: -1 | 1 },
-  playerX: number | null,
+  player: { x: number; y: number } | null,
+  dt: number,
 ): void {
-  if (playerX === null) {
-    vel.x = 0; // no player to chase — hold position
+  if (player === null) {
+    // Decelerate to a stop when there's no target.
+    vel.x = approach(vel.x, 0, e.accel * dt);
     return;
   }
-  const dir: -1 | 1 = playerX > pos.x ? 1 : -1;
-  facing.dir = dir;
-  vel.x = e.speed * dir;
+  const force = arrive(
+    { x: pos.x, y: 0 },
+    { x: vel.x, y: 0 },
+    { x: player.x, y: 0 },
+    e.speed,
+    e.accel,
+  );
+  const steered = applySteering({ x: vel.x, y: 0 }, force, dt, e.speed);
+  vel.x = steered.x;
+  if (Math.abs(vel.x) > 1) facing.dir = vel.x > 0 ? 1 : -1;
 }
 
-export function enemySystem(world: World): void {
+export function enemySystem(world: World, dt: number): void {
   // Chase targets the first player; null when there's no player (so chasers idle
   // instead of marching toward world origin x=0).
-  const playerX = world.query(Player, Position)[0]?.get(Position)?.x ?? null;
+  const playerPos = world.query(Player, Position)[0]?.get(Position) ?? null;
+  const player = playerPos ? { x: playerPos.x, y: playerPos.y } : null;
 
   world.query(Enemy, Position, Velocity, Facing, Size).updateEach(([e, pos, vel, facing, size]) => {
     if (!e.alive) return;
     if (e.kind === "patrol") steerPatrol(e, pos, vel, facing, size.w);
-    else steerChase(e, pos, vel, facing, playerX);
+    else steerChase({ speed: e.speed, accel: 600 }, pos, vel, facing, player, dt);
   });
 }
 
