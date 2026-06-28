@@ -1,54 +1,50 @@
 /**
- * Root game shell (React). Mounts the canvas the PixiJS renderer draws into and
- * the HUD overlay, wires Capacitor app-lifecycle (pause on background) +
- * immersive status bar, starts the ECS loop, and pipes score/lives to the HUD.
+ * Root game shell (React). Owns the canvas the PixiJS renderer draws into, the
+ * HUD overlay, and the game-state machine (title → playing → won/lost). The Pixi
+ * Application initialises once and persists; the FSM gates pause + which overlay
+ * shows. StrictMode-safe Pixi init/teardown is serialised on a ref promise.
  */
 import { App as CapApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { createGame, type Game } from "@engine/gameEcs.ts";
+import { gameMachine } from "@ui/gameMachine.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
+import { ResultScreen, TitleScreen } from "@ui/Screens.tsx";
+import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
 
 export function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // Survives StrictMode's mount→cleanup→mount cycle: the previous mount's
-  // async createGame() may still be awaiting app.init() when the next mount
-  // fires. Serialising on this ref guarantees the prior game is fully disposed
-  // (its WebGL context released) before the next createGame() touches the SAME
-  // canvas — otherwise two Pixi inits share one canvas and the second gets a
-  // broken GL context, hanging the thread in checkMaxIfStatementsInShader.
+  const gameRef = useRef<Game | undefined>(undefined);
   const pendingRef = useRef<Promise<void>>(Promise.resolve());
+  const [snapshot, send] = useMachine(gameMachine);
+  const state = snapshot.value as string;
 
+  // Init the game once (canvas persists). It starts paused; the FSM unpauses it.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    let game: Game | undefined;
     let disposed = false;
 
-    // Chain behind any in-flight teardown so a single Pixi Application owns the
-    // canvas at a time across StrictMode (and HMR / route) remounts.
     const ready = pendingRef.current.then(() =>
       createGame(canvas, {
         onHud: ({ score, lives }) => {
           hudStore.setScore(score);
           hudStore.setLives(lives);
         },
+        onGameOver: (finalScore) => send({ type: "LOSE", score: finalScore }),
       })
         .then((g) => {
           if (disposed) {
-            g.dispose(); // unmounted before init finished
+            g.dispose();
             return;
           }
-          game = g;
-          game.start();
+          gameRef.current = g;
+          g.start();
+          g.setPaused(true); // wait on the title screen
         })
-        // Pixi/WebGL init can reject (no GL context). Swallow so the promise
-        // chain the next mount waits on never rejects unhandled, and the canvas
-        // stays free for a retry on remount.
         .catch((err) => {
           console.error("Game init failed:", err);
         }),
@@ -61,14 +57,12 @@ export function App() {
     }
 
     const lifecycle = CapApp.addListener("appStateChange", ({ isActive }) => {
-      game?.setPaused(!isActive);
+      gameRef.current?.setPaused(!isActive);
       hudStore.setPaused(!isActive);
     });
-
     const onVisibility = () => {
-      const hidden = document.hidden;
-      game?.setPaused(hidden);
-      hudStore.setPaused(hidden);
+      gameRef.current?.setPaused(document.hidden);
+      hudStore.setPaused(document.hidden);
     };
     document.addEventListener("visibilitychange", onVisibility);
 
@@ -76,20 +70,38 @@ export function App() {
       disposed = true;
       void lifecycle.then((h) => h.remove());
       document.removeEventListener("visibilitychange", onVisibility);
-      // Dispose only AFTER init settles — if app.init() is still in flight,
-      // `game` is undefined here and a bare game?.dispose() would leak the
-      // half-built Pixi Application + its WebGL context onto the canvas. The
-      // next mount chains on this promise, so it sees a free canvas.
       pendingRef.current = ready.then(() => {
-        game?.dispose();
+        gameRef.current?.dispose();
+        gameRef.current = undefined;
       });
     };
-  }, []);
+  }, [send]);
+
+  // Drive the engine from the FSM state.
+  useEffect(() => {
+    const g = gameRef.current;
+    if (!g) return;
+    if (state === "playing") g.setPaused(false);
+    else g.setPaused(true);
+  }, [state]);
 
   return (
     <main className="relative h-full w-full">
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <Hud />
+      {state === "playing" && <Hud />}
+      {state === "title" && <TitleScreen onStart={() => send({ type: "START" })} />}
+      {(state === "won" || state === "lost") && (
+        <ResultScreen
+          won={state === "won"}
+          score={snapshot.context.score}
+          bestScore={snapshot.context.bestScore}
+          onRestart={() => {
+            gameRef.current?.restart();
+            send({ type: "RESTART" });
+          }}
+          onTitle={() => send({ type: "TO_TITLE" })}
+        />
+      )}
     </main>
   );
 }

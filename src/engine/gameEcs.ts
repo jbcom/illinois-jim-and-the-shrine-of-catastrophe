@@ -36,6 +36,8 @@ export interface Game {
   start(): void;
   stop(): void;
   setPaused(paused: boolean): void;
+  /** Rebuild the world from scratch and resume (used by the FSM RESTART). */
+  restart(): void;
   dispose(): void;
 }
 
@@ -45,12 +47,15 @@ export interface GameDeps {
   readonly now?: () => number;
   /** Inject a HUD sink (score/lives) — defaults to a no-op for tests. */
   readonly onHud?: (hud: { score: number; lives: number; combo: number }) => void;
+  /** Fired when the player runs out of lives (final score). */
+  readonly onGameOver?: (finalScore: number) => void;
 }
 
 export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {}): Promise<Game> {
   const raf = deps.raf ?? globalThis.requestAnimationFrame.bind(globalThis);
   const cancelRaf = deps.cancelRaf ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const now = deps.now ?? (() => performance.now());
+  const onGameOver = deps.onGameOver ?? (() => {});
   const onHud = deps.onHud ?? (() => {});
 
   const level: Level = parseLevel(SHRINE_01, 16);
@@ -131,31 +136,39 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
     }
   }
 
-  function updateCameraAndHud(): void {
-    const player = sim.world.query(Player, Position)[0];
-    if (player) {
-      const pos = player.get(Position);
-      if (pos) {
-        camera = followCamera(
-          camera,
-          pos.x + sim.tuning.width / 2,
-          pos.y + sim.tuning.height / 2,
-          bounds,
-        );
-      }
+  function followPlayer(): void {
+    const pos = sim.world.query(Player, Position)[0]?.get(Position);
+    if (!pos) return;
+    camera = followCamera(
+      camera,
+      pos.x + sim.tuning.width / 2,
+      pos.y + sim.tuning.height / 2,
+      bounds,
+    );
+  }
+
+  /** Handle player death: lose a life + rebuild, or end the run at zero lives. */
+  function handleDeath(): void {
+    const dead = sim.world.query(Player)[0]?.get(Player)?.dead;
+    if (!dead) return;
+    const score = sim.score.get(Score);
+    const points = score?.points ?? 0;
+    const lives = Math.max(0, (score?.lives ?? 1) - 1);
+    if (lives <= 0) {
+      stop();
+      onGameOver(points);
+      return;
     }
+    rebuildWorld();
+    const ns = sim.score.get(Score);
+    if (ns) sim.score.set(Score, { ...ns, lives, points });
+  }
+
+  function updateCameraAndHud(): void {
+    followPlayer();
     const s = sim.score.get(Score);
     if (s) onHud({ score: s.points, lives: s.lives, combo: s.combo });
-
-    // Death → lose a life and rebuild; out of lives is handled by the FSM later.
-    const p = player?.get(Player);
-    if (p?.dead) {
-      const score = sim.score.get(Score);
-      const lives = Math.max(0, (score?.lives ?? 1) - 1);
-      rebuildWorld();
-      const ns = sim.score.get(Score);
-      if (ns) sim.score.set(Score, { ...ns, lives, points: score?.points ?? 0 });
-    }
+    handleDeath();
   }
 
   const frame = (t: number) => {
@@ -201,6 +214,15 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
       if (paused === next) return;
       paused = next;
       if (!paused) clock.resync(now());
+    },
+    restart() {
+      rebuildWorld();
+      paused = false;
+      if (!running) {
+        running = true;
+        handle = raf(frame);
+      }
+      clock.resync(now());
     },
     dispose() {
       stop();
