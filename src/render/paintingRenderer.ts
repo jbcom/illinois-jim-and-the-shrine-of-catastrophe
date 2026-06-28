@@ -9,6 +9,7 @@
  * Actor sprites are created when an entity first appears and destroyed when it
  * vanishes; positions sync (interpolated) from the sim each frame.
  */
+import { scaleFor } from "@render/actorScale.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
@@ -241,7 +242,7 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
       return;
     }
     p.sprite.anchor.set(0.5, 1);
-    p.sprite.scale.set(0.5);
+    p.sprite.scale.set(scaleFor("player"));
     layer.addChild(p.sprite);
     ph.parent?.removeChild(ph);
     ph.destroy();
@@ -263,7 +264,7 @@ function ensureEnemy(e: Entity, visual: EnemyKind, views: Map<Entity, ActorView>
       return;
     }
     sprite.anchor.set(0.5, 1);
-    sprite.scale.set(0.28);
+    sprite.scale.set(scaleFor(visual));
     layer.addChild(sprite);
     ph.parent?.removeChild(ph);
     ph.destroy();

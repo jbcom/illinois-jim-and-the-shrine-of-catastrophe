@@ -1,5 +1,44 @@
 @import "tailwindcss";
 
+/* Curated, self-hosted game typography (OFL, bundled — no runtime CDN, works
+   offline + on Pages). Cinzel = carved-stone pulp display (wordmark/headers);
+   EB Garamond = literary storybook narration; Jersey 15 = true pixel HUD face. */
+@import "@fontsource/cinzel/400.css";
+@import "@fontsource/cinzel/700.css";
+@import "@fontsource/cinzel/900.css";
+@import "@fontsource/eb-garamond/400.css";
+@import "@fontsource/eb-garamond/500.css";
+@import "@fontsource/eb-garamond/400-italic.css";
+@import "@fontsource/jersey-15/400.css";
+
+:root {
+  /* Semantic font stacks — keep in sync with src/brand.ts TYPE. */
+  --font-display: "Cinzel", "Trajan Pro", "Times New Roman", serif;
+  --font-body: "EB Garamond", "Iowan Old Style", Georgia, serif;
+  --font-pixel: "Jersey 15", "Courier New", monospace;
+}
+
+/* Semantic typographic roles used across UI + cutscenes. */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+.font-body {
+  font-family: var(--font-body);
+}
+.font-pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+}
+.cutscene-text {
+  font-family: var(--font-body);
+  font-style: italic;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+.cutscene-hint {
+  font-family: var(--font-pixel);
+}
+
 /* Brand tokens as Tailwind theme colours (keep in sync with src/brand.ts). */
 @theme {
   --color-obsidian: #17110b;

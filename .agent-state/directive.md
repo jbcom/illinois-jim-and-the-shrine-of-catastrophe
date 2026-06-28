@@ -1,7 +1,48 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
+
+## 🎯 Milestone 3 — The REAL coherent narrative (ACTIVE, branch feat/cutscenes-landing-scaling)
+**User directive (2026-06-28, NON-NEGOTIABLE):** Milestone 2 shipped ONE cave + a
+stub flow — NOT the planned game. The plan was always: the SAME level of authoring
+effort into BOTH overworld AND cave, a REAL coherent STORY using the NPC factory,
+BIG elaborate painted levels with parallax backgrounds, told through fade in/out
+cutscenes. Build that now. No re-asking what was already decided — execute the plan.
+
+### M3 bug fixes (live-verified broken on Pages, measured)
+- [ ] SPRITE SCALE: Jim content is 83px tall (96² frame) scaled 0.5 → ~41px; goblin
+      content 36px (150² frame) scaled 0.28 → ~10px. Jim is 4× too big. FIX: scale
+      every actor by its MEASURED content-height to a target world height (per-kind
+      target), not an arbitrary frame-size factor. Hero ≈ reference; goblin chest-
+      high, skeleton ≈ hero, mushroom small, flyingEye mid. Measure bboxes, bake a
+      table, scale = targetH / contentH. Browser screenshot proving the ratio.
+- [ ] FLICKER: adventurer flickers back-and-forth — facing/anim state thrash. Find
+      the per-frame state oscillation (facing flip vs anim re-apply) and stabilise.
+- [ ] DEATH PLANE: Jim falls past the floor and just sits at the bottom instead of
+      dying. Add a kill-plane / out-of-bounds-below death so falling kills + respawns.
+- [ ] CUTSCENE IMAGE FILL: cutscene images don't scale to fill the screen (cover, not
+      letterbox), with a proper prominent bottom TEXT BAR for narration.
+- [ ] CUTSCENE TIMING: fade IN → hold an appropriate period → fade OUT, tap to advance
+      immediately. Not the current instant cut.
+- [ ] TYPOGRAPHY: real curated game-themed fonts (display face for wordmark/headers,
+      readable pixel/serif for narration) — not system defaults. Self-host, licensed.
+
+### M3 narrative build (the planned game)
+- [ ] OVERWORLD authoring: the SAME composition/painting engine as the cave, an
+      overworld shape catalog from biomes/overworld (measured connected components),
+      and a real BIG painted overworld level with the full parallax stack.
+- [ ] LANDING = separate static .tsx (decided): GenAI hero key-art of Illinois Jim +
+      overworld backdrop, curated wordmark, story hook, PLAY. NOT the live engine.
+- [ ] STORY STARTS IN THE OVERWORLD (village of Halward's Reach), not a cave. Flow:
+      landing → intro cutscene → OVERWORLD level → descent cutscene → CAVE level →
+      … → shrine. A real coherent narrative, multiple painted levels.
+- [ ] NPCs in the world: use the paper-doll factory to place real townsfolk/quest-
+      givers Jim talks to (dialogue) — they carry the story (hooks, warnings).
+- [ ] Each level proven live (Safari GPU screenshot READ + measured), tests updated.
+
+---
+## (archived) Milestone 2 SHIPPED (2026-06-28)
 
 ## ✅ Milestone 2 SHIPPED (2026-06-28)
 The complete game merged to `main` (PR #9, squash `bdbc35e`), CI green, deployed to

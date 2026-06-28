@@ -175,7 +175,6 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   }
 
   function step(dt: number): void {
-    prev = snapshotPositions();
     const intent = input.poll();
     // Mine-cart sets the player's rail velocity before playerSystem integrates,
     // so a rider is carried along the rail rather than fighting the run accel.
@@ -248,6 +247,14 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     const vp = viewport.current().viewport;
 
     if (!paused) {
+      // Snapshot ONCE before the batch: `prev` must be "positions as of the end
+      // of the last frame's sim" so render lerps prev→current monotonically by
+      // alpha. Snapshotting inside step() (per sub-step) left prev stale on
+      // zero-step frames and skipped intermediate steps on multi-step frames,
+      // making the sprite snap backward then forward across every step boundary
+      // (the per-frame horizontal flicker). Only refresh when a step will run,
+      // so zero-step frames keep interpolating from the genuine previous state.
+      if (stepInfo.steps > 0) prev = snapshotPositions();
       for (let i = 0; i < stepInfo.steps; i++) step(stepInfo.dt);
       if (stepInfo.steps > 0) updateCameraAndHud();
     }
