@@ -16,20 +16,23 @@ import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
 
 export function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Game | undefined>(undefined);
   const pendingRef = useRef<Promise<void>>(Promise.resolve());
   const [snapshot, send] = useMachine(gameMachine);
   const state = snapshot.value as string;
 
-  // Init the game once (canvas persists). It starts paused; the FSM unpauses it.
+  // Init the game once. Pixi creates its own canvas inside this host div — a
+  // fresh canvas per Application means a virgin WebGL context across StrictMode
+  // remounts (a destroyed Pixi app leaves its canvas's GL context permanently
+  // lost). The pendingRef chain still serialises dispose-before-reinit ordering.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const host = hostRef.current;
+    if (!host) return;
     let disposed = false;
 
     const ready = pendingRef.current.then(() =>
-      createGame(canvas, {
+      createGame(host, {
         onHud: ({ score, lives }) => {
           hudStore.setScore(score);
           hudStore.setLives(lives);
@@ -87,7 +90,7 @@ export function App() {
 
   return (
     <main className="relative h-full w-full">
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
       {state === "title" && <TitleScreen onStart={() => send({ type: "START" })} />}
       {(state === "won" || state === "lost") && (

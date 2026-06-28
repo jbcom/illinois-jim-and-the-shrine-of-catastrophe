@@ -16,53 +16,35 @@ import { geminiGenerateImage, readGeminiKey } from "./genai-client.mjs";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "raw-assets", "generated");
 
-// Hard art-direction guardrails: an ORIGINAL hero — explicitly NOT the
-// brown-fedora-and-whip archetype. Distinct silhouette so it can't read as any
-// existing franchise. Clean game-sprite format (no scene/background), small,
-// chunky, readable at platformer scale.
-// Lead HARD with isolation — Imagen bakes scenery into dynamic poses unless the
-// very first tokens forbid it. Flat solid magenta keys out cleanly downstream.
-const STYLE =
-  "isolated single game-sprite asset on a COMPLETELY FLAT SOLID MAGENTA (#FF00FF) " +
-  "background, absolutely NO floor, NO wall, NO ground line, NO bricks, NO room, " +
-  "NO scenery, NO cast shadow, NO drop shadow, NO vignette, NO frame, NO border; " +
-  "one character only, full body, centered, feet at the bottom; clean chunky " +
-  "pixel-art for a side-scrolling platformer; the CHARACTER uses a warm temple " +
-  "palette of obsidian, tarnished gold, blood red, parchment, and teal";
+// GenAI is used ONLY for cutscene scenes + branding — gameplay sprites come from
+// real transparent asset packs. (The old isolated-hero sprite prompts were
+// retired when the hero became the real classes/adventure pack.)
 
-// Illinois Jim: a wiry adventurer in a TEAL explorer vest and GOGGLES pushed up
-// on a flat cap (NOT a fedora), a glowing relic-lantern at the hip and a grappling
-// hook (NOT a bullwhip). Deliberately distinct from any existing pulp hero.
-const HERO =
-  "Illinois Jim, a wiry young explorer wearing a teal canvas vest, leather " +
-  "bracers, a flat newsboy cap with brass goggles pushed up, carrying a glowing " +
-  "amber relic-lantern and a coiled grappling hook";
+// Cutscene style — full-screen 16-bit SNES/Genesis-era story art. Unlike the
+// gameplay sprites (which come from real transparent packs), cutscenes are
+// PAINTED SCENES with backgrounds: this is the one place GenAI art belongs.
+const CUT =
+  "16-bit SNES-era pixel-art story cutscene illustration, full scene with a " +
+  "background, cinematic wide composition, dramatic lighting, limited retro " +
+  "palette of obsidian, tarnished gold, blood red, parchment, and teal; the mood " +
+  "of an early-90s pulp adventure game";
+
+// The hero as he appears in cutscenes (matches the in-game red-cloaked adventurer).
+const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak and travel boots";
 
 const PROMPTS = [
-  // Hero — ONE pose per file (transparent), assembled into animations by the
-  // renderer's frame-source layer (single-image frames OR strips), never baked
-  // into a strip here. Enough poses that idle/run/jump/attack read as motion.
-  // Every pose is framed FLOATING / off-ground so Imagen has no excuse to bake a
-  // floor — the feet never touch a surface. Bottom-anchored in-engine anyway.
-  { name: "illinois-jim-idle-1", prompt: `${STYLE}; ${HERO}, floating in empty space, standing idle pose facing right, arms relaxed, feet hanging with nothing beneath them` },
-  { name: "illinois-jim-idle-2", prompt: `${STYLE}; ${HERO}, floating in empty space, idle breathing pose facing right, lantern swaying, feet hanging with nothing beneath them` },
-  { name: "illinois-jim-run-1", prompt: `${STYLE}; ${HERO}, suspended mid-air in a running pose facing right, left knee raised high, arms pumping, nothing touching the ground` },
-  { name: "illinois-jim-run-2", prompt: `${STYLE}; ${HERO}, suspended mid-air in a running pose facing right, legs scissoring, leaning forward, nothing touching the ground` },
-  { name: "illinois-jim-run-3", prompt: `${STYLE}; ${HERO}, suspended mid-air in a running pose facing right, right knee raised high, opposite arm swing, nothing touching the ground` },
-  { name: "illinois-jim-run-4", prompt: `${STYLE}; ${HERO}, suspended mid-air in a running pose facing right, back leg extended behind in push-off, nothing touching the ground` },
-  { name: "illinois-jim-jump-1", prompt: `${STYLE}; ${HERO}, airborne launching upward, knees bent, facing right, high above any ground` },
-  { name: "illinois-jim-jump-2", prompt: `${STYLE}; ${HERO}, airborne at the apex of a jump, legs tucked, grappling hook raised, facing right, high above any ground` },
-  { name: "illinois-jim-fall", prompt: `${STYLE}; ${HERO}, airborne falling, arms out for balance, facing right, high above any ground` },
-  { name: "illinois-jim-attack-1", prompt: `${STYLE}; ${HERO}, floating in empty space, swinging the coiled grappling hook forward to strike, facing right, wind-up, feet off the ground` },
-  { name: "illinois-jim-attack-2", prompt: `${STYLE}; ${HERO}, floating in empty space, grappling hook snapped fully forward at full extension, facing right, follow-through, feet off the ground` },
-  {
-    name: "idol-relic",
-    prompt: `${STYLE}; a single glowing golden idol relic collectible, faceted gem core`,
-  },
+  // Story beats — one full-screen scene per cutscene, in narrative order.
+  { name: "cut-01-village", prompt: `${CUT}; ${JIM} standing at the edge of a windswept clifftop village at dusk, an elder pointing toward a distant mountain shrine, the sea far below` },
+  { name: "cut-02-descent", prompt: `${CUT}; ${JIM} lowering himself by rope into a vast black cave mouth in the mountainside, torchlight flickering on jagged rock, ominous depth below` },
+  { name: "cut-03-ruins", prompt: `${CUT}; ${JIM} crossing a crumbling brick-and-stone underground ruin lit by glowing red gems, broken pottery and ancient carvings around him` },
+  { name: "cut-04-shrine", prompt: `${CUT}; a towering ancient shrine deep underground, a single glowing idol on an altar atop cracked steps, ${JIM} small in the foreground gazing up in awe and dread` },
+  { name: "cut-05-catastrophe", prompt: `${CUT}; the shrine cracking and erupting with red light as ${JIM} grabs the idol and flees, the cavern collapsing behind him, debris and dust` },
+  { name: "cut-06-escape", prompt: `${CUT}; ${JIM} bursting out of the cave mouth into dawn light clutching the glowing idol, the mountain crumbling behind him, triumphant and exhausted` },
+  // Branding.
   {
     name: "title-wordmark",
     prompt:
-      "pulp adventure game logo wordmark reading 'ILLINOIS JIM AND THE SHRINE OF CATASTROPHE', carved-stone gold lettering, transparent background",
+      "16-bit pulp adventure game logo wordmark reading 'ILLINOIS JIM AND THE SHRINE OF CATASTROPHE', carved-stone gold lettering with a cracked-relic motif, on a transparent background",
   },
 ];
 

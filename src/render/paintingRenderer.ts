@@ -34,6 +34,8 @@ export interface PaintingRenderer {
   render(opts: PaintingRenderOpts): void;
   destroy(): void;
   readonly app: Application;
+  /** The canvas this renderer created and owns (a child of the host container). */
+  readonly canvas: HTMLCanvasElement;
 }
 
 export interface PaintingRendererSpec {
@@ -53,18 +55,42 @@ interface ActorView {
   dispose(): void;
 }
 
+/**
+ * Each renderer creates and owns its OWN `<canvas>`, appended to the host
+ * container `<div>`. A WebGL context is bound to a canvas ELEMENT for its
+ * lifetime: when Pixi's `app.destroy()` tears down the GL context it loses it
+ * (`WEBGL_lose_context.loseContext()`), and `getContext('webgl2')` on that same
+ * element thereafter returns the *lost* context forever — `gl.createShader()`
+ * then returns null and `gl.shaderSource(null, …)` throws inside Pixi's
+ * `checkMaxIfStatementsInShader`. React StrictMode's mount→cleanup→mount cycle
+ * destroyed app #1 and re-initialised app #2 on the SAME element, so #2 always
+ * booted onto a dead context. Serialising init never helped — the element was
+ * already poisoned. Fresh element per Application = virgin context every time.
+ */
 export async function createPaintingRenderer(
-  canvas: HTMLCanvasElement,
+  container: HTMLElement,
   spec: PaintingRendererSpec,
 ): Promise<PaintingRenderer> {
+  const canvas = document.createElement("canvas");
+  canvas.style.position = "absolute";
+  canvas.style.inset = "0";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  container.appendChild(canvas);
+
   const app = new Application();
-  await app.init({
-    canvas,
-    background: "#17110b",
-    antialias: false,
-    resolution: Math.min(2, globalThis.devicePixelRatio || 1),
-    autoDensity: true,
-  });
+  try {
+    await app.init({
+      canvas,
+      background: "#17110b",
+      antialias: false,
+      resolution: Math.min(2, globalThis.devicePixelRatio || 1),
+      autoDensity: true,
+    });
+  } catch (err) {
+    canvas.remove();
+    throw err;
+  }
 
   const root = new Container();
   app.stage.addChild(root);
@@ -136,6 +162,7 @@ export async function createPaintingRenderer(
 
   return {
     app,
+    canvas,
     render,
     destroy() {
       for (const v of views.values()) v.dispose();
@@ -144,7 +171,11 @@ export async function createPaintingRenderer(
       relicTex.destroy(true); // standalone RenderTexture — not in the Assets cache
       painting.destroy();
       parallax.destroy();
-      app.destroy({ removeView: false }, { children: true, texture: true });
+      // removeView:true so Pixi drops the canvas; we also detach it from the DOM.
+      // The element's GL context is now lost and unusable — it must never be
+      // re-mounted (a fresh renderer always makes a fresh canvas).
+      app.destroy({ removeView: true }, { children: true, texture: true });
+      canvas.remove();
     },
   };
 }

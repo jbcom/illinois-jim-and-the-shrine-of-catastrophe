@@ -50,6 +50,10 @@ must all be used for narrative purpose, not decoration:
 - **GenAI 16-bit cutscenes** = story beats between levels (Imagen art + a React
   cutscene player), the way 16-bit games told their story. THIS is what Gemini is
   for (cutscene backplates/branding), NOT the gameplay sprites.
+  STATUS (2026-06-28): 6 cutscene scenes generated + curated to
+  public/assets/cutscenes/ (intro→descent→ruins→shrine→catastrophe→escape),
+  cutscene script (src/sim/story/cutscenes.ts) + CutscenePlayer.tsx + unit tests
+  done. REMAINING: wire the cutscene→level→cutscene flow into the FSM/App.
 The hero is the real transparent `classes/adventure` pack (no chromakey, no gen).
 
 ### Build checklist (the FULL game — keep going until ALL done + proven)

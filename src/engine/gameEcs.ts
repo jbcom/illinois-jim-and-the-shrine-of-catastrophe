@@ -54,7 +54,7 @@ export interface GameDeps {
   readonly onGameOver?: (finalScore: number) => void;
 }
 
-export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {}): Promise<Game> {
+export async function createGame(container: HTMLElement, deps: GameDeps = {}): Promise<Game> {
   const raf = deps.raf ?? globalThis.requestAnimationFrame.bind(globalThis);
   const cancelRaf = deps.cancelRaf ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const now = deps.now ?? (() => performance.now());
@@ -64,12 +64,17 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
   const level = DESCENT;
   const bounds = levelBounds(level);
 
-  const input: InputManager = createInputManager(canvas);
-  const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
-  const renderer: PaintingRenderer = await createPaintingRenderer(canvas, {
+  // Pixi creates and owns its own <canvas> inside the container; a fresh element
+  // per Application guarantees a virgin (never-lost) WebGL context across React
+  // StrictMode remounts. Input binds to the stable container; the viewport sizes
+  // the Pixi-owned canvas.
+  const input: InputManager = createInputManager(container);
+  const renderer: PaintingRenderer = await createPaintingRenderer(container, {
     parallax: CAVE_PARALLAX,
     painting: CAVE_DESCENT,
   });
+  const canvas: HTMLCanvasElement = renderer.canvas;
+  const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
   const clock: Clock = createClock();
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.

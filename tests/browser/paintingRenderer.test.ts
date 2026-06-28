@@ -49,22 +49,22 @@ function buildDescentWorld() {
 }
 
 describe("painting renderer (in-game integration)", () => {
-  let canvas: HTMLCanvasElement | undefined;
+  let host: HTMLDivElement | undefined;
   let renderer: Awaited<ReturnType<typeof createPaintingRenderer>> | undefined;
   beforeEach(() => {
-    canvas = document.createElement("canvas");
-    canvas.width = 480;
-    canvas.height = 270;
-    document.body.appendChild(canvas);
+    host = document.createElement("div");
+    host.style.width = "480px";
+    host.style.height = "270px";
+    document.body.appendChild(host);
   });
   afterEach(() => {
     renderer?.destroy();
     renderer = undefined;
-    canvas?.remove();
+    host?.remove();
   });
 
   it("renders the real game (painting + sim sprites) (visual proof)", async () => {
-    renderer = await createPaintingRenderer(canvas!, {
+    renderer = await createPaintingRenderer(host!, {
       parallax: CAVE_PARALLAX,
       painting: CAVE_DESCENT,
     });
