@@ -1,6 +1,6 @@
 ---
 title: System Architecture
-updated: 2026-06-27
+updated: 2026-06-28
 status: current
 domain: technical
 ---
@@ -15,8 +15,11 @@ domain: technical
 │  Pure deterministic TypeScript — no DOM, no Math.random,     │
 │  no performance.now. Replayable from (seed, intents).        │
 │                                                              │
-│  math/vec2  physics/aabb+collide  world/tilemap+camera+level │
+│  math/vec2  physics/aabb+collide  world/tilemap+camera       │
+│  world/gameLevel (collision data)  world/level (ASCII util)  │
 │  player/player+tuning  input/intent+touchModel               │
+│  ecs/traits+systems+world  ai/steering                       │
+│  story/cutscenes+dialogue                                    │
 └────────────────────────┬─────────────────────────────────────┘
                          │ consumed by
 ┌────────────────────────▼─────────────────────────────────────┐
@@ -24,29 +27,35 @@ domain: technical
 │  Browser glue — the only layer allowed to touch DOM,         │
 │  performance.now, or Capacitor plugins.                      │
 │                                                              │
-│  rng.ts (mulberry32)  clock.ts (fixed-step)                  │
+│  rng.ts (dual mulberry32)  clock.ts (fixed-step)             │
 │  input/keyboard+touch+inputManager                           │
 │  viewport/deviceProfile+scaler+responsive                    │
-│  game.ts (rAF loop)                                          │
+│  gameEcs.ts (rAF loop, koota world, PixiJS paint)            │
 └──────┬───────────────────────┬────────────────────────┬──────┘
        │                       │                        │
-┌──────▼──────┐  ┌─────────────▼──────────┐  ┌─────────▼──────┐
-│ src/render/ │  │ src/ui/                │  │ src/audio/     │
-│ canvas 2D   │  │ SolidJS HUD components │  │ Web Audio      │
-│ drawFrame() │  │ App.tsx Hud.tsx        │  │ audioEngine    │
-│             │  │ hudState.ts (signals)  │  │ sfxBank        │
-└─────────────┘  └────────────────────────┘  └────────────────┘
+┌──────▼──────────┐  ┌─────────▼──────────┐  ┌─────────▼──────┐
+│ src/render/     │  │ src/ui/            │  │ src/audio/     │
+│ PixiJS 8        │  │ React 19 + Tailwind│  │ Web Audio      │
+│ paintingRenderer│  │ App.tsx            │  │ audioEngine    │
+│ composition.ts  │  │ Hud.tsx            │  │ sfxBank        │
+│ (organic shape  │  │ CutscenePlayer.tsx │  │ gameAudio      │
+│  stamps)        │  │ Screens.tsx        │  │ (cave ambience │
+│ playerSprite.ts │  │ gameMachine.ts     │  │  + SFX)        │
+│ enemySprites.ts │  │ hudState.ts        │  │                │
+│ npc.ts  pots.ts │  │ persistence.ts     │  │                │
+│ hpBar.ts        │  │ (@xstate/react v5) │  │                │
+└─────────────────┘  └────────────────────┘  └────────────────┘
 ```
 
-Import direction: each box may only import from boxes above it in the diagram,
-with one exception — `game.ts` in `engine/` imports `hudState.ts` from `ui/` to
-write signals.
+Import direction: each box may only import from boxes above it in the diagram.
+Exception: `gameEcs.ts` in `engine/` imports `hudState.ts` from `ui/` to write
+the HUD store, and imports render components from `src/render/`.
 
 ---
 
 ## Data flow per frame
 
-The game loop in `src/engine/game.ts` runs on `requestAnimationFrame`:
+The game loop in `src/engine/gameEcs.ts` runs on `requestAnimationFrame`:
 
 ```
 1. clock.tick(performance.now())
@@ -57,49 +66,107 @@ The game loop in `src/engine/game.ts` runs on `requestAnimationFrame`:
    (touch axes take priority; keyboard fills in when touch is inactive)
 
 3. for i in 0..steps:
-     prevPlayer = player
-     player = stepPlayer(player, intent, tilemap, tuning, dt)
+     physicsSystem(world, dt)   — gravity + moveAndCollide for all entities
+     playerSystem(world, intent, dt) — run/jump/whip timers
+     enemySystem(world, dt)     — patrol/chase AI via yuka steering
+     combatSystem(world)        — whip/stomp kill checks
+     potSystem(world)           — smash + drop spawn
+     collectibleSystem(world)   — pickup detection + combo award
+     mineCartSystem(world, dt)  — cart rail riding
+     scoreSystem(world)         — combo decay
+     npcInteractionSystem(world)— nearest-NPC talk prompt
+     lifetimeSystem(world, dt)  — particle/FX expiry
+     particleSystem(world, dt)  — particle motion
 
-4. camera = followCamera(camera, player.x, player.y, levelBounds)
+4. camera = followCamera(camera, playerCenter, levelBounds)
 
-5. drawFrame(ctx, {
-     map, camera, viewport,
-     prevPlayer, player,
-     tuning, alpha, palette
-   })
-   Renderer lerps player position between prevPlayer and player using alpha,
-   projects world coordinates into canvas pixels via ViewportGeometry
-   scale + offset (letterbox), draws tiles, player sprite, whip arc.
+5. renderer.render({ world, camera, viewport, alpha, prev })
+   PaintingRenderer (PixiJS 8):
+     a. parallax backdrop scrolls fractionally by depth layer
+     b. painted level composition (organic shape stamps from biome sheets,
+        assembled by composition.ts + render/levels/caveDescent.ts) —
+        cover-scaled so the authored vertical band fills the canvas height
+     c. actor sprites synced from sim entities (Position interpolated
+        with alpha between prev and current step):
+        - player (illinois-jim-*.png strip, feet-anchored)
+        - enemies (animated packs: goblin/skeleton/mushroom/flyingEye)
+        - breakable pots (4-frame smash animation)
+        - collectibles (relic gems)
+        - HP bar overlay (hpBar.ts)
 
-6. hudState.setScore / setLives / setPaused
-   → SolidJS signals fire; only changed HUD nodes re-render (no VDOM diff)
+6. hudStore.setScore / setLives / setCombo
+   → React re-renders only the changed HUD nodes (fine-grained state)
 ```
 
 The clock caps sub-steps at 5 to prevent the "spiral of death" under lag.
+Collision is driven by the invisible `GameLevel.map` tilemap (authored in
+`src/sim/world/gameLevel.ts`) — entirely separate from the painted visuals.
+
+---
+
+## Level architecture: painting + invisible collision
+
+Levels are NOT tile grids on screen. A level has two distinct halves:
+
+- **Render side** (`src/render/levels/caveDescent.ts`): an array of `Placement[]`
+  — named shape stamps (pixel rects cut from biome sheets) placed at authored
+  world positions to build a hand-painted cave scene. `composition.ts` assembles
+  these into a PixiJS `Container`.
+
+- **Sim side** (`src/sim/world/gameLevel.ts`): an invisible `TileMap` whose solid
+  tiles match the visual ground. Physics runs against this; the painter never
+  reads it.
+
+The two halves share a level id (`"cave-descent"`) and are designed to align:
+the tilemap's solid floor row sits at the same world-y as the painted floor.
 
 ---
 
 ## Determinism model
 
-The sim is a pure function:
+The sim is driven by pure systems over a koota ECS world:
 
 ```
-(PlayerState, PlayerIntent, TileMap, PlayerTuning, dt: number) → PlayerState
+(World, PlayerIntent, dt: number) → World (mutated in place)
 ```
 
 Deterministic replay is achieved by:
 
-- **Seeded RNG** — `createRng(seed)` (mulberry32). Seed is the only external
-  randomness input; re-seeding with the same value produces identical output.
+- **Dual seeded RNG** — `createRngPair(seed)` (two mulberry32 streams: one for
+  the sim, one for spawn). Seed is the only external randomness input.
 - **Fixed timestep** — `createClock()` outputs integer step counts with a
-  constant `dt`. Floating-point arithmetic is identical across runs given the
-  same inputs.
-- **No hidden state** — `PlayerState`, `Camera`, and `TileMap` are plain data
-  objects passed by value (spread-cloned on mutation).
+  constant `dt`. Floating-point arithmetic is identical across runs.
+- **No hidden state** — all sim state lives in koota traits (plain data). No
+  `Math.random()`, no `performance.now()` inside `src/sim/**`.
 
 Recording an intent stream and replaying it against the same seed produces
-bit-identical `PlayerState` values at every step. This is verified by unit tests
-in `tests/unit/player.test.ts`.
+bit-identical entity state at every step. Verified by ECS unit tests.
+
+---
+
+## UI / FSM model
+
+The React shell (`src/ui/App.tsx`) runs an xstate v5 machine (`gameMachine.ts`):
+
+```
+title ──START──► cutscene(intro) ──CUTSCENE_DONE──► playing
+                                                        │
+                                            WIN         │    LOSE
+                                             ▼          │     ▼
+                                    cutscene(escape)   lost ◄─┘
+                                             │
+                                    CUTSCENE_DONE
+                                             ▼
+                                            won
+                        won/lost ──RESTART──► playing
+                        won/lost ──TO_TITLE──► title
+```
+
+The FSM governs which screen (TitleScreen / CutscenePlayer / Hud / ResultScreen)
+is displayed and whether the engine is paused. The engine runs continuously;
+`g.setPaused(true/false)` is called on state transitions.
+
+Best score is persisted via `@capacitor/preferences` (`persistence.ts`).
 
 ---
 
@@ -122,17 +189,16 @@ computeViewport(profile, canvasW, canvasH) → ViewportGeometry
   { scale, offsetX, offsetY, viewW, viewH }
           │
           ▼
-canvas.width  = cssW × dpr   (backing-store pixels)
-canvas.height = cssH × dpr
-canvas.style.width/height = cssW/cssH px   (display CSS pixels)
+PixiJS Application tracks the host container's CSS box and keeps
+the backing WebGL canvas + app.screen in sync (resizePlugin + resolution).
 ```
 
 `deviceProfile.ts` and `scaler.ts` are pure — no DOM — and are fully unit-tested
 in Node. `responsive.ts` wraps them with DOM + Capacitor calls and debounces
 updates at 100 ms.
 
-The `ViewportGeometry` is passed to `drawFrame()` each frame so the renderer
-always projects with the current scale and letterbox offsets.
+The `ViewportGeometry` is passed to `renderer.render()` each frame so the
+renderer always projects with the current scale.
 
 ---
 
@@ -161,5 +227,5 @@ The release workflow:
 5. `actions/attest-build-provenance` signs the APK's provenance.
 6. `gh release upload` attaches the APK to the GitHub release.
 
-The Android WebView renders the canvas-based game fullscreen (`#17110b`
-background, `androidScheme: https`).
+The Android WebView renders the game fullscreen (`#17110b` background,
+`androidScheme: https`). PixiJS renders into a WebGL canvas.
