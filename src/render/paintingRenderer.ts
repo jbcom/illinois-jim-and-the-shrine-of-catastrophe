@@ -140,6 +140,8 @@ export async function createPaintingRenderer(
     destroy() {
       for (const v of views.values()) v.dispose();
       views.clear();
+      potCache.clear();
+      relicTex.destroy(true); // standalone RenderTexture — not in the Assets cache
       painting.destroy();
       parallax.destroy();
       app.destroy({ removeView: false }, { children: true, texture: true });
@@ -162,6 +164,7 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
     p.sprite.anchor.set(0.5, 1);
     p.sprite.scale.set(0.5);
     layer.addChild(p.sprite);
+    ph.parent?.removeChild(ph);
     ph.destroy();
     views.set(e, { display: p.sprite, anim: p.sprite, acc: 0, fps: 12, faceable: true, dispose: () => p.destroy() });
   });
@@ -180,6 +183,7 @@ function ensureEnemy(e: Entity, kind: "patrol" | "chase", views: Map<Entity, Act
     sprite.anchor.set(0.5, 1);
     sprite.scale.set(0.28);
     layer.addChild(sprite);
+    ph.parent?.removeChild(ph);
     ph.destroy();
     views.set(e, { display: sprite, anim: sprite, acc: 0, fps: 10, faceable: true, dispose: () => sprite.destroy() });
   });
@@ -212,6 +216,7 @@ function ensurePot(
   void loadPotFrames(color).then((frames) => {
     cache.set(color, frames);
     if (!views.has(e)) return;
+    ph.parent?.removeChild(ph);
     ph.destroy();
     placePot(e, frames, views, layer);
   });

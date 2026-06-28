@@ -15,11 +15,13 @@ import {
   MineCart,
   Player,
   Position,
+  Pot,
   Score,
   Size,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
+import type { PotSpawn } from "@sim/world/gameLevel.ts";
 import type { Level } from "@sim/world/level.ts";
 import { createWorld, type Entity, type World } from "koota";
 
@@ -54,6 +56,15 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
       Position({ x: c.x, y: c.y }),
       Size({ w: 10, h: 10 }),
       Collectible({ value: c.value, taken: false }),
+    );
+  }
+
+  // Breakable pots, when the level authors them (GameLevel).
+  for (const p of (level as { pots?: readonly PotSpawn[] }).pots ?? []) {
+    world.spawn(
+      Position({ x: p.x, y: p.y }),
+      Size({ w: 16, h: 16 }),
+      Pot({ color: p.color, drop: p.drop, broken: false, breakTimer: 0 }),
     );
   }
 

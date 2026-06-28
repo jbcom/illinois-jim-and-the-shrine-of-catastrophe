@@ -44,8 +44,8 @@ function descentMap(): TileMap {
   const floorRow = 19; // 19*16 = 304 ≈ painted FLOOR_Y 300
 
   for (let c = 0; c < cols; c++) {
-    // Ground floor, except a gap (cols 22–30) crossed by the beam platforms.
-    if (c < 22 || c > 30) {
+    // Ground floor, except a gap (cols 22–35) the beam platforms bridge.
+    if (c < 22 || c > 35) {
       setTile(map, c, floorRow, TileKind.Solid);
       setTile(map, c, floorRow + 1, TileKind.Solid);
       setTile(map, c, floorRow + 2, TileKind.Solid);

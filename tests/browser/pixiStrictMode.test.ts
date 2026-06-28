@@ -13,8 +13,13 @@
  * mechanism: concurrent inits on one canvas must NOT hang, and the serialised
  * pattern must yield a usable renderer.
  */
-import { createPixiRenderer } from "@render/pixiRenderer.ts";
+import { CAVE_DESCENT } from "@render/levels/caveDescent.ts";
+import { createPaintingRenderer } from "@render/paintingRenderer.ts";
+import { CAVE_PARALLAX } from "@render/parallax.ts";
 import { describe, expect, it } from "vitest";
+
+const renderer = (canvas: HTMLCanvasElement) =>
+  createPaintingRenderer(canvas, { parallax: CAVE_PARALLAX, painting: CAVE_DESCENT });
 
 function makeCanvas(): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
@@ -31,14 +36,14 @@ describe("Pixi renderer under StrictMode-style remounts", () => {
     const canvas = makeCanvas();
 
     // First mount.
-    const a = await createPixiRenderer(canvas);
+    const a = await renderer(canvas);
     expect(a.app.renderer).toBeTruthy();
 
     // StrictMode teardown: dispose the first app, freeing the canvas/context.
     a.destroy();
 
     // Second mount on the SAME canvas — must succeed once the first is gone.
-    const b = await createPixiRenderer(canvas);
+    const b = await renderer(canvas);
     expect(b.app.renderer).toBeTruthy();
     // A real, non-degenerate shader-if limit proves the GL context is healthy
     // (the hang case never returns from init at all).
@@ -50,7 +55,7 @@ describe("Pixi renderer under StrictMode-style remounts", () => {
 
   it("a fresh canvas per mount is always safe", async () => {
     const c1 = makeCanvas();
-    const r1 = await createPixiRenderer(c1);
+    const r1 = await renderer(c1);
     expect(r1.app.renderer).toBeTruthy();
     r1.destroy();
     c1.remove();

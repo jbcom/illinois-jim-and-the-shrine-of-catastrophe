@@ -39,6 +39,16 @@ export interface Painting {
 
 const cache = new Map<string, Texture>();
 
+/**
+ * Destroy every cached stamp texture + clear the cache. Call when the backing
+ * biome sheets are unloaded (level transition / HMR) so stale slices don't hold
+ * references to a destroyed TextureSource. Single-session play needn't call it.
+ */
+export function clearStampCache(): void {
+  for (const tex of cache.values()) tex.destroy();
+  cache.clear();
+}
+
 /** Resolve (and cache) the cut-out texture for a stamp. */
 async function stampTexture(stamp: ShapeStamp): Promise<Texture> {
   const key = `${stamp.sheet}#${stamp.x},${stamp.y},${stamp.w},${stamp.h}`;

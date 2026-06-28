@@ -13,7 +13,9 @@ import { type Clock, createClock } from "@engine/clock.ts";
 import { createInputManager, type InputManager } from "@engine/input/inputManager.ts";
 import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
-import { createPixiRenderer, type PixiRenderer } from "@render/pixiRenderer.ts";
+import { CAVE_DESCENT } from "@render/levels/caveDescent.ts";
+import { createPaintingRenderer, type PaintingRenderer } from "@render/paintingRenderer.ts";
+import { CAVE_PARALLAX } from "@render/parallax.ts";
 import {
   collectibleSystem,
   combatSystem,
@@ -23,14 +25,15 @@ import {
   particleSystem,
   physicsSystem,
   playerSystem,
+  potSystem,
   scoreSystem,
   spawnBurst,
 } from "@sim/ecs/systems.ts";
 import { Enemy, Player, Position, Score } from "@sim/ecs/traits.ts";
 import { createSimWorld, type SimWorld } from "@sim/ecs/world.ts";
 import { type Camera, createCamera, followCamera } from "@sim/world/camera.ts";
-import { type Level, levelBounds, parseLevel } from "@sim/world/level.ts";
-import { SHRINE_01 } from "@sim/world/levels/shrine01.ts";
+import { DESCENT } from "@sim/world/gameLevel.ts";
+import { levelBounds } from "@sim/world/level.ts";
 
 export interface Game {
   start(): void;
@@ -58,12 +61,15 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
   const onGameOver = deps.onGameOver ?? (() => {});
   const onHud = deps.onHud ?? (() => {});
 
-  const level: Level = parseLevel(SHRINE_01, 16);
+  const level = DESCENT;
   const bounds = levelBounds(level);
 
   const input: InputManager = createInputManager(canvas);
   const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
-  const renderer: PixiRenderer = await createPixiRenderer(canvas);
+  const renderer: PaintingRenderer = await createPaintingRenderer(canvas, {
+    parallax: CAVE_PARALLAX,
+    painting: CAVE_DESCENT,
+  });
   const clock: Clock = createClock();
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.
@@ -121,6 +127,7 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
     const combat = combatSystem(sim.world, sim.tuning);
+    potSystem(sim.world, sim.tuning, dt);
     const gained = collectibleSystem(sim.world);
     scoreSystem(sim.world, dt);
     particleSystem(sim.world, dt, sim.tuning.gravity);
@@ -183,10 +190,8 @@ export async function createGame(canvas: HTMLCanvasElement, deps: GameDeps = {})
 
     renderer.render({
       world: sim.world,
-      map: level.map,
       camera,
       viewport: vp,
-      tuning: sim.tuning,
       alpha: paused ? 0 : stepInfo.alpha,
       prev,
     });
