@@ -12,6 +12,88 @@ still matters for replays, so prefer libraries that allow a fixed-step,
 seeded-RNG integration (drive them from our clock + rng) over ones that bury
 wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
 
+## 🛑 OPERATING MODE (user directive, NON-NEGOTIABLE)
+ONE continuous build on branch `feat/scoring-and-renderer` until there is a FULL,
+proven, tested, documented GAME. No stopping at increments. No PR-merge ceremony
+mid-flow — keep building; land/merge only when the whole thing is done. Work as
+long as it takes (days if needed). Set whatever sub-directives/reminders keep
+focus. DO NOT narrate the plan back to the user — execute.
+
+Every VISUAL component must be 100% PROVEN before moving on:
+1. **Vitest browser test in isolation** (real Chromium, renders the component alone).
+2. **Screenshot captured + READ + reviewed** against the intended look — fix until right.
+3. **Fully documented** (what it is, how it's used, the proof screenshot path).
+DEFERRAL IS HOW PROJECTS FAIL. No "later"/"follow-up"/"wire it up next".
+Browser verify: vitest-browser `page.screenshot({path})` (read the saved PNG) or
+Safari MCP headed GPU. The real game uses SPRITE assets (below), each proven this way.
+
+### Build checklist (the FULL game — keep going until ALL done + proven)
+- [ ] AnimatedSprite component — browser test + screenshot REVIEWED
+- [ ] Parallax background (bg1-4 stack) — browser test + screenshot REVIEWED
+- [ ] Cave tile layer (@pixi/tilemap from mainlev_build) — test + screenshot REVIEWED
+- [ ] Enemy sprites (goblin/skeleton/mushroom/flying-eye anim) — test + screenshot each
+- [ ] Side-view hero (Gemini-generated, idle/run/jump/attack) — gen + test + screenshot
+- [ ] Breakable pots (drop relics) — test + screenshot
+- [ ] HP/lives UI bar from ux/hp_bar — test + screenshot
+- [ ] Tiled .tmj loader + designed cave levels — test + screenshot
+- [ ] Full layered scene composited in-game — Safari GPU screenshot of real gameplay
+- [ ] Audio sfx wired to events (jump/coin/hurt/whip/land) + music loop
+- [ ] Landing page + GenAI cutscenes
+- [ ] Persistence (best score), level-select, win condition (reach idol)
+- [ ] Docs (ARCHITECTURE/STATE/CHANGELOG) fully aligned
+- [ ] Final: whole game proven end-to-end (play it, screenshot every screen), then land
+
+## 🎨 Asset pipeline — Tiled + sprites (DECIDED, replaces ASCII levels + flat rects)
+Assets live in `public/assets/` (user-provided, side-view platformer set). Read +
+catalogued; design:
+- **Player**: `classes/adventure/` is TOP-DOWN 4-dir (768x80 = 8×(96×80), idle/run/
+  attack1/attack2 × down/left/right/up) — MISMATCH for a side-scroller. Need a
+  side-view hero (the enemies are side-view). Decide: source/generate a side hero,
+  or re-scope. (Open design Q — resolve before wiring the player sprite.)
+- **Enemies**: `enemies/{Goblin,Mushroom,Skeleton,Flying eye}/` — side-view, 150×150
+  frames, Idle/Run/Attack/Death/Take Hit (600px=4f or 1200px=8f). Map to our
+  patrol/chase enemies. Goblin=patrol(dagger), Skeleton=chase, Mushroom=tanky.
+- **Cave tileset**: `biomes/caves/mainlev_build.png` (1024² — cave walls, wooden
+  platforms, crates, brick, lava block) → the Tiled tileset. `background1-4` (960×480
+  parallax layers) → parallax bg. `props1/2` → decoration.
+- **Breakables**: `breakables/pots/` 128×128 (32px frames, color variants) → smashable
+  pots dropping relics.
+- **UX**: `ux/hp_bar/` → lives/health bar.
+- **Levels**: design in TILED (.tmj) with the cave tileset; loader → TileMap +
+  collision + object layer (spawns/enemies/relics). Render via **@pixi/tilemap** +
+  parallax. ASCII levels (shrine01-03) are RETIRED.
+- **Reorg**: rename/restructure public/assets into a clean, game-meaningful layout
+  (player/, enemies/, tiles/, bg/, props/, ui/) — current names are vendor dumps.
+
+### Layered biome scene (user directive: use the WHOLE set, not one PNG)
+A biome is a COMPLETE layered system; use all parts together by depth:
+- **Parallax background**: the `background1-4` stack (deepest→nearest), each scrolls
+  at a fraction of camera (depth). NOT one picked image — the full depth stack.
+- **Tile layer (foreground collision)**: `mainlev_build` tileset = the platforms/
+  walls the player stands on (the gameplay layer).
+- **Props**: `props1/2` decoration placed in front of bg, behind/around actors.
+- **Actors**: player, enemies, particles, breakables.
+- **(Optional) foreground overlay**: near tiles drawn over actors for depth.
+
+### koota render-layer traits (model the layers as ECS, decided)
+Add traits describing renderable layers + sprites so the renderer composites by
+z-order + parallax factor:
+- `Sprite` { atlas, frame/anim, flip } — an actor's current sprite.
+- `Anim` { sheet, frames, fps, t, loop } — animation playback state (clock-driven).
+- `Layer` { z, parallaxX, parallaxY } — which composite layer + its scroll factor.
+- `ParallaxBg` { textures[], speeds[] } — the bg depth stack as one entity.
+- `TileLayer` { tilesetId, data } — the Tiled foreground tile layer.
+The renderer iterates layers in z-order; parallax layers offset by camera×factor.
+
+### Build order under the HARD STANDARD (prove each in isolation, screenshot-reviewed)
+1. AnimatedSprite component (PixiJS sheet → playing animation) — browser test + screenshot.
+2. Parallax background (the bg1-4 stack scrolling) — browser test + screenshot.
+3. Tile layer from the cave tileset (@pixi/tilemap) — browser test + screenshot.
+4. Enemy sprites (goblin/skeleton/mushroom anim) — browser test + screenshot each.
+5. Side-view hero (Gemini-generated) — generate, slice, browser test + screenshot.
+6. Tiled .tmj loader + a designed cave level — browser test + screenshot.
+7. Compose the full layered scene in the game; Safari GPU screenshot of real gameplay.
+
 ### Library adoption plan (custom code → proper libs) — DECIDED
 - **UI framework: React 19** (replaces SolidJS) — unifies the stack so @pixi/react
   and koota/react bindings work natively.
