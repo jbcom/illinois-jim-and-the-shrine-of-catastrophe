@@ -57,7 +57,12 @@ type Drawable =
   | { kind: "layer"; container: Container }
   | { kind: "parallax"; container: Container; stack: Parallax }
   | { kind: "tiles"; container: Container; layer: TileLayer }
-  | { kind: "sprite"; sprite: Sprite | AnimatedSprite };
+  | {
+      kind: "sprite";
+      sprite: Sprite | AnimatedSprite;
+      /** Optional owner-handle teardown (e.g. PlayerSprite.destroy) freeing its textures. */
+      dispose?: () => void;
+    };
 
 /** Maps render entities to their heavyweight Pixi objects. */
 export class RenderStore {
@@ -77,6 +82,13 @@ export class RenderStore {
     const d = this.items.get(entity);
     if (!d) return undefined;
     return d.kind === "sprite" ? d.sprite : d.container;
+  }
+  /** Run every sprite's dispose() (frees owner-held textures), then clear. */
+  disposeAll(): void {
+    for (const d of this.items.values()) {
+      if (d.kind === "sprite") d.dispose?.();
+    }
+    this.items.clear();
   }
 }
 

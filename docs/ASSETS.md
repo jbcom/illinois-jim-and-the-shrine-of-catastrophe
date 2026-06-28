@@ -75,6 +75,28 @@ Every component has an isolated Vitest **browser** test (real Chromium) that
 renders it in a PixiJS `Application` and captures a screenshot for visual review.
 Screenshots are gitignored proof artifacts, not committed assets.
 
+## NPC factory (`src/render/npc.ts`)
+
+Story NPCs are **paper-doll composites**. The `classes/npcs` pack is a layered
+kit — skin / clothing / hair / hand sheets that all share one grid (10 cols × 7
+rows of **80×64** frames; rows = idle/walk/run/jump/cheer/attack/fall). An NPC is
+an `NpcSpec` of named part slots; the factory paints present slots in a fixed
+back→front order so layering is correct by construction:
+
+`skin → underwear → legs → socks → feet → torso → hair → hand`
+
+`composeNpcSheet(renderer, spec)` bakes the stack into one texture via a Pixi
+`RenderTexture`; `npcAnimFrames(sheet, anim)` slices a chosen animation row. A few
+part choices → a unique, animated, transparent NPC. Proven piece-by-piece
+(`npc-layer-buildup.png` shows skin→+legs→+torso→+feet→+hair→+hand with a
+monotonic opaque-pixel diagnostic) and per-NPC (`npc-townsfolk.png`, 3 distinct
+townsfolk).
+
+The narrative half lives in the sim: the `Npc` trait (`dialogueId`, `range`,
+`talked`) + `src/sim/story/dialogue.ts` (the dialogue script registry, pure data)
++ `npcInteractionSystem` (nearest in-range NPC → talk prompt). This is how the
+overworld→cave→shrine story is told between the platforming.
+
 ## Render-layer model (`src/render/layers.ts`)
 
 The scene is composited through a **render koota world** — a world separate from

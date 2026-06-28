@@ -15,6 +15,7 @@ import {
   Gravity,
   Lifetime,
   MineCart,
+  Npc,
   Particle,
   Player,
   Position,
@@ -28,7 +29,7 @@ import { aabb, intersects } from "@sim/physics/aabb.ts";
 import { moveAndCollide } from "@sim/physics/collide.ts";
 import type { PlayerTuning } from "@sim/player/tuning.ts";
 import { TileKind, type TileMap, tileAtWorld } from "@sim/world/tilemap.ts";
-import type { World } from "koota";
+import type { Entity, World } from "koota";
 
 /** Horizontal acceleration toward the intended run speed (player only). */
 function accelToward(vx: number, target: number, rate: number, dt: number): number {
@@ -160,6 +161,40 @@ export function collectibleSystem(world: World): number {
   let gained = 0;
   for (const v of values) gained += award(world, v);
   return gained;
+}
+
+/** The NPC nearest to the player and within its talk range, if any. */
+export interface TalkTarget {
+  readonly entity: Entity;
+  readonly dialogueId: string;
+}
+
+/**
+ * Find the nearest story NPC within talk range of the player. Pure read — the
+ * HUD uses the result to show a "talk" prompt and, on interact, open the
+ * dialogue. Returns null when no NPC is in range (or there's no player).
+ */
+export function npcInteractionSystem(world: World): TalkTarget | null {
+  const player = world.query(Player, Position, Size)[0];
+  if (!player) return null;
+  const pp = player.get(Position);
+  const ps = player.get(Size);
+  if (!pp || !ps) return null;
+  const cx = pp.x + ps.w / 2;
+  const cy = pp.y + ps.h / 2;
+
+  let best: TalkTarget | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  world.query(Npc, Position, Size).readEach(([npc, pos, size], entity) => {
+    const nx = pos.x + size.w / 2;
+    const ny = pos.y + size.h / 2;
+    const dist = Math.hypot(nx - cx, ny - cy);
+    if (dist <= npc.range && dist < bestDist) {
+      bestDist = dist;
+      best = { entity, dialogueId: npc.dialogueId };
+    }
+  });
+  return best;
 }
 
 /**

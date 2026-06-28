@@ -38,6 +38,19 @@ export const Enemy = trait({
   alive: true,
 });
 
+/**
+ * A story NPC the player can talk to. `dialogueId` keys into the dialogue script
+ * registry (src/sim/story/dialogue.ts); `range` is the interaction radius (px)
+ * within which a talk prompt appears. `talked` latches once Jim has spoken to
+ * them (so one-shot story beats don't repeat). Pure data — the HUD renders the
+ * lines, the render layer draws the composited NPC sprite.
+ */
+export const Npc = trait({
+  dialogueId: "",
+  range: 28,
+  talked: false,
+});
+
 /** A collectible (relic/gem) worth `value` points. */
 export const Collectible = trait({ value: 100, taken: false });
 

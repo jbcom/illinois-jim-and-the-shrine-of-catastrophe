@@ -11,7 +11,7 @@ import { Container } from "pixi.js";
 import { createWorld, type World } from "koota";
 import { createParallax, type ParallaxLayerSpec } from "@render/parallax.ts";
 import { renderTileLayer, type TileLayerSpec } from "@render/tileLayer.ts";
-import { createPlayerSprite, type PlayerState } from "@render/playerSprite.ts";
+import { createPlayerSprite, type PlayerState, TIMING } from "@render/playerSprite.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
 import { Anim, Layer, mountLayers, ParallaxBg, RenderStore, SpriteRef, TileLayerRef } from "@render/layers.ts";
 import type { TileMap } from "@sim/world/tilemap.ts";
@@ -61,8 +61,17 @@ export async function buildScene(spec: SceneSpec): Promise<Scene> {
     store.set(e, { kind: "tiles", container, layer });
   }
 
-  for (const actor of spec.actors ?? []) {
-    await spawnActor(world, store, actor);
+  // All actors share ONE world-space layer (parallax 1) so scrollLayers offsets
+  // them by the camera exactly like the tiles — sprites and world stay locked
+  // together. Individual actors are children of this container, not their own
+  // Layers (which would bypass the camera transform).
+  const actorsContainer = new Container();
+  if (spec.actors?.length) {
+    const actorsLayer = world.spawn(Layer({ z: Z_ACTORS, parallax: 1 }));
+    store.set(actorsLayer, { kind: "layer", container: actorsContainer });
+    for (const actor of spec.actors) {
+      await spawnActor(world, store, actorsContainer, actor);
+    }
   }
 
   mountLayers(world, store, root);
@@ -77,6 +86,7 @@ export async function buildScene(spec: SceneSpec): Promise<Scene> {
       });
     },
     destroy() {
+      store.disposeAll(); // free owner-held textures (player states) first
       root.destroy({ children: true });
       world.destroy();
     },
@@ -84,26 +94,31 @@ export async function buildScene(spec: SceneSpec): Promise<Scene> {
   return scene;
 }
 
-async function spawnActor(world: World, store: RenderStore, actor: SceneActor): Promise<void> {
+async function spawnActor(
+  world: World,
+  store: RenderStore,
+  parent: Container,
+  actor: SceneActor,
+): Promise<void> {
   if (actor.kind === "player") {
-    const player = await createPlayerSprite(actor.state ?? "idle");
+    const state = actor.state ?? "idle";
+    const player = await createPlayerSprite(state);
     player.sprite.position.set(actor.x, actor.y);
+    parent.addChild(player.sprite);
     const e = world.spawn(
-      Layer({ z: Z_ACTORS, parallax: 1 }),
       SpriteRef({ sim: actor.sim ?? -1 }),
-      Anim({ state: actor.state ?? "idle", fps: 12, ticks: 0 }),
+      Anim({ state, fps: TIMING[state].fps, ticks: 0 }),
     );
-    store.set(e, { kind: "sprite", sprite: player.sprite });
+    // dispose frees the pre-loaded textures for all states on scene teardown.
+    store.set(e, { kind: "sprite", sprite: player.sprite, dispose: () => player.destroy() });
     return;
   }
-  const sprite = await createEnemySprite(actor.enemy, (actor.state as never) ?? "idle");
+  const state = actor.state ?? "idle";
+  const sprite = await createEnemySprite(actor.enemy, state as never);
   sprite.position.set(actor.x, actor.y);
   sprite.width = 64;
   sprite.height = 64;
-  const e = world.spawn(
-    Layer({ z: Z_ACTORS, parallax: 1 }),
-    SpriteRef({ sim: actor.sim ?? -1 }),
-    Anim({ state: actor.state ?? "idle", fps: 10, ticks: 0 }),
-  );
-  store.set(e, { kind: "sprite", sprite });
+  parent.addChild(sprite);
+  const e = world.spawn(SpriteRef({ sim: actor.sim ?? -1 }), Anim({ state, fps: 10, ticks: 0 }));
+  store.set(e, { kind: "sprite", sprite, dispose: () => sprite.destroy() });
 }

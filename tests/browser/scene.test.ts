@@ -25,6 +25,22 @@ describe("render-layer traits + compositor", () => {
     world.destroy();
   });
 
+  it("scrolls the actors container with the world (camera lock)", async () => {
+    // The actors layer is parallax 1, so it shifts exactly with the camera —
+    // sprites (its children) stay locked to their world position on scroll.
+    const scene = await buildScene({
+      actors: [{ kind: "player", state: "idle", x: 120, y: 240 }],
+    });
+    const actorsLayer = scene.world
+      .query(Layer)
+      .find((e) => scene.store.get(e)?.kind === "layer");
+    const container = actorsLayer && scene.store.get(actorsLayer);
+    scrollLayers(scene.world, scene.store, 300, 0);
+    expect(container?.kind).toBe("layer");
+    if (container?.kind === "layer") expect(container.container.position.x).toBe(-300);
+    scene.destroy();
+  });
+
   it("advances a sprite's animation frame deterministically via Anim", async () => {
     const { AnimatedSprite, Texture } = await import("pixi.js");
     const world = createWorld();

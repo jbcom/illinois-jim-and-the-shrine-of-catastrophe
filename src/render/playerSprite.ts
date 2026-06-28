@@ -23,7 +23,7 @@ export const PLAYER_ANIMS: Record<PlayerState, FrameSource> = {
 };
 
 /** Per-state playback speed (fps) and looping. */
-const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
+export const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
   idle: { fps: 6, loop: true },
   run: { fps: 12, loop: true },
   attack: { fps: 14, loop: false },
@@ -35,7 +35,12 @@ export interface PlayerSprite {
   setState(state: PlayerState): void;
   /** Face left (true) or right (false) via horizontal flip. */
   setFacing(faceLeft: boolean): void;
-  /** Advance animation by `ticks` 60fps ticks (deterministic). */
+  /**
+   * Advance animation by `ticks` 60fps ticks (deterministic). For STANDALONE use
+   * only (no render-world). When this sprite is managed by a scene's `Anim` trait,
+   * `syncSprites` is the sole frame-advance authority — do NOT also call this, or
+   * the animation double-advances.
+   */
   update(ticks: number): void;
   readonly state: PlayerState;
   destroy(): void;
