@@ -89,10 +89,12 @@ export async function createGame(
   const canvas: HTMLCanvasElement = renderer.canvas;
   const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
 
-  // The renderer cover-scales the authored frame to fill the canvas height. The
-  // camera's WORLD-space view must match: height = the authored frame band,
-  // width = that height × the canvas aspect ratio (the camera scrolls the level
-  // horizontally). Recomputed on every resize so scroll/clamp stay correct.
+  // The renderer cover-scales the authored frame to fill the canvas HEIGHT. The
+  // camera's WORLD-space view must match: height = the authored band, width =
+  // that height × the canvas aspect ratio (the camera scrolls horizontally).
+  // Phones are landscape-locked (see the orientation guard in the UI), so the
+  // canvas is always wide enough for this to read correctly; large screens
+  // (tablets, unfolded foldables) are free in either orientation.
   const frameH = bundle.frame.bottom - bundle.frame.top;
   const cameraView = (vw: number, vh: number): { viewW: number; viewH: number } => {
     const aspect = Math.max(0.1, vw / Math.max(1, vh));

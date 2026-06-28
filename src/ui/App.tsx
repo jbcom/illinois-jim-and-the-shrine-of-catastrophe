@@ -16,6 +16,8 @@ import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
+import { RotatePrompt } from "@ui/RotatePrompt.tsx";
+import { useOrientation } from "@ui/orientationStore.ts";
 import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
 
@@ -31,6 +33,11 @@ export function App() {
   // `.then` so a freshly-recreated level instance starts unpaused if we're mid-play.
   const playingRef = useRef(false);
   playingRef.current = state === "playing";
+
+  // Device-profile-driven orientation via the UI orientation store (phones lock
+  // landscape; tablets / unfolded foldables / desktop stay free). The store owns
+  // the engine bridge + native lock; App just reads the signal.
+  const orientation = useOrientation();
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -145,6 +152,8 @@ export function App() {
           onTitle={() => send({ type: "TO_TITLE" })}
         />
       )}
+      {/* Topmost: web phones held in portrait get a rotate-to-landscape prompt. */}
+      {orientation.needsRotatePrompt && <RotatePrompt />}
     </main>
   );
 }

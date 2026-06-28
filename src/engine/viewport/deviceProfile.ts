@@ -35,6 +35,20 @@ export interface DeviceProfile {
   designResolution: DesignResolution;
   /** Recommended UI scale factor (1 = 100 %). Applied to HUD/UI elements. */
   uiScale: number;
+  /**
+   * Whether gameplay should be LOCKED to landscape. A side-scroller's flat band
+   * fills a wide screen but can't fill a tall portrait one without extreme zoom
+   * or empty sky — so phones lock to landscape (Sonic/Metal Slug-style). Larger
+   * screens (tablets, UNFOLDED foldables, desktop) have room in either rotation
+   * and stay free. Folded foldables read as `phone`-ish and lock; once unfolded
+   * they reclassify to `foldable` and unlock.
+   */
+  lockLandscape: boolean;
+}
+
+/** Gameplay locks to landscape only on phone-class devices. */
+export function shouldLockLandscape(deviceClass: DeviceClass): boolean {
+  return deviceClass === "phone";
 }
 
 /**
@@ -55,6 +69,7 @@ export function classifyDevice(input: DeviceClassifyInput): DeviceProfile {
     deviceClass,
     designResolution: designResolutionFor(deviceClass),
     uiScale: uiScaleFor(deviceClass, minDim),
+    lockLandscape: shouldLockLandscape(deviceClass),
   };
 }
 

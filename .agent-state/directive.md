@@ -1,7 +1,36 @@
 # Continuous Work Directive — illinois-jim-and-the-shrine-of-catastrophe
 
-**Status:** RELEASED
+**Status:** ACTIVE
 **Owner:** jbogaty
+
+## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
+**User feedback (live mobile bugs):** the deployed game was broken on phones —
+torches rendered as a WALL (whole-sheet stamp), text clipped at the bottom (no
+safe-area), and the portrait viewport either zoomed to ~1 screen or left huge
+empty sky.
+
+- [x] TORCH/COOKFIRE/STATUE: were placing whole multi-item sheets as one stamp;
+      now slice a single element (audited every catalog slice via a rendered
+      contact sheet). [[craft-levels-study-palette]]
+- [x] SAFE AREAS: Landing + CutscenePlayer pad with env(safe-area-inset-*) so the
+      controls/narration never clip under the home bar.
+- [x] DEVICE-PROFILE ORIENTATION: phones lock landscape; tablets/unfolded
+      foldables/desktop stay free (@capacitor/device profile + screen-orientation
+      + a web RotatePrompt). NOT a blanket lock. orientation.test.ts.
+- [ ] MULTI-ASPECT GENAI: each cutscene + the landing hero generated in 16:9 /
+      9:16 / 1:1; the UI picks the variant for the viewport (aspectImage.ts).
+      In progress.
+- [ ] [DESIGN — Milestone 5] SERPENTINE PORTRAIT (user idea, supersedes landscape
+      lock): instead of locking, design levels so portrait SLICES the horizontal
+      level into stacked bands. Play left→right across the top band; at the right
+      edge the camera "flips up" — scrolls DOWN so the band you just finished
+      becomes the top and the NEXT horizontal slice appears as the new bottom band
+      — boustrophedon/serpentine. Continue until the cutscene, which then stays at
+      the top. This makes landscape-lock OPTIONAL and turns portrait into a
+      feature. Requires: level authoring that's slice-aware, a camera that scrolls
+      both axes with the flip transition, and the collision/spawns mapped to the
+      serpentine path. Big architectural unit — own milestone + directive.
+
 
 ## 🎯 Milestone 3 — The REAL coherent narrative (SHIPPED 2026-06-28)
 **User directive (2026-06-28, NON-NEGOTIABLE):** Milestone 2 shipped ONE cave + a

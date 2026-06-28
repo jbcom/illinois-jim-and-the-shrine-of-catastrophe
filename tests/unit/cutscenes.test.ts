@@ -11,9 +11,11 @@ describe("cutscene script", () => {
     expect(withoutNext[0]?.id).toBe("escape");
   });
 
-  it("every cutscene has an image and at least one line", () => {
+  it("every cutscene has a base image path and at least one line", () => {
     for (const c of CUTSCENES) {
-      expect(c.image).toMatch(/^\/assets\/cutscenes\/.+\.png$/);
+      // `image` is a BASE path (no extension); the player appends the aspect
+      // variant (-16x9 / -9x16 / -1x1).png for the viewport.
+      expect(c.image).toMatch(/^\/assets\/cutscenes\/[^.]+$/);
       expect(c.lines.length).toBeGreaterThan(0);
       for (const l of c.lines) expect(l.length).toBeGreaterThan(0);
     }

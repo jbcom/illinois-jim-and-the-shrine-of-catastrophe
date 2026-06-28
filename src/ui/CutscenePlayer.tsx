@@ -12,6 +12,7 @@
  * Cutscenes are presentation, not simulation — wall-clock timing is fine here
  * (they're never part of a deterministic replay).
  */
+import { aspectImagePath, useViewportAspect } from "@ui/aspectImage.ts";
 import type { Cutscene } from "@sim/story/cutscenes.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -34,6 +35,7 @@ function dwellFor(line: string): number {
 export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
   const [line, setLine] = useState(0);
   const [phase, setPhase] = useState<Phase>("in");
+  const aspect = useViewportAspect();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const last = line >= cutscene.lines.length - 1;
@@ -102,10 +104,11 @@ export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
       data-phase={phase}
       className="absolute inset-0 flex h-full w-full flex-col bg-black"
     >
-      {/* Scene image — fills the upper region edge-to-edge (cover, no letterbox). */}
+      {/* Scene image — the aspect variant composed for this viewport, filling the
+          upper region edge-to-edge (so portrait shows the portrait crop, etc.). */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <img
-          src={cutscene.image}
+          src={aspectImagePath(cutscene.image, aspect)}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
           style={{ imageRendering: "pixelated" }}
@@ -114,8 +117,18 @@ export function CutscenePlayer({ cutscene, onComplete }: CutscenePlayerProps) {
         <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t from-[#1a120b] to-transparent" />
       </div>
 
-      {/* Narration BAR — solid, prominent, pinned to the bottom. */}
-      <div className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] px-6 py-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+      {/* Narration BAR — solid, prominent, pinned to the bottom. Safe-area
+          padding so the text + hint never clip under the home bar on phones. */}
+      <div
+        className="relative z-10 border-[#c9a14a]/40 border-t-2 bg-[#1a120b] pt-7 text-center shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
+        style={{
+          paddingBottom: "max(env(safe-area-inset-bottom), 1.75rem)",
+          // Landscape phones put the notch/home-indicator on the SIDES — pad
+          // left/right so the narration never slips under them.
+          paddingLeft: "max(env(safe-area-inset-left), 1.5rem)",
+          paddingRight: "max(env(safe-area-inset-right), 1.5rem)",
+        }}
+      >
         <p
           className="cutscene-text mx-auto max-w-3xl text-[#f4e4c1] text-lg leading-relaxed transition-opacity md:text-2xl"
           style={{ opacity: textVisible ? 1 : 0, transitionDuration: `${FADE_MS}ms` }}

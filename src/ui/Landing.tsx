@@ -8,16 +8,20 @@
  */
 import { assetUrl } from "@/assetUrl.ts";
 import { TITLE } from "@/brand.ts";
+import { aspectImagePath, useViewportAspect } from "@ui/aspectImage.ts";
 
-const HERO_ART = assetUrl("assets/branding/landing-hero.png");
+const HERO_BASE = assetUrl("assets/branding/landing-hero");
 const WORDMARK = assetUrl("assets/branding/title-wordmark.png");
 
 export function Landing(props: { onStart: () => void }) {
+  const aspect = useViewportAspect();
   return (
     <section className="absolute inset-0 overflow-hidden bg-[#1a120b]">
-      {/* GenAI hero key-art — covers the screen; the hero sits left-of-centre. */}
+      {/* GenAI hero key-art — the aspect variant composed for this viewport, so a
+          portrait phone gets the portrait crop (full-body hero) not a side-cropped
+          landscape. */}
       <img
-        src={HERO_ART}
+        src={aspectImagePath(HERO_BASE, aspect)}
         alt="Illinois Jim raising his relic-lantern toward the shrine on the mountain"
         className="absolute inset-0 h-full w-full object-cover object-center"
         style={{ imageRendering: "pixelated" }}
@@ -25,8 +29,18 @@ export function Landing(props: { onStart: () => void }) {
       {/* Legibility scrim — darkens the top + bottom so text reads over the art. */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a120b]/85 via-transparent to-[#1a120b]/90" />
 
-      {/* Content column — wordmark up top, hook + PLAY anchored to the bottom. */}
-      <div className="relative flex h-full w-full flex-col items-center justify-between py-[6vh]">
+      {/* Content column — wordmark up top, hook + PLAY anchored to the bottom.
+          Safe-area padding so the controls line never clips under the home bar. */}
+      <div
+        className="relative flex h-full w-full flex-col items-center justify-between"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top), 3vh)",
+          paddingBottom: "max(env(safe-area-inset-bottom), 3vh)",
+          // Landscape phones notch on the sides — pad left/right too.
+          paddingLeft: "max(env(safe-area-inset-left), 4vw)",
+          paddingRight: "max(env(safe-area-inset-right), 4vw)",
+        }}
+      >
         {/* The curated GenAI wordmark (carved-stone gold, transparent) — used as
             the title image so we never stack a second wordmark over baked-in art. */}
         <img

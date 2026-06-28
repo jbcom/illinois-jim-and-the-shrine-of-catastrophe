@@ -44,13 +44,14 @@ const HERO =
   "carrying a glowing amber relic-lantern and a coiled grappling hook";
 
 const PROMPTS = [
-  // Story beats — one full-screen scene per cutscene, in narrative order.
-  { name: "cut-01-village", prompt: `${CUT}; ${JIM} standing at the edge of a windswept clifftop village at dusk, an elder pointing toward a distant mountain shrine, the sea far below` },
-  { name: "cut-02-descent", prompt: `${CUT}; ${JIM} lowering himself by rope into a vast black cave mouth in the mountainside, torchlight flickering on jagged rock, ominous depth below` },
-  { name: "cut-03-ruins", prompt: `${CUT}; ${JIM} crossing a crumbling brick-and-stone underground ruin lit by glowing red gems, broken pottery and ancient carvings around him` },
-  { name: "cut-04-shrine", prompt: `${CUT}; a towering ancient shrine deep underground, a single glowing idol on an altar atop cracked steps, ${JIM} small in the foreground gazing up in awe and dread` },
-  { name: "cut-05-catastrophe", prompt: `${CUT}; the shrine cracking and erupting with red light as ${JIM} grabs the idol and flees, the cavern collapsing behind him, debris and dust` },
-  { name: "cut-06-escape", prompt: `${CUT}; ${JIM} bursting out of the cave mouth into dawn light clutching the glowing idol, the mountain crumbling behind him, triumphant and exhausted` },
+  // Story beats — one full-screen scene per cutscene, in narrative order. Each is
+  // multiAspect: rendered 16:9 / 9:16 / 1:1 so the right crop serves every viewport.
+  { name: "cut-01-village", multiAspect: true, prompt: `${CUT}; ${JIM} standing at the edge of a windswept clifftop village at dusk, an elder pointing toward a distant mountain shrine, the sea far below` },
+  { name: "cut-02-descent", multiAspect: true, prompt: `${CUT}; ${JIM} lowering himself by rope into a vast black cave mouth in the mountainside, torchlight flickering on jagged rock, ominous depth below` },
+  { name: "cut-03-ruins", multiAspect: true, prompt: `${CUT}; ${JIM} crossing a crumbling brick-and-stone underground ruin lit by glowing red gems, broken pottery and ancient carvings around him` },
+  { name: "cut-04-shrine", multiAspect: true, prompt: `${CUT}; a towering ancient shrine deep underground, a single glowing idol on an altar atop cracked steps, ${JIM} small in the foreground gazing up in awe and dread` },
+  { name: "cut-05-catastrophe", multiAspect: true, prompt: `${CUT}; the shrine cracking and erupting with red light as ${JIM} grabs the idol and flees, the cavern collapsing behind him, debris and dust` },
+  { name: "cut-06-escape", multiAspect: true, prompt: `${CUT}; ${JIM} bursting out of the cave mouth into dawn light clutching the glowing idol, the mountain crumbling behind him, triumphant and exhausted` },
   // Branding.
   {
     name: "title-wordmark",
@@ -62,6 +63,7 @@ const PROMPTS = [
   // engine). Wide 16:9 so it fills a landscape title screen.
   {
     name: "landing-hero",
+    multiAspect: true,
     prompt:
       `${CUT}; a heroic key-art title illustration of ${HERO}, standing with a confident roguish stance on a ` +
       "clifftop trail at golden dusk, relic-lantern raised, smirking toward a distant dark mountain shrine " +
@@ -87,15 +89,32 @@ async function main() {
   const onlyIdx = process.argv.indexOf("--only");
   const only = onlyIdx >= 0 ? process.argv[onlyIdx + 1] : undefined;
   const prompts = only ? PROMPTS.filter((p) => p.name.includes(only)) : PROMPTS;
+  // Scene art (cutscenes + landing hero) is generated in THREE aspect ratios so
+  // the right crop serves each viewport: 16:9 landscape (locked phones + wide
+  // screens), 9:16 portrait (the landing on a held-upright phone), 1:1 square
+  // (a safe middle for foldables / tablets in either rotation). Files are
+  // suffixed -16x9 / -9x16 / -1x1; the wordmark + any non-scene asset stays 1:1.
+  const ASPECTS = { "16:9": "16x9", "9:16": "9x16", "1:1": "1x1" };
+  // Append ratio-specific framing so each variant is COMPOSED for its shape (the
+  // shared CUT cue is otherwise landscape-biased — "cinematic wide composition").
+  const frameFor = (prompt, ratio) => {
+    if (ratio === "9:16") return `${prompt}; vertical portrait composition, tall framing, the subject fills the frame top-to-bottom`;
+    if (ratio === "1:1") return `${prompt}; square composition, balanced centred framing with safe margins`;
+    return `${prompt}; wide cinematic landscape composition`;
+  };
   for (const p of prompts) {
-    console.warn(`generating ${p.name}…`);
-    const bytes = await generate(p.prompt);
-    if (!bytes) {
-      console.warn(`  no image returned for ${p.name}`);
-      continue;
+    const ratios = p.multiAspect ? Object.entries(ASPECTS) : [["1:1", null]];
+    for (const [ratio, suffix] of ratios) {
+      const outName = suffix ? `${p.name}-${suffix}` : p.name;
+      console.warn(`generating ${outName} (${ratio})…`);
+      const bytes = await generate(p.multiAspect ? frameFor(p.prompt, ratio) : p.prompt, ratio);
+      if (!bytes) {
+        console.warn(`  no image returned for ${outName}`);
+        continue;
+      }
+      writeFileSync(join(OUT, `${outName}.png`), bytes);
+      console.warn(`  wrote raw-assets/generated/${outName}.png`);
     }
-    writeFileSync(join(OUT, `${p.name}.png`), bytes);
-    console.warn(`  wrote raw-assets/generated/${p.name}.png`);
   }
   console.warn("Done. Curate keepers from raw-assets/generated/ into public/assets/.");
 }
