@@ -186,7 +186,9 @@ export async function createPaintingRenderer(
 
     syncActors(o);
     for (const v of views.values()) {
-      if (v.anim) advanceAnim(v.anim, (v.acc += v.fps / 60));
+      if (!v.anim) continue;
+      v.acc += v.fps / 60;
+      advanceAnim(v.anim, v.acc);
     }
   }
 

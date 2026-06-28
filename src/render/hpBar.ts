@@ -66,7 +66,7 @@ export async function createHpBar(fillColor: "Blue" | "yellow" = "Blue"): Promis
     clip.rect(METER.x, METER.y, METER.w * f, METER.h).fill(0xffffff);
   };
   const drawLives = (n: number) => {
-    lives.removeChildren().forEach((c) => c.destroy());
+    for (const c of lives.removeChildren()) c.destroy();
     for (let i = 0; i < Math.max(0, n); i++) {
       const pip = new Graphics();
       pip.rect(i * 6, 0, 4, 4).fill(0xf2c14e);

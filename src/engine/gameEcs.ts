@@ -142,6 +142,34 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     return pos ? { x: pos.x + sim.tuning.width / 2, y: pos.y + sim.tuning.height / 2 } : null;
   }
 
+  /** Play sfx for this step's events + a grounded→airborne jump edge. */
+  function playStepSfx(
+    combat: { kills: number; playerHurt: boolean },
+    smashed: number,
+    gained: number,
+    wasGrounded: boolean,
+  ): void {
+    if (combat.kills > 0) audio.play("whip");
+    if (combat.playerHurt) audio.play("hurt");
+    if (gained > 0) audio.play("pickup");
+    if (smashed > 0) audio.play("potSmash");
+    const pl = sim.world.query(Player, Velocity)[0];
+    const grounded = pl?.get(Player)?.grounded ?? true;
+    if (wasGrounded && !grounded && (pl?.get(Velocity)?.y ?? 0) < 0) audio.play("jump");
+  }
+
+  /** Cosmetic particle bursts on kills/pickups — FX stream, never the sim stream. */
+  function spawnStepBursts(kills: number, gained: number): void {
+    const c = playerCenter();
+    if (!c) return;
+    if (kills > 0) {
+      spawnBurst(sim.world, fx, c.x, c.y, { count: 8, color: 0xc2402e, speed: 90, gravity: 0.4 });
+    }
+    if (gained > 0) {
+      spawnBurst(sim.world, fx, c.x, c.y, { count: 6, color: 0xf6d36b, speed: 70, size: 2 });
+    }
+  }
+
   function step(dt: number): void {
     prev = snapshotPositions();
     const intent = input.poll();
@@ -159,25 +187,8 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     particleSystem(sim.world, dt, sim.tuning.gravity);
     lifetimeSystem(sim.world, dt);
 
-    // Sfx for this step's events (whip/stomp kill, pickup, pot smash, hurt, jump).
-    if (combat.kills > 0) audio.play("whip");
-    if (combat.playerHurt) audio.play("hurt");
-    if (gained > 0) audio.play("pickup");
-    if (pots.smashed > 0) audio.play("potSmash");
-    // Jump = was grounded last step, now airborne moving up.
-    const pl = sim.world.query(Player, Velocity)[0];
-    if (wasGrounded && !(pl?.get(Player)?.grounded ?? true) && (pl?.get(Velocity)?.y ?? 0) < 0) {
-      audio.play("jump");
-    }
-
-    // Cosmetic bursts on kills/pickups — FX stream, never touches the sim stream.
-    const c = playerCenter();
-    if (c && combat.kills > 0) {
-      spawnBurst(sim.world, fx, c.x, c.y, { count: 8, color: 0xc2402e, speed: 90, gravity: 0.4 });
-    }
-    if (c && gained > 0) {
-      spawnBurst(sim.world, fx, c.x, c.y, { count: 6, color: 0xf6d36b, speed: 70, size: 2 });
-    }
+    playStepSfx(combat, pots.smashed, gained, wasGrounded);
+    spawnStepBursts(combat.kills, gained);
   }
 
   function followPlayer(): void {

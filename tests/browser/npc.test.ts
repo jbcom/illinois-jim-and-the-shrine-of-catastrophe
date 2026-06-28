@@ -83,9 +83,7 @@ describe("NPC factory (paper-doll composite)", () => {
       // Diagnostic: each added layer should add opaque coverage to the idle pose.
       const px = app.renderer.extract.pixels(frames[0]!);
       let opaque = 0;
-      for (let i = 3; i < px.pixels.length; i += 4) if (px.pixels[i]! > 16) opaque++;
-      // eslint-disable-next-line no-console
-      console.log(`[npc] layers=${npcLayerUrls(spec).length} idle-opaque-px=${opaque}`);
+      for (let i = 3; i < px.pixels.length; i += 4) if ((px.pixels[i] ?? 0) > 16) opaque++;
       expect(opaque).toBeGreaterThanOrEqual(prevOpaque); // monotonic: layers add, never remove
       prevOpaque = opaque;
 
