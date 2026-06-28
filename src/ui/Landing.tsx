@@ -45,7 +45,16 @@ export function Landing(props: { onStart: () => void }) {
             its own scrim panel at the very top so it always reads cleanly and never
             sits over the hero's FACE across aspects (the portrait art puts the face
             high). Narrower on tall viewports so it stays in the sky band above Jim. */}
-        <div className="flex w-full justify-center rounded-b-xl bg-gradient-to-b from-[#1a120b]/80 to-transparent px-4 pb-6">
+        <div
+          className="flex w-full justify-center rounded-b-xl bg-gradient-to-b from-[#1a120b]/80 to-transparent px-4 pb-6"
+          style={{
+            // Pull the scrim to the absolute top (cancel the parent's top padding)
+            // and re-add the safe-area inset inside, so the gradient starts at the
+            // very edge with no seam below a notch.
+            marginTop: "calc(-1 * max(env(safe-area-inset-top), 3vh))",
+            paddingTop: "max(env(safe-area-inset-top), 3vh)",
+          }}
+        >
           <img
             src={WORDMARK}
             alt={TITLE}
