@@ -32,6 +32,17 @@ const CUT =
 // The hero as he appears in cutscenes (matches the in-game red-cloaked adventurer).
 const JIM = "Illinois Jim, a wiry young adventurer in a dark red hooded cloak and travel boots";
 
+// The hero for full key-art — the original in-game Illinois Jim (teal explorer
+// vest, brass-goggle cap, amber relic-lantern, coiled grappling hook), so the
+// landing illustration matches the sprite the player actually controls. He's
+// DEVIL-MAY-CARE: a roguish, swashbuckling pulp adventurer — cocky grin, hat at
+// a rakish angle, relaxed confident swagger, the easy charm of a treasure-hunter
+// who's already decided the danger is worth it.
+const HERO =
+  "Illinois Jim, a wiry young rogue explorer with a cocky grin and devil-may-care swagger, " +
+  "in a teal adventurer's vest, a brass-goggle cap worn at a rakish angle, " +
+  "carrying a glowing amber relic-lantern and a coiled grappling hook";
+
 const PROMPTS = [
   // Story beats — one full-screen scene per cutscene, in narrative order.
   { name: "cut-01-village", prompt: `${CUT}; ${JIM} standing at the edge of a windswept clifftop village at dusk, an elder pointing toward a distant mountain shrine, the sea far below` },
@@ -45,6 +56,18 @@ const PROMPTS = [
     name: "title-wordmark",
     prompt:
       "16-bit pulp adventure game logo wordmark reading 'ILLINOIS JIM AND THE SHRINE OF CATASTROPHE', carved-stone gold lettering with a cracked-relic motif, on a transparent background",
+  },
+  // Landing-page hero key-art — a full, cinematic 16-bit title illustration of
+  // the hero over the overworld, for the dedicated landing scene (NOT the live
+  // engine). Wide 16:9 so it fills a landscape title screen.
+  {
+    name: "landing-hero",
+    prompt:
+      `${CUT}; a heroic key-art title illustration of ${HERO}, standing with a confident roguish stance on a ` +
+      "clifftop trail at golden dusk, relic-lantern raised, smirking toward a distant dark mountain shrine " +
+      "wreathed in red light; a windswept village of pitched-roof houses and tents below, weeping willows and " +
+      "pines, dramatic god-rays, wide cinematic 16:9 composition with the hero left-of-centre and the mountain " +
+      "far right. NO TEXT, NO WORDS, NO LETTERS, NO LOGO anywhere in the image — illustration only",
   },
 ];
 

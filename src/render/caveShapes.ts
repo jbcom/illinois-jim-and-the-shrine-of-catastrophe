@@ -56,3 +56,37 @@ export const CAVE = {
 } as const;
 
 export type CaveShapeName = keyof typeof CAVE;
+
+/**
+ * CAVE PROP catalog — the big ORGANIC rock/flora brushes from the cave prop
+ * sheets (props1.png 1280², props2.png 1024²), measured by connected-component
+ * analysis + identified by eye. These give the cave real DEPTH and density: tall
+ * stacked-rock masses to frame the chamber, jagged spires + stalagmite columns
+ * for the ceiling and floor, gnarled cavern trees, and dark bushes. Composed
+ * over the mainlev built elements (brick/beams/relic) and the parallax.
+ */
+const PROPS1 = assetUrl("assets/biomes/caves/props1.png");
+const PROPS2 = assetUrl("assets/biomes/caves/props2.png");
+const p1 = (x: number, y: number, w: number, h: number): ShapeStamp => ({ sheet: PROPS1, x, y, w, h });
+const p2 = (x: number, y: number, w: number, h: number): ShapeStamp => ({ sheet: PROPS2, x, y, w, h });
+
+export const CAVE_PROPS = {
+  // --- BIG ROCK MASSES (props2): frame the chamber, build floor/wall bulk ---
+  rockTall: p2(33, 500, 336, 271), // tall stacked-rock tower
+  rockWide: p2(606, 518, 308, 189), // wide rock shoulder
+  rockMass: p2(432, 740, 577, 271), // huge low rock mass (floor feature)
+  rockLedge: p2(20, 861, 359, 150), // grass-topped rock ledge
+  // --- JAGGED ROCK (props1): spires + columns + chunks for vertical drama ---
+  spire: p1(829, 68, 64, 95), // sharp single spire (stalagmite/-tite)
+  column: p1(717, 51, 102, 112), // thick rock column
+  chunk: p1(13, 13, 150, 150), // big angular rock chunk
+  rockMassSm: p1(909, 69, 124, 94), // smaller rock mass
+  platW: p1(173, 96, 166, 67), // wide low rock platform
+  // --- CAVE FLORA (props2): gnarled trees + bushes for life in the dark ---
+  tree: p2(66, 3, 289, 176),
+  tree2: p2(388, 35, 224, 144),
+  bush: p2(687, 107, 100, 72),
+  bushWide: p2(852, 98, 139, 81),
+} as const;
+
+export type CavePropName = keyof typeof CAVE_PROPS;

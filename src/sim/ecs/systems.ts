@@ -107,6 +107,15 @@ function resolvePlayerMove(r: PlayerTraitRefs, map: TileMap, t: PlayerTuning, dt
     r.p.coyote = t.coyoteTime;
   }
   if (res.touchedHazard) r.p.dead = true;
+
+  // Kill-plane: falling into a pit kills the player. The tilemap is a CLOSED
+  // world — tileAt() returns Solid out of bounds — so a body that falls past the
+  // last row snaps flush to the map's bottom edge and reads as "grounded" on a
+  // phantom floor, sitting there forever instead of dying. Detect that: feet at
+  // (or below) the map's bottom edge while the in-bounds cell beneath them is
+  // NOT solid means Jim is only held up by the closed-world floor → he fell. Die.
+  const feet = r.pos.y + r.size.h;
+  if (feet >= map.height * map.tileSize - 1) r.p.dead = true;
 }
 
 /**

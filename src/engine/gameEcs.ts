@@ -14,9 +14,8 @@ import { type Clock, createClock } from "@engine/clock.ts";
 import { createInputManager, type InputManager } from "@engine/input/inputManager.ts";
 import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
-import { CAVE_DESCENT, CAVE_DESCENT_FRAME } from "@render/levels/caveDescent.ts";
+import { FIRST_LEVEL_ID, levelBundle } from "@render/levels/registry.ts";
 import { createPaintingRenderer, type PaintingRenderer } from "@render/paintingRenderer.ts";
-import { CAVE_PARALLAX } from "@render/parallax.ts";
 import {
   collectibleSystem,
   combatSystem,
@@ -33,7 +32,6 @@ import {
 import { Enemy, Player, Position, Score, Velocity } from "@sim/ecs/traits.ts";
 import { createSimWorld, type SimWorld } from "@sim/ecs/world.ts";
 import { type Camera, createCamera, followCamera } from "@sim/world/camera.ts";
-import { DESCENT } from "@sim/world/gameLevel.ts";
 import { levelBounds } from "@sim/world/level.ts";
 
 export interface Game {
@@ -59,7 +57,11 @@ export interface GameDeps {
   readonly onWin?: (finalScore: number) => void;
 }
 
-export async function createGame(container: HTMLElement, deps: GameDeps = {}): Promise<Game> {
+export async function createGame(
+  container: HTMLElement,
+  deps: GameDeps = {},
+  levelId: string = FIRST_LEVEL_ID,
+): Promise<Game> {
   const raf = deps.raf ?? globalThis.requestAnimationFrame.bind(globalThis);
   const cancelRaf = deps.cancelRaf ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const now = deps.now ?? (() => performance.now());
@@ -68,7 +70,8 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   const onHud = deps.onHud ?? (() => {});
   let won = false;
 
-  const level = DESCENT;
+  const bundle = levelBundle(levelId);
+  const level = bundle.sim;
   const bounds = levelBounds(level);
 
   // Pixi creates and owns its own <canvas> inside the container; a fresh element
@@ -77,10 +80,11 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   // the Pixi-owned canvas.
   const input: InputManager = createInputManager(container);
   const renderer: PaintingRenderer = await createPaintingRenderer(container, {
-    parallax: CAVE_PARALLAX,
-    painting: CAVE_DESCENT,
-    frameTop: CAVE_DESCENT_FRAME.top,
-    frameBottom: CAVE_DESCENT_FRAME.bottom,
+    parallax: bundle.parallax,
+    painting: bundle.painting,
+    frameTop: bundle.frame.top,
+    frameBottom: bundle.frame.bottom,
+    ...(bundle.groundFill ? { groundFill: bundle.groundFill } : {}),
   });
   const canvas: HTMLCanvasElement = renderer.canvas;
   const viewport: ResponsiveViewport = createResponsiveViewport(canvas);
@@ -89,7 +93,7 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   // camera's WORLD-space view must match: height = the authored frame band,
   // width = that height × the canvas aspect ratio (the camera scrolls the level
   // horizontally). Recomputed on every resize so scroll/clamp stay correct.
-  const frameH = CAVE_DESCENT_FRAME.bottom - CAVE_DESCENT_FRAME.top;
+  const frameH = bundle.frame.bottom - bundle.frame.top;
   const cameraView = (vw: number, vh: number): { viewW: number; viewH: number } => {
     const aspect = Math.max(0.1, vw / Math.max(1, vh));
     return { viewW: frameH * aspect, viewH: frameH };
@@ -175,7 +179,6 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   }
 
   function step(dt: number): void {
-    prev = snapshotPositions();
     const intent = input.poll();
     // Mine-cart sets the player's rail velocity before playerSystem integrates,
     // so a rider is carried along the rail rather than fighting the run accel.
@@ -248,6 +251,14 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
     const vp = viewport.current().viewport;
 
     if (!paused) {
+      // Snapshot ONCE before the batch: `prev` must be "positions as of the end
+      // of the last frame's sim" so render lerps prev→current monotonically by
+      // alpha. Snapshotting inside step() (per sub-step) left prev stale on
+      // zero-step frames and skipped intermediate steps on multi-step frames,
+      // making the sprite snap backward then forward across every step boundary
+      // (the per-frame horizontal flicker). Only refresh when a step will run,
+      // so zero-step frames keep interpolating from the genuine previous state.
+      if (stepInfo.steps > 0) prev = snapshotPositions();
       for (let i = 0; i < stepInfo.steps; i++) step(stepInfo.dt);
       if (stepInfo.steps > 0) updateCameraAndHud();
     }

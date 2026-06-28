@@ -28,6 +28,8 @@ export interface Placement {
   readonly scale?: number;
   /** Horizontal flip (mirror the shape). */
   readonly flipX?: boolean;
+  /** Vertical flip (e.g. an upward spire becomes a downward stalactite). */
+  readonly flipY?: boolean;
   /** Paint order within the composition (higher = front). */
   readonly z?: number;
 }
@@ -74,9 +76,13 @@ export async function paintComposition(placements: readonly Placement[]): Promis
     const tex = await stampTexture(p.stamp);
     const sprite = new Sprite(tex);
     const scale = p.scale ?? 1;
-    sprite.scale.set(p.flipX ? -scale : scale, scale);
-    // Keep the top-left anchored at (x,y) regardless of flip.
-    sprite.position.set(p.flipX ? p.x + p.stamp.w * scale : p.x, p.y);
+    sprite.scale.set(p.flipX ? -scale : scale, p.flipY ? -scale : scale);
+    // Keep the top-left anchored at (x,y) regardless of flip (a negative scale
+    // mirrors about the anchor, so shift by the mirrored extent to compensate).
+    sprite.position.set(
+      p.flipX ? p.x + p.stamp.w * scale : p.x,
+      p.flipY ? p.y + p.stamp.h * scale : p.y,
+    );
     container.addChild(sprite);
   }
   return {

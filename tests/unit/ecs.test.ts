@@ -93,6 +93,27 @@ describe("ECS world + systems", () => {
     expect(vel?.y).toBeLessThan(0);
   });
 
+  it("kills the player when they fall past the level's bottom (kill-plane)", () => {
+    // A pit: spawn over empty space with NO floor anywhere, so the player falls
+    // straight through. Without a kill-plane they'd fall forever (or sit at the
+    // lowest solid tile); the kill-plane marks them dead once past the bottom.
+    const level = flatLevel(["...@........", "............", "............"]);
+    const sim = createSimWorld(level, T);
+    let dead = false;
+    for (let i = 0; i < 240 && !dead; i++) {
+      playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+      dead = sim.player.get(Player)?.dead ?? false;
+    }
+    expect(dead).toBe(true);
+  });
+
+  it("does NOT kill the player standing on solid ground", () => {
+    const level = flatLevel(["............", "...@........", "############"]);
+    const sim = createSimWorld(level, T);
+    for (let i = 0; i < 240; i++) playerSystem(sim.world, NEUTRAL_INTENT, level.map, T, DT);
+    expect(sim.player.get(Player)?.dead).toBe(false);
+  });
+
   it("parses collectibles from '*' and spawns them as entities", () => {
     const level = parseLevel(["..*..", "..@..", "#####"], 16);
     expect(level.collectibles.length).toBe(1);

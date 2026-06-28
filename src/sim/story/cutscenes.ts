@@ -30,7 +30,7 @@ export const CUTSCENES: readonly Cutscene[] = [
       "Elder Mara says the last seal has cracked. The Shrine of Catastrophe is waking.",
       "Illinois Jim came for the idol's gold. He is starting to wish he hadn't.",
     ],
-    nextLevel: "cave-descent",
+    nextLevel: "village-approach",
   },
   {
     id: "descent",
@@ -39,7 +39,7 @@ export const CUTSCENES: readonly Cutscene[] = [
       "The cave mouth swallows the last of the daylight.",
       "Down Jim goes, rope by rope, into the dark the village will not speak of.",
     ],
-    nextLevel: "cave-ruins",
+    nextLevel: "cave-descent",
   },
   {
     id: "ruins",

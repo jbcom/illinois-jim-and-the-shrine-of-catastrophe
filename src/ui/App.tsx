@@ -14,7 +14,8 @@ import { loadBestScore, saveBestScore } from "@ui/persistence.ts";
 import { gameMachine } from "@ui/gameMachine.ts";
 import { Hud } from "@ui/Hud.tsx";
 import { hudStore } from "@ui/hudState.ts";
-import { ResultScreen, TitleScreen } from "@ui/Screens.tsx";
+import { Landing } from "@ui/Landing.tsx";
+import { ResultScreen } from "@ui/Screens.tsx";
 import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
 
@@ -25,6 +26,11 @@ export function App() {
   const [snapshot, send] = useMachine(gameMachine);
   const state = snapshot.value as string;
   const cutscene = cutsceneById(snapshot.context.cutsceneId);
+  const levelId = snapshot.context.levelId;
+  // Tracks whether the FSM is in `playing`, readable from the async game-init
+  // `.then` so a freshly-recreated level instance starts unpaused if we're mid-play.
+  const playingRef = useRef(false);
+  playingRef.current = state === "playing";
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -43,7 +49,7 @@ export function App() {
         },
         onGameOver: (finalScore) => send({ type: "LOSE", score: finalScore }),
         onWin: (finalScore) => send({ type: "WIN", score: finalScore }),
-      })
+      }, levelId)
         .then((g) => {
           if (disposed) {
             g.dispose();
@@ -51,7 +57,9 @@ export function App() {
           }
           gameRef.current = g;
           g.start();
-          g.setPaused(true); // wait on the title screen
+          // Start paused unless the FSM is already in `playing` (the common case
+          // when the game was recreated for the next level mid-story).
+          g.setPaused(!playingRef.current);
         })
         .catch((err) => {
           console.error("Game init failed:", err);
@@ -83,15 +91,19 @@ export function App() {
         gameRef.current = undefined;
       });
     };
-  }, [send]);
+    // Recreate the game when the story moves to a new level (village → cave → …).
+  }, [send, levelId]);
 
-  // Drive the engine from the FSM state.
+  // Drive the engine from the FSM state. levelId is an intentional extra dep so
+  // this re-runs after the game is recreated for a new level and unpauses the
+  // fresh instance (the new game finished init in a separate async tick).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: levelId re-triggers pause sync for the recreated game
   useEffect(() => {
     const g = gameRef.current;
     if (!g) return;
     if (state === "playing") g.setPaused(false);
     else g.setPaused(true);
-  }, [state]);
+  }, [state, levelId]);
 
   // Seed the persisted best score once on mount.
   useEffect(() => {
@@ -113,7 +125,7 @@ export function App() {
         <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />
       )}
       {state === "title" && (
-        <TitleScreen
+        <Landing
           onStart={() => {
             // PLAY is a user gesture — unlock the AudioContext here so sfx play.
             void gameRef.current?.unlockAudio();
