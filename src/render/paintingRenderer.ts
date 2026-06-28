@@ -32,6 +32,14 @@ export interface PaintingRenderOpts {
 
 export interface PaintingRenderer {
   render(opts: PaintingRenderOpts): void;
+  /**
+   * Dispose + clear all actor views. MUST be called when the sim world is
+   * rebuilt (player death): koota recycles worldId 0, so the new world's entity
+   * ids numerically alias the destroyed world's — without flushing, the stale
+   * `views` entries make `ensure*` think the actors already exist and the new
+   * player/enemies never get sprites (invisible after a death with lives left).
+   */
+  flushViews(): void;
   destroy(): void;
   readonly app: Application;
   /** The canvas this renderer created and owns (a child of the host container). */
@@ -127,24 +135,24 @@ export async function createPaintingRenderer(
   function syncActors(o: PaintingRenderOpts): void {
     const seen = new Set<Entity>();
 
-    o.world.query(Player, Position, Size, Facing).updateEach(([, pos, size, facing], e) => {
+    o.world.query(Player, Position, Size, Facing).readEach(([, pos, size, facing], e) => {
       seen.add(e);
       ensurePlayer(e, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
       faceView(views.get(e), facing.dir);
     });
-    o.world.query(Enemy, Position, Size, Facing).updateEach(([enemy, pos, size, facing], e) => {
+    o.world.query(Enemy, Position, Size, Facing).readEach(([enemy, pos, size, facing], e) => {
       seen.add(e);
       ensureEnemy(e, enemy.visual, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
       faceView(views.get(e), facing.dir);
     });
-    o.world.query(Collectible, Position, Size).updateEach(([, pos, size], e) => {
+    o.world.query(Collectible, Position, Size).readEach(([, pos, size], e) => {
       seen.add(e);
       ensureRelic(e, relicTex, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
     });
-    o.world.query(Pot, Position, Size).updateEach(([pot, pos, size], e) => {
+    o.world.query(Pot, Position, Size).readEach(([pot, pos, size], e) => {
       seen.add(e);
       ensurePot(e, pot.color, potCache, views, actorsLayer);
       place(views.get(e), e, o, pos, size);
@@ -192,13 +200,21 @@ export async function createPaintingRenderer(
     }
   }
 
+  function flushViews(): void {
+    for (const v of views.values()) v.dispose();
+    views.clear();
+  }
+
   return {
     app,
     canvas,
     render,
+    flushViews,
     destroy() {
-      for (const v of views.values()) v.dispose();
-      views.clear();
+      flushViews();
+      // Pot frames are standalone Texture slices sharing an Assets-owned source;
+      // destroy the slice wrappers (false = keep the shared source for Assets).
+      for (const frames of potCache.values()) for (const t of frames) t.destroy(false);
       potCache.clear();
       relicTex.destroy(true); // standalone RenderTexture — not in the Assets cache
       painting.destroy();

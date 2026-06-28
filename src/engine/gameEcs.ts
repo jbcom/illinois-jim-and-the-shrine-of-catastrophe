@@ -131,6 +131,10 @@ export async function createGame(container: HTMLElement, deps: GameDeps = {}): P
   }
 
   function rebuildWorld(): void {
+    // Flush stale actor sprites BEFORE the new world reuses worldId 0 (koota
+    // recycles it), or the new player/enemies alias dead entity ids and stay
+    // invisible — the renderer's view map must be cleared on every rebuild.
+    renderer.flushViews();
     sim.world.destroy(); // free the koota world slot (16-world cap)
     sim = createSimWorld(level);
     prev = new Map();
