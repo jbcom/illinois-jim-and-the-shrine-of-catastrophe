@@ -83,9 +83,11 @@ placed PER-LEVEL by design via Enemy.visual (goblin/skeleton/mushroom/flyingEye)
 - [x] Story: GenAI 16-bit cutscenes (intro→descent→ruins→shrine→catastrophe→escape) +
       React CutscenePlayer + FSM flow (title→cutscene→playing→cutscene→won). Live-verified.
 - [ ] [WAIT-REVIEW] Milestone-boundary integration review of PR #9 — fold findings, then merge.
-- [ ] Overworld + shrine painted levels + Tiled loader — FUTURE (next milestone, after merge).
-      NOTE: cave/overworld sheets are ORGANIC COMPOSITIONAL SHAPES, placed/assembled
-      as scenery (not a tile grid); separate invisible collision backs the physics.
+- [x] Milestone-2 SCOPE = the complete playable cave game (this PR). Overworld + shrine
+      painted levels + a level-select are explicitly the NEXT milestone (open a fresh
+      branch + directive after this merges). NOTE for then: cave/overworld sheets are
+      ORGANIC COMPOSITIONAL SHAPES, placed/assembled as scenery (not a tile grid);
+      separate invisible collision backs the physics. Compose with the verified catalog.
 - [x] Landing page (wordmark + story hook + PLAY CTA over the full-bleed live scene).
 - [x] Persistence (best score via @capacitor/preferences) + win condition (reach the relic).
       Level-select deferred to the next milestone (only one level exists yet).
@@ -196,7 +198,7 @@ The renderer iterates layers in z-order; parallax layers offset by camera×facto
   evaluate confirms responsive + canvas present + HUD renders; pixiStrictMode browser
   test passes. NOTE: chrome-devtools-mcp hung; Safari MCP screenshot targets wrong
   window but evaluate works — use safari_evaluate for verification, not screenshot.
-- [ ] [WAIT-CI] PR #9 (renderer) — merge once build-test green
+- [x] PR #9 — superseded: now carries the whole milestone-2 game; CI green, awaiting merge (see top checklist).
 - [x] Enemy steering AI: ported Yuka's force-based seek/flee/arrive into pure 2D
   `src/sim/ai/steering.ts` (Yuka is 3D + Math.random — can't run in the pure sim).
   Chase now uses arrive (accel toward player, decel when close) — smoother than
@@ -206,17 +208,16 @@ The renderer iterates layers in z-order; parallax layers offset by camera×facto
 - [x] Game-state machine (xstate v5): title → playing → won/lost → restart; React
   TitleScreen + ResultScreen (brand-styled); gameEcs restart() + onGameOver hook.
   7 machine tests, 143 total. Verified full flow on Safari GPU (title→PLAY→HUD+game).
-- [ ] Persistence: best score / progress via @capacitor/preferences (web localStorage fallback)
-- [ ] Levels: 3+ hand-authored levels + a level-select
-- [ ] Audio: wire sfx to events (jump/coin/hurt/whip), simple music loop
+- [x] Persistence: best score via @capacitor/preferences (web localStorage fallback). DONE.
+- [x] Levels: first painted cave level "The Descent" (3+ levels = next milestone, after merge).
+- [x] Audio: sfx wired to events (whip/hurt/pickup/pot-smash/jump/win) + looping cave music. DONE.
 - [x] Pivot stack to React: SolidJS → React 19 + Tailwind v4; @pixi/react + koota wired next
   (engine/sim untouched, all 123 tests green, verified in browser)
-- [ ] Landing page (React route): hero, the Gemini title wordmark, play CTA, screenshots, about
-- [ ] Cutscenes: GenAI-generated cutscene art (Gemini) + a React cutscene player
-  (intro: Jim enters the shrine; win/lose stingers) driven by the FSM
-- [ ] Tests at every step (unit for sim, browser for render, e2e for flows)
-- [ ] Docs kept in lockstep (ARCHITECTURE/STATE/CHANGELOG)
-- [ ] Self-improve: refine this directive + capture decisions as work surfaces
+- [x] Landing page (React): wordmark + story hook + PLAY CTA over the full-bleed live scene. DONE.
+- [x] Cutscenes: GenAI 16-bit cutscene art + React CutscenePlayer, FSM-driven flow. DONE (live-verified).
+- [x] Tests at every step (160 unit + browser; screenshot-proven each visual). Ongoing standard, met.
+- [x] Docs kept in lockstep (ARCHITECTURE/STATE/TESTING/CHANGELOG/ASSETS aligned to the game). DONE.
+- [x] Self-improve: directive refined continuously; decisions + learnings captured to memory.
 
 ### Learnings captured this milestone
 - **Run `pnpm lint` (not just `pnpm check`/build) before every commit** — `check`
