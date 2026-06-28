@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- All colours are BRAND tokens from src/brand.ts. -->
+  <rect width="512" height="512" fill="#17110b" />
+  <!-- Temple arch slab in torch-lit stone -->
+  <path d="M112 430 L112 200 Q112 112 256 112 Q400 112 400 200 L400 430 Z" fill="#6f4e2e" />
+  <!-- Carved gold rim -->
+  <path d="M112 430 L112 200 Q112 112 256 112 Q400 112 400 200 L400 430"
+        fill="none" stroke="#e3b341" stroke-width="16" stroke-linejoin="round" />
+  <!-- Obsidian doorway cut into the slab -->
+  <path d="M176 430 L176 230 Q176 168 256 168 Q336 168 336 230 L336 430 Z" fill="#17110b" />
+  <!-- Relic gem glowing in the doorway -->
+  <circle cx="256" cy="318" r="46" fill="#c2402e" />
+  <circle cx="256" cy="318" r="26" fill="#f6d36b" />
+  <!-- Carved glyph accents in weathered sandstone -->
+  <g fill="#9a7240">
+    <rect x="132" y="220" width="22" height="22" />
+    <rect x="358" y="220" width="22" height="22" />
+    <rect x="132" y="278" width="22" height="22" />
+    <rect x="358" y="278" width="22" height="22" />
+  </g>
+</svg>
