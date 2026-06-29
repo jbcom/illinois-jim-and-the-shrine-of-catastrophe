@@ -44,6 +44,23 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 
 ## Queue — LIVE
 
+### Render polish (agent-doable, NOT Meshy-gated)
+- [ ] [WAIT-DEBUGGER] Gorge bottom-right transparency CHECKERBOARD: in the-rushing-gorge
+      portrait, a transparent-pixel checkerboard shows at the extreme bottom-right corner
+      (beside a dark rock), at the level/screen boundary. RULED OUT (verified this session):
+      ALL gorge assets clean — baked props (wet-rock-ledge, static-log-raft, log-raft, etc.),
+      level-dir layers (water-surface, ground-riverbed, parallax-far/mid) all checkerboard-free;
+      no texture-load errors; canvas has solid #17110b background (so it's NOT the canvas
+      showing through), out-of-range band slots are hidden. It's a slice-wrap compositing
+      edge-case — likely a Pixi Texture.EMPTY/missing-texture debug checkerboard on a sprite
+      whose texture is mid-load, or an empty band RT. stuck-loop-debugger dispatched with the
+      ruled-out list; awaiting its file:line root cause before editing (debug-loop stop rule:
+      3+ hypotheses reached, stop probing, let the specialist land the fix).
+- [ ] [WAIT-DEPLOY] Confirm the live GitHub Pages site (jonbogaty.com/illinois-jim-…)
+      propagates the v1.0.0 build (b2ee2d8). Deploy succeeded from the correct SHA; the edge
+      was still serving an older index hash (index-BTEG_bK-) at merge time. Monitor polling
+      for the hash flip; no code action needed unless it never propagates.
+
 ### Next chapter — levels 6–10 (gated on Meshy credit)
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of
       levels 6–10 needs ~10 baked 3D props — generating them needs credits I can't purchase
