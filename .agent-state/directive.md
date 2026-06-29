@@ -45,6 +45,12 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 ## Queue — LIVE
 
 ### Render polish (agent-doable, NOT Meshy-gated)
+- [x] Halftone-dither sweep across ALL 12 level parallax layers — DONE. The Explore audit
+      flagged 3 more with the same Gemini dot-screen defect: halward parallax-distant-sea-mountain
+      (water surface), crystal-parallax-sky (gradient sky), jungle-trunks-parallax (fog/mist).
+      Regenerated all 3 with the hardened no-dither prompt (solid water / smooth glow / solid
+      mist clouds) and re-prepped their WebPs — verified clean. The other 9 were already clean.
+      Bundled into PR #28 with the gorge fix.
 - [x] Gorge bottom-right transparency CHECKERBOARD — FIXED (0eea22d). Root cause (via
       stuck-loop-debugger): portrait band RenderTextures were created at resolution:1 while
       the app runs at resolution:2, so each band buffer was half-density and 2×-upscaled on
