@@ -15,13 +15,16 @@ import { createInputManager, type InputManager } from "@engine/input/inputManage
 import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
 import { FIRST_LEVEL_ID, levelBundle } from "@render/levels/registry.ts";
-import { createPaintingRenderer, type PaintingRenderer } from "@render/paintingRenderer.ts";
+import { createPaintingRenderer, type PaintingRenderer, type PortraitWrap } from "@render/paintingRenderer.ts";
+import { makeBandLayout, mapWorldX } from "@render/bandLayout.ts";
 import {
   collectibleSystem,
   combatSystem,
   enemySystem,
+  gateSwitchSystem,
   lifetimeSystem,
   mineCartSystem,
+  movingPlatformSystem,
   npcInteractionSystem,
   particleSystem,
   physicsSystem,
@@ -86,6 +89,7 @@ export async function createGame(
   const renderer: PaintingRenderer = await createPaintingRenderer(container, {
     parallax: bundle.parallax,
     painting: bundle.painting,
+    ...(bundle.artPainting ? { artPainting: bundle.artPainting } : {}),
     frameTop: bundle.frame.top,
     frameBottom: bundle.frame.bottom,
     ...(bundle.groundFill ? { groundFill: bundle.groundFill } : {}),
@@ -104,6 +108,35 @@ export async function createGame(
     const aspect = Math.max(0.1, vw / Math.max(1, vh));
     return { viewW: frameH * aspect, viewH: frameH };
   };
+
+  // Each on-screen band reads like a normal ~16:10 landscape view of the level; a band
+  // shows this much horizontal world. The level wraps into ceil(levelWidth/bandW) bands.
+  const BAND_ASPECT = 1.6;
+  const bandWidthWorld = frameH * BAND_ASPECT;
+
+  /**
+   * Decide the portrait slice-wrap for the current canvas. Engage wrap mode when the
+   * canvas is NOT comfortably wide (a phone/folded foldable upright, or a near-square
+   * unfolded foldable): show several stacked bands so the level fills the tall screen
+   * instead of a thin sliver. Returns undefined for a wide landscape canvas (one band).
+   */
+  function portraitWrap(canvasW: number, canvasH: number): PortraitWrap | undefined {
+    const aspect = canvasW / Math.max(1, canvasH);
+    // A single band needs ≈ BAND_ASPECT wide to read; if the screen is wider than that
+    // it's a normal landscape view — one band, no wrap. Below it, stack bands to fill.
+    if (aspect >= BAND_ASPECT - 0.05) return undefined;
+    const layout = makeBandLayout(bounds.width, bandWidthWorld, frameH);
+    if (layout.bandCount < 2) return undefined; // level too short to wrap
+    // How many bands fit the screen height at the scale where a band fills the width:
+    // bandScreenH = screenW / aspectOfBand; visibleBands = screenH / bandScreenH.
+    const bandScreenH = canvasW / BAND_ASPECT;
+    const visibleBands = Math.max(1, Math.min(layout.bandCount, Math.round(canvasH / bandScreenH)));
+    const center = playerCenter();
+    const pb = center ? mapWorldX(layout, center.x) : { band: 0, xInBand: 0 };
+    // Fractional band = band + progress across it, so the vertical scroll is smooth.
+    const playerBand = pb.band + pb.xInBand / layout.bandWidthWorld;
+    return { bandCount: layout.bandCount, bandWidthWorld: layout.bandWidthWorld, visibleBands, playerBand };
+  }
   const clock: Clock = createClock();
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.
@@ -124,10 +157,17 @@ export async function createGame(
   viewport.onChange((state) => {
     const view = cameraView(canvas.width || state.viewport.viewW, canvas.height || state.viewport.viewH);
     camera = { ...camera, viewW: view.viewW, viewH: view.viewH };
-    input.resize(
-      canvas.clientWidth || state.viewport.viewW,
-      canvas.clientHeight || state.viewport.viewH,
-    );
+    // Touch zones live in CSS px — localPoint() maps pointers via the surface's
+    // getBoundingClientRect, and input binds to `container`. Size the layout from
+    // the container's CSS box, NOT canvas.clientWidth (can read 0 mid-resize before
+    // Pixi's resizeTo ResizeObserver reflows) and NEVER viewport.viewW (that's
+    // design-space units = designW × scale, not CSS px). The old fallback put the
+    // absolute-positioned jump/whip zones off-screen on an unfolded foldable — the
+    // unfold's resize tick fired with canvas.clientWidth==0 → design-space units →
+    // unreachable bottom controls. window.innerWidth is a same-unit last resort.
+    const cssW = container.clientWidth || window.innerWidth;
+    const cssH = container.clientHeight || window.innerHeight;
+    input.resize(cssW, cssH);
   });
 
   /** Snapshot current actor positions so the next frame can interpolate from them. */
@@ -201,6 +241,10 @@ export async function createGame(
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
+    // Gate/switch puzzle: latch switches on overlap, open gates, block closed ones.
+    gateSwitchSystem(sim.world);
+    // Moving platforms oscillate and carry the player riding them.
+    movingPlatformSystem(sim.world, dt);
     const wasGrounded = sim.world.query(Player)[0]?.get(Player)?.grounded ?? true;
     const combat = combatSystem(sim.world, sim.tuning);
     const pots = potSystem(sim.world, sim.tuning, dt);
@@ -222,6 +266,11 @@ export async function createGame(
       pos.y + sim.tuning.height / 2,
       bounds,
     );
+    // PIN the vertical view to the authored band (the renderer cover-scales the
+    // frame top→bottom to fill the screen). Vertical camera scroll would reveal the
+    // dead world BELOW the floor (the dirt void) or above the ceiling — the level
+    // is authored so the whole playable band fits the frame, so we never scroll Y.
+    camera = { ...camera, y: 0 };
   }
 
   /** Handle player death: lose a life + rebuild, or end the run at zero lives. */
@@ -262,10 +311,22 @@ export async function createGame(
     handleDeath();
   }
 
+  /** Issue one render, choosing the portrait slice-wrap when the canvas is tall. */
+  function renderFrame(alpha: number): void {
+    const wrap = portraitWrap(canvas.width || 1, canvas.height || 1);
+    renderer.render({
+      world: sim.world,
+      camera,
+      viewport: viewport.current().viewport,
+      alpha,
+      prev,
+      ...(wrap ? { portrait: wrap } : {}),
+    });
+  }
+
   const frame = (t: number) => {
     if (!running) return;
     const stepInfo = clock.tick(t);
-    const vp = viewport.current().viewport;
 
     if (!paused) {
       // Snapshot ONCE before the batch: `prev` must be "positions as of the end
@@ -280,14 +341,7 @@ export async function createGame(
       if (stepInfo.steps > 0) updateCameraAndHud();
     }
 
-    renderer.render({
-      world: sim.world,
-      camera,
-      viewport: vp,
-      alpha: paused ? 0 : stepInfo.alpha,
-      prev,
-    });
-
+    renderFrame(paused ? 0 : stepInfo.alpha);
     handle = raf(frame);
   };
 

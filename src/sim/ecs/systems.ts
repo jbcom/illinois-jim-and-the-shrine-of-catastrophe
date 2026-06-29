@@ -12,9 +12,11 @@ import {
   Collectible,
   Enemy,
   Facing,
+  Gate,
   Gravity,
   Lifetime,
   MineCart,
+  MovingPlatform,
   Npc,
   Particle,
   Player,
@@ -22,6 +24,7 @@ import {
   Pot,
   Score,
   Size,
+  Switch,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import type { PlayerIntent } from "@sim/input/intent.ts";
@@ -206,6 +209,81 @@ export function npcInteractionSystem(world: World): TalkTarget | null {
     }
   });
   return best;
+}
+
+/**
+ * Gate/switch puzzle system: the player overlapping a Switch latches it `on` (stays
+ * on); a Gate opens once its `opensWith` switch is on. While a gate is CLOSED its
+ * world rect blocks the player — overlap pushes the player back out horizontally, so
+ * the way forward is sealed until the lever is pulled. Returns true if any switch
+ * just flipped on (so the caller can play a sfx / log).
+ */
+export function gateSwitchSystem(world: World): boolean {
+  const player = world.query(Player, Position, Size)[0];
+  if (!player) return false;
+  const pp = player.get(Position);
+  const ps = player.get(Size);
+  if (!pp || !ps) return false;
+  const playerBox = aabb(pp.x, pp.y, ps.w, ps.h);
+
+  // 1) Latch switches the player overlaps.
+  let flipped = false;
+  const on = new Set<string>();
+  world.query(Switch, Position, Size).updateEach(([sw, pos, size]) => {
+    if (!sw.on && intersects(playerBox, aabb(pos.x, pos.y, size.w, size.h))) {
+      sw.on = true;
+      flipped = true;
+    }
+    if (sw.on) on.add(sw.id);
+  });
+
+  // 2) Open gates whose switch is on; block the player against still-closed gates.
+  let pushX: number | null = null;
+  world.query(Gate, Position).updateEach(([gate]) => {
+    if (!gate.open && on.has(gate.opensWith)) gate.open = true;
+    if (gate.open) return;
+    const gateBox = aabb(gate.x0, gate.top, gate.x1 - gate.x0, gate.bottom - gate.top);
+    if (!intersects(playerBox, gateBox)) return;
+    // Push the player back to the side of the gate they came from.
+    const playerCx = pp.x + ps.w / 2;
+    const gateCx = (gate.x0 + gate.x1) / 2;
+    pushX = playerCx < gateCx ? gate.x0 - ps.w - 1 : gate.x1 + 1;
+  });
+  if (pushX !== null) player.set(Position, { ...pp, x: pushX });
+
+  return flipped;
+}
+
+/**
+ * Moving-platform system: each platform oscillates along its axis (a ping-pong over
+ * `distance` at `speed`) and CARRIES the player when they stand on its top — the
+ * platform's per-tick delta is added to the player's position so they ride it. The
+ * player must be horizontally within the platform's width and resting on its top edge.
+ */
+export function movingPlatformSystem(world: World, dt: number): void {
+  const player = world.query(Player, Position, Size)[0];
+  const pp = player?.get(Position);
+  const ps = player?.get(Size);
+
+  world.query(MovingPlatform, Position).updateEach(([mp, pos]) => {
+    const span = Math.max(1, mp.distance);
+    // Advance phase along the round trip (2× distance), wrapping [0,1).
+    const cycle = (2 * span) / mp.speed; // seconds per full there-and-back
+    mp.phase = (mp.phase + dt / cycle) % 1;
+    const t = mp.phase < 0.5 ? mp.phase * 2 : 2 - mp.phase * 2; // triangle 0→1→0
+    const offset = t * span;
+    const nx = mp.axis === "horizontal" ? mp.originX + offset : mp.originX;
+    const ny = mp.axis === "vertical" ? mp.originY + offset : mp.originY;
+    const dx = nx - pos.x;
+    const dy = ny - pos.y;
+    pos.x = nx;
+    pos.y = ny;
+
+    // Carry the player if they're standing on this platform's top this frame.
+    if (!player || !pp || !ps) return;
+    const onTop = Math.abs(pp.y + ps.h - ny) <= 6 && pp.x + ps.w > nx && pp.x < nx + mp.width;
+    if (onTop) player.set(Position, { x: pp.x + dx, y: pp.y + dy });
+  });
 }
 
 /**

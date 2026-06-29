@@ -85,6 +85,37 @@ export const Gravity = trait({ scale: 1 });
 /** A hazard volume that kills the player on contact. */
 export const Hazard = trait();
 
+/**
+ * A switch the player activates by standing on/near it (a lever/plate). `id` is what
+ * a Gate references via `opensWith`; `on` flips true once triggered (latching — the
+ * gate stays open). The interaction system sets `on` when the player overlaps it.
+ */
+export const Switch = trait({ id: "", on: false });
+
+/**
+ * A gate that blocks a span of the level until its switch fires. `opensWith` is the
+ * Switch id; `open` flips true when that switch latches on. While closed the gate's
+ * collision span blocks the player; while open it's passable. `x0`/`x1`/`top`/`bottom`
+ * are the blocked world rect (px).
+ */
+export const Gate = trait({ opensWith: "", open: false, x0: 0, x1: 0, top: 0, bottom: 0 });
+
+/**
+ * A platform that oscillates along an axis and CARRIES the player standing on its top.
+ * `originX/originY` is the path start; it travels `distance` px along `axis` at `speed`
+ * px/s and back, forever. `phase` (0..1) tracks position along the round trip. `width`
+ * is the standable span; the top is at the platform's y. A timing/traversal challenge.
+ */
+export const MovingPlatform = trait({
+  originX: 0,
+  originY: 0,
+  axis: "horizontal" as "horizontal" | "vertical",
+  distance: 0,
+  speed: 40,
+  width: 64,
+  phase: 0,
+});
+
 /** Lifetime in seconds; entity is removed when it reaches 0 (particles, fx). */
 export const Lifetime = trait({ remaining: 0 });
 

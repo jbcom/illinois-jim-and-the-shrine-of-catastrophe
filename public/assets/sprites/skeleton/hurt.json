@@ -1,0 +1,15 @@
+{
+  "name": "hurt",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.8555,
+  "contentBox": {
+    "minX": 39,
+    "minY": 45,
+    "maxX": 216,
+    "maxY": 219
+  }
+}

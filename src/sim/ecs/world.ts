@@ -11,14 +11,17 @@ import {
   Collectible,
   Enemy,
   Facing,
+  Gate,
   Gravity,
   MineCart,
+  MovingPlatform,
   Npc,
   Player,
   Position,
   Pot,
   Score,
   Size,
+  Switch,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
@@ -87,8 +90,15 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
         visual: (e as { visual?: "goblin" | "skeleton" | "mushroom" | "flyingEye" }).visual ??
           (e.kind === "chase" ? "skeleton" : "goblin"),
         speed: e.kind === "chase" ? 55 : 40,
-        minX: e.x - ts * 3,
-        maxX: e.x + ts * 4,
+        // Use the authored patrol half-width when a GameLevel provides one, so wide
+        // designed patrols read as intended; older ASCII levels keep the ±3-4 tile default.
+        ...(() => {
+          const range = (e as { range?: number }).range;
+          const half = range && range > 0 ? range : undefined;
+          return half !== undefined
+            ? { minX: e.x - half, maxX: e.x + half }
+            : { minX: e.x - ts * 3, maxX: e.x + ts * 4 };
+        })(),
         alive: true,
       }),
     );
@@ -101,6 +111,26 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
       Size({ w: 18, h: 24 }),
       Facing({ dir: 1 }),
       Npc({ dialogueId: n.dialogueId, range: 36, talked: false }),
+    );
+  }
+
+  // Puzzle switches the player activates by overlapping (the gate-puzzle layer).
+  for (const s of level.switches ?? []) {
+    world.spawn(Position({ x: s.x, y: s.y }), Size({ w: 20, h: 24 }), Switch({ id: s.id, on: false }));
+  }
+  // Gates that block their rect until the matching switch latches on.
+  for (const g of level.gates ?? []) {
+    world.spawn(
+      Position({ x: g.x, y: g.y }),
+      Gate({ opensWith: g.opensWith[0] ?? "", open: false, x0: g.x0, x1: g.x1, top: g.top, bottom: g.bottom }),
+    );
+  }
+  // Moving platforms that oscillate and carry the player riding their top.
+  for (const m of level.movingPlatforms ?? []) {
+    world.spawn(
+      Position({ x: m.x, y: m.y }),
+      Size({ w: m.width, h: 12 }),
+      MovingPlatform({ originX: m.x, originY: m.y, axis: m.axis, distance: m.distance, speed: m.speed, width: m.width, phase: 0 }),
     );
   }
 

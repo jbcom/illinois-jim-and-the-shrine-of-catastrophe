@@ -1,0 +1,549 @@
+{
+  "id": "halward-s-reach",
+  "title": "Halward's Reach",
+  "order": 1,
+  "biome": "clifftop-village",
+  "types": [
+    "platformer"
+  ],
+  "targetMinutes": 7,
+  "story": {
+    "beat": "Dusk over a windswept clifftop village that has feared the mountain for a hundred years. Elder Mara begs Jim to end the curse before the last seal breaks.",
+    "narration": [
+      "The wind off the sea carries the smell of woodsmoke and old secrets.",
+      "Elder Mara spoke of a curse, but Illinois Jim only heard the call of adventure.",
+      "The trail ahead is blocked by the old village gate. There must be a release lever nearby."
+    ]
+  },
+  "baselineY": 250,
+  "art": [
+    {
+      "key": "parallax-sky",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit retro SNES style windswept dusk sky with blood-red and gold clouds, dramatic lighting, pixel art landscape",
+      "aspect": "16:9",
+      "worldHeight": 450
+    },
+    {
+      "key": "parallax-distant-sea-mountain",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit pixel art distant dark sea and towering obsidian mountain under a twilight sky, Genesis retro color palette",
+      "aspect": "16:9",
+      "worldHeight": 400
+    },
+    {
+      "key": "parallax-near-cliffs",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit retro platformer background jagged near-cliff edges and silhouettes of distant village roofs, dark teal tones",
+      "aspect": "16:9",
+      "worldHeight": 350
+    },
+    {
+      "key": "ground-village",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "Windswept stone-cobbled street of a clifftop village, obsidian stone and golden grass tufts, retro 16-bit tileable floor",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "pitched-house-1",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A cozy cottage with a steep gabled wood roof, warm glowing windows, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 160
+    },
+    {
+      "key": "pitched-house-2",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A taller village home with a tarnished gold tiled roof and dark timber frame, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 200
+    },
+    {
+      "key": "market-stall",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A canvas-topped wooden market stall with hanging parchment banners and ropes, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 110
+    },
+    {
+      "key": "cliff-ledge-structure",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A natural stone pillar cliff with a flat wooden scaffold built on top, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 220
+    },
+    {
+      "key": "npc-mara",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "Elder Mara, an old village woman in a parchment shawl holding a tarnished gold staff, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "npc-watchman",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "The village watchman in light armor, holding a torch with a warm amber glow, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "npc-ferryman",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "A rugged old ferryman with a thick beard and a heavy rope coiled over his shoulder, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "enemy-crow",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "A shadow-winged mountain crow with glowing blood-red eyes, retro pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "hazard-spikes",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "Sharp wooden defensive stakes lashed together with coarse twine, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 40
+    },
+    {
+      "key": "switch-lever",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A rustic iron wall lever with a heavy wooden handle in a stone housing, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "gate-trailhead",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "A heavy wooden security gate reinforced with thick obsidian iron bands, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 128
+    },
+    {
+      "key": "collectible-relic-coin",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A shiny, tarnished gold coin stamped with an ancient seal, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 16
+    },
+    {
+      "key": "secret-relic",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A rare crystal idol glowing with a faint teal light, retro pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "moving-platform-wood",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A sturdy wooden lift suspended by thick hemp ropes, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 24
+    },
+    {
+      "key": "breakables-pot",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A clay village urn painted with teal and gold stripes, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    }
+  ],
+  "parallax": [
+    {
+      "art": "parallax-sky",
+      "factor": 0.1
+    },
+    {
+      "art": "parallax-distant-sea-mountain",
+      "factor": 0.3
+    },
+    {
+      "art": "parallax-near-cliffs",
+      "factor": 0.6
+    }
+  ],
+  "surfaces": [
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 80,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 600,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 200,
+      "top": 120,
+      "anchorArt": "pitched-house-1"
+    },
+    {
+      "kind": "raised",
+      "length": 220,
+      "top": 160,
+      "anchorArt": "pitched-house-2"
+    },
+    {
+      "kind": "gap",
+      "length": 90,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 150,
+      "top": 90,
+      "anchorArt": "market-stall"
+    },
+    {
+      "kind": "ground",
+      "length": 700,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 120,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 250,
+      "top": 180,
+      "anchorArt": "cliff-ledge-structure"
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 450,
+      "top": 0
+    }
+  ],
+  "placements": [
+    {
+      "art": "pitched-house-1",
+      "at": {
+        "surface": 0,
+        "t": 0.5,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    },
+    {
+      "art": "market-stall",
+      "at": {
+        "surface": 2,
+        "t": 0.2,
+        "dy": 0
+      },
+      "z": 2,
+      "flipX": false
+    },
+    {
+      "art": "pitched-house-2",
+      "at": {
+        "surface": 2,
+        "t": 0.7,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": true
+    },
+    {
+      "art": "pitched-house-1",
+      "at": {
+        "surface": 7,
+        "t": 0.1,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    },
+    {
+      "art": "market-stall",
+      "at": {
+        "surface": 7,
+        "t": 0.8,
+        "dy": 0
+      },
+      "z": 2,
+      "flipX": false
+    }
+  ],
+  "enemies": [
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 2,
+        "t": 0.4,
+        "dy": 80
+      },
+      "behavior": "patrol",
+      "range": 60
+    },
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 3,
+        "t": 0.5,
+        "dy": 30
+      },
+      "behavior": "patrol",
+      "range": 40
+    },
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 4,
+        "t": 0.3,
+        "dy": 40
+      },
+      "behavior": "chase",
+      "range": 0
+    },
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 9,
+        "t": 0.5,
+        "dy": 90
+      },
+      "behavior": "patrol",
+      "range": 80
+    }
+  ],
+  "collectibles": [
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 3,
+        "t": 0.2,
+        "dy": 30
+      },
+      "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 3,
+        "t": 0.8,
+        "dy": 30
+      },
+      "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 4,
+        "t": 0.5,
+        "dy": 40
+      },
+      "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 6,
+        "t": 0.5,
+        "dy": 30
+      },
+      "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 10,
+        "t": 0.2,
+        "dy": 40
+      },
+      "value": 200
+    }
+  ],
+  "pots": [
+    {
+      "art": "breakables-pot",
+      "at": {
+        "surface": 0,
+        "t": 0.8,
+        "dy": 0
+      },
+      "drop": "health"
+    },
+    {
+      "art": "breakables-pot",
+      "at": {
+        "surface": 7,
+        "t": 0.4,
+        "dy": 0
+      },
+      "drop": "relic"
+    },
+    {
+      "art": "breakables-pot",
+      "at": {
+        "surface": 11,
+        "t": 0.1,
+        "dy": 0
+      },
+      "drop": "secret"
+    }
+  ],
+  "npcs": [
+    {
+      "art": "npc-mara",
+      "at": {
+        "surface": 7,
+        "t": 0.5,
+        "dy": 0
+      },
+      "dialogueId": "mara_farewell"
+    },
+    {
+      "art": "npc-watchman",
+      "at": {
+        "surface": 7,
+        "t": 0.55,
+        "dy": 0
+      },
+      "dialogueId": "watchman_warning"
+    },
+    {
+      "art": "npc-ferryman",
+      "at": {
+        "surface": 7,
+        "t": 0.6,
+        "dy": 0
+      },
+      "dialogueId": "ferryman_tip"
+    }
+  ],
+  "hazards": [
+    {
+      "art": "hazard-spikes",
+      "at": {
+        "surface": 2,
+        "t": 0.9,
+        "dy": 0
+      },
+      "width": 32
+    },
+    {
+      "art": "hazard-spikes",
+      "at": {
+        "surface": 9,
+        "t": 0.7,
+        "dy": 0
+      },
+      "width": 32
+    }
+  ],
+  "switches": [
+    {
+      "id": "trailhead-switch",
+      "art": "switch-lever",
+      "at": {
+        "surface": 10,
+        "t": 0.8,
+        "dy": 0
+      },
+      "kind": "lever"
+    }
+  ],
+  "gates": [
+    {
+      "art": "gate-trailhead",
+      "at": {
+        "surface": 11,
+        "t": 0.5,
+        "dy": 0
+      },
+      "opensWith": [
+        "trailhead-switch"
+      ],
+      "blocksSurface": 12
+    }
+  ],
+  "keys": [],
+  "movingPlatforms": [
+    {
+      "art": "moving-platform-wood",
+      "at": {
+        "surface": 8,
+        "t": 0.5,
+        "dy": 50
+      },
+      "axis": "vertical",
+      "distance": 100,
+      "speed": 50,
+      "width": 64
+    }
+  ],
+  "secrets": [
+    {
+      "art": "secret-relic",
+      "at": {
+        "surface": 4,
+        "t": 0.9,
+        "dy": 80
+      },
+      "hint": "High jump from the tallest pitched roof to discover an invisible wind-scaffold.",
+      "value": 1000
+    }
+  ],
+  "checkpoints": [
+    {
+      "at": {
+        "surface": 7,
+        "t": 0.3,
+        "dy": 0
+      }
+    }
+  ],
+  "spawn": {
+    "surface": 0,
+    "t": 0.1,
+    "dy": 0
+  },
+  "goal": {
+    "surface": 12,
+    "t": 0.8,
+    "dy": 0
+  }
+}

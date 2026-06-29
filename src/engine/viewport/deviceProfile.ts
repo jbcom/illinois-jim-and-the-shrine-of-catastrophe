@@ -21,6 +21,14 @@ export interface DeviceClassifyInput {
   dpr: number;
   /** Runtime platform from Capacitor or navigator. */
   platform: "ios" | "android" | "web";
+  /**
+   * UA hint that the web runtime is on an Android device (a phone OR an unfolded
+   * foldable/tablet browser). Lets the web path tell a big-screen Android foldable
+   * from a small phone — the deployed Pages build is always `platform: "web"`, so
+   * without this an unfolded OnePlus Open would fall into the phone bucket and get
+   * wrongly landscape-locked. Defaults false (desktop-style web).
+   */
+  androidUA?: boolean;
 }
 
 /** Design resolution the engine should target for this device class. */
@@ -36,19 +44,22 @@ export interface DeviceProfile {
   /** Recommended UI scale factor (1 = 100 %). Applied to HUD/UI elements. */
   uiScale: number;
   /**
-   * Whether gameplay should be LOCKED to landscape. A side-scroller's flat band
-   * fills a wide screen but can't fill a tall portrait one without extreme zoom
-   * or empty sky — so phones lock to landscape (Sonic/Metal Slug-style). Larger
-   * screens (tablets, UNFOLDED foldables, desktop) have room in either rotation
-   * and stay free. Folded foldables read as `phone`-ish and lock; once unfolded
-   * they reclassify to `foldable` and unlock.
+   * Whether gameplay should be LOCKED to landscape. ALWAYS false now: the portrait
+   * serpentine slice-wrap (src/render/bandLayout.ts) wraps the horizontal level into
+   * stacked screen-width bands, so a tall portrait screen is FULLY playable — no lock,
+   * no "rotate your device" nag. Both orientations are first-class. Kept on the profile
+   * for back-compat with the orientation store; it just never asks for a lock anymore.
+   * See [[portrait-serpentine-slice-wrap]].
    */
   lockLandscape: boolean;
 }
 
-/** Gameplay locks to landscape only on phone-class devices. */
-export function shouldLockLandscape(deviceClass: DeviceClass): boolean {
-  return deviceClass === "phone";
+/**
+ * Gameplay no longer locks to landscape on any device — the portrait slice-wrap makes
+ * upright play first-class. Returns false for every class (signature kept for callers).
+ */
+export function shouldLockLandscape(_deviceClass: DeviceClass): boolean {
+  return false;
 }
 
 /**
@@ -57,13 +68,18 @@ export function shouldLockLandscape(deviceClass: DeviceClass): boolean {
  * All inputs are CSS pixels. The function is pure: same inputs → same output.
  */
 export function classifyDevice(input: DeviceClassifyInput): DeviceProfile {
-  const { width, height, platform } = input;
+  const { width, height, dpr, platform, androidUA } = input;
 
   const minDim = Math.min(width, height);
   const maxDim = Math.max(width, height);
   const aspectRatio = maxDim / (minDim === 0 ? 1 : minDim);
+  // Physical screen size = CSS px × DPR. A high-DPR device can report a small CSS
+  // viewport yet be a physically LARGE screen (an unfolded foldable in a browser
+  // with a mobile viewport meta). Classify big-screen web by physical pixels so a
+  // foldable/tablet is never mistaken for a phone (and wrongly landscape-locked).
+  const physicalMinDim = minDim * (dpr || 1);
 
-  const deviceClass = resolveClass(minDim, aspectRatio, platform);
+  const deviceClass = resolveClass({ minDim, physicalMinDim, aspectRatio, platform, androidUA });
 
   return {
     deviceClass,
@@ -77,20 +93,37 @@ export function classifyDevice(input: DeviceClassifyInput): DeviceProfile {
 // Private helpers
 // ---------------------------------------------------------------------------
 
-function resolveClass(
-  minDim: number,
-  aspectRatio: number,
-  platform: "ios" | "android" | "web",
-): DeviceClass {
+interface ResolveInput {
+  minDim: number;
+  physicalMinDim: number;
+  aspectRatio: number;
+  platform: "ios" | "android" | "web";
+  androidUA: boolean | undefined;
+}
+
+function resolveClass(input: ResolveInput): DeviceClass {
+  const { minDim, physicalMinDim, aspectRatio, platform, androidUA } = input;
+
   if (platform === "web") {
-    // On web: large enough viewport → desktop; otherwise phone-like.
+    // The deployed Pages build is ALWAYS platform:"web" (no native Capacitor), so
+    // this branch must tell a phone, a tablet, an unfolded foldable, AND a desktop
+    // apart — using PHYSICAL pixels (CSS×DPR), because a high-DPR mobile browser
+    // reports a small CSS viewport for a physically large screen.
+    if (androidUA) {
+      // A mobile browser (phone or unfolded foldable/tablet). Use physical size:
+      // a real phone's short edge is < ~1100 physical px; a tablet/unfolded
+      // foldable is larger and must NOT be phone-locked.
+      if (physicalMinDim >= 1300) return "tablet"; // big slate (Pixel Tablet, iPad-class)
+      if (physicalMinDim >= 1000) return "foldable"; // unfolded foldable (OnePlus Open ≈ 1840)
+      return "phone";
+    }
+    // Desktop/laptop browser: large CSS viewport → desktop; a tiny window → phone.
     return minDim >= 600 ? "desktop" : "phone";
   }
 
   if (platform === "android") {
-    // Foldable: very tall/narrow aspect (cover-mode) OR very large min-dim.
-    // Cover screens on foldables (e.g. Galaxy Z Fold) typically have aspect > 2.4.
-    // Regular tall phones (e.g. 9:20 ≈ 2.22) do not reach this threshold.
+    // Native Android (Capacitor). Foldable: very tall/narrow cover aspect OR a
+    // large min-dim (the unfolded inner screen).
     if (aspectRatio > 2.4 || minDim >= 900) {
       return "foldable";
     }

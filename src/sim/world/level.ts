@@ -26,6 +26,27 @@ export interface Level {
   readonly collectibles: readonly CollectibleSpawn[];
   /** Enemy spawn positions (world px) with a kind tag. */
   readonly enemies: readonly (SpawnPoint & { kind: "patrol" | "chase" })[];
+  /** Puzzle switches (optional) — a Gate's `opensWith` references their id. */
+  readonly switches?: readonly { x: number; y: number; id: string }[];
+  /** Gates (optional) that block a world rect until their switch(es) fire. */
+  readonly gates?: readonly {
+    x: number;
+    y: number;
+    opensWith: readonly string[];
+    x0: number;
+    x1: number;
+    top: number;
+    bottom: number;
+  }[];
+  /** Moving platforms (optional) that oscillate and carry the player. */
+  readonly movingPlatforms?: readonly {
+    x: number;
+    y: number;
+    axis: "horizontal" | "vertical";
+    distance: number;
+    speed: number;
+    width: number;
+  }[];
 }
 
 const CHAR_TO_KIND: Record<string, TileKind> = {

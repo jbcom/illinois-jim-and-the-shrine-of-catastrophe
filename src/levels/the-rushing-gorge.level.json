@@ -1,0 +1,484 @@
+{
+  "id": "the-rushing-gorge",
+  "title": "The Rushing Gorge",
+  "order": 3,
+  "biome": "river-gorge",
+  "types": [
+    "swim",
+    "autoscroller"
+  ],
+  "targetMinutes": 9,
+  "story": {
+    "beat": "The jungle breaks at a roaring river gorge. The only way on is down — and through the water.",
+    "narration": [
+      "The roar of the rapids fills the air. Illinois Jim stands at the precipice of the Great Gorge.",
+      "The water looks deep and dangerous, but the ancient path continues beneath the surface.",
+      "Time to dive in. Keep your eyes peeled for air pockets and watch out for the local river life!"
+    ]
+  },
+  "baselineY": 250,
+  "art": [
+    {
+      "key": "parallax-far",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit SNES style parallax background of a deep river gorge with towering wet basalt cliffs, dramatic mist rising from the roaring river below, a blood red pulp adventure sky, dark obsidian stones.",
+      "aspect": "16:9",
+      "worldHeight": 320
+    },
+    {
+      "key": "parallax-mid",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit Genesis style rocky canyon silhouettes, closer rushing waterfalls, dense teal moss clinging to sheer wet rock faces, atmospheric perspective with heavy spray effects.",
+      "aspect": "16:9",
+      "worldHeight": 240
+    },
+    {
+      "key": "ground-riverbed",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit pixel art tileable riverbed ground strip, dark muddy rocks underwater, tarnished gold sand deposits, slimy teal moss, retro adventure look.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "water-surface",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit retro white-water rapids surface strip, bubbling foam, animated churning currents of teal water and parchment white spray.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "wet-rock-ledge",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art wet mossy stone ledge, dark obsidian rock with water dripping from it, on a flat solid magenta background.",
+      "aspect": "4:3",
+      "worldHeight": 120
+    },
+    {
+      "key": "static-log-raft",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art makeshift wooden log raft tied with frayed hemp rope, weathered brown logs floating on water, on a flat solid magenta background.",
+      "aspect": "4:3",
+      "worldHeight": 80
+    },
+    {
+      "key": "log-raft-platform",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "16-bit style isolated wooden raft platform, wet slippery logs, retro platformer asset, on a flat solid magenta background.",
+      "aspect": "4:3",
+      "worldHeight": 40
+    },
+    {
+      "key": "river-serpent",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art of a fearsome river serpent, teal scales, glowing red eyes, jagged teeth, coiled to strike, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "boatman-npc",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "16-bit SNES style stranded old boatman in a tattered yellow coat, waving frantically, retro explorer aesthetic, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "floating-relic",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art shiny tarnished gold relic with a glowing teal circular gem in the center, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "sunken-lever",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "16-bit retro ancient stone lever covered in green river algae, glowing teal energy core, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "crystal-wall-gate",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit style ancient crystal gate, glowing teal glyph runes blocking the passage, ornate stone frames, on a flat solid magenta background.",
+      "aspect": "3:4",
+      "worldHeight": 120
+    },
+    {
+      "key": "runic-disk-key",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art of an ancient circular runic key made of tarnished gold, glowing red inscriptions, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 24
+    },
+    {
+      "key": "floating-crate-pot",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art weathered wooden cargo crate floating in water, rusted iron bands, retro destructible, on a flat solid magenta background.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "sharp-river-rocks",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit retro sharp jagged river rocks pointing upwards, wet obsidian stone, splashing water, on a flat solid magenta background.",
+      "aspect": "4:3",
+      "worldHeight": 64
+    },
+    {
+      "key": "waterfall-overlay",
+      "role": "decor",
+      "isolation": "transparent",
+      "prompt": "16-bit pixel art rushing vertical waterfall curtain, semi-transparent teal and white foam, water splash, on a flat solid magenta background.",
+      "aspect": "3:4",
+      "worldHeight": 200
+    }
+  ],
+  "parallax": [
+    {
+      "art": "parallax-far",
+      "factor": 0.1
+    },
+    {
+      "art": "parallax-mid",
+      "factor": 0.3
+    }
+  ],
+  "surfaces": [
+    {
+      "kind": "ground",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 550,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 200,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 600,
+      "top": -120
+    },
+    {
+      "kind": "raised",
+      "length": 300,
+      "top": 100,
+      "anchorArt": "wet-rock-ledge"
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 300,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 600,
+      "top": -150
+    },
+    {
+      "kind": "raised",
+      "length": 400,
+      "top": 80,
+      "anchorArt": "static-log-raft"
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 450,
+      "top": 0
+    }
+  ],
+  "placements": [
+    {
+      "art": "wet-rock-ledge",
+      "at": {
+        "surface": 4,
+        "t": 0.5,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    },
+    {
+      "art": "static-log-raft",
+      "at": {
+        "surface": 8,
+        "t": 0.5,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    }
+  ],
+  "enemies": [
+    {
+      "art": "river-serpent",
+      "at": {
+        "surface": 1,
+        "t": 0.4,
+        "dy": 20
+      },
+      "behavior": "patrol",
+      "range": 120
+    },
+    {
+      "art": "river-serpent",
+      "at": {
+        "surface": 3,
+        "t": 0.2,
+        "dy": 30
+      },
+      "behavior": "chase",
+      "range": 0
+    },
+    {
+      "art": "river-serpent",
+      "at": {
+        "surface": 7,
+        "t": 0.6,
+        "dy": 40
+      },
+      "behavior": "patrol",
+      "range": 150
+    }
+  ],
+  "collectibles": [
+    {
+      "art": "floating-relic",
+      "at": {
+        "surface": 1,
+        "t": 0.5,
+        "dy": 80
+      },
+      "value": 200
+    },
+    {
+      "art": "floating-relic",
+      "at": {
+        "surface": 3,
+        "t": 0.8,
+        "dy": 120
+      },
+      "value": 300
+    },
+    {
+      "art": "floating-relic",
+      "at": {
+        "surface": 7,
+        "t": 0.4,
+        "dy": 100
+      },
+      "value": 250
+    }
+  ],
+  "pots": [
+    {
+      "art": "floating-crate-pot",
+      "at": {
+        "surface": 1,
+        "t": 0.2,
+        "dy": 40
+      },
+      "drop": "health"
+    },
+    {
+      "art": "floating-crate-pot",
+      "at": {
+        "surface": 5,
+        "t": 0.6,
+        "dy": 20
+      },
+      "drop": "relic"
+    },
+    {
+      "art": "floating-crate-pot",
+      "at": {
+        "surface": 8,
+        "t": 0.7,
+        "dy": 10
+      },
+      "drop": "secret"
+    }
+  ],
+  "npcs": [
+    {
+      "art": "boatman-npc",
+      "at": {
+        "surface": 8,
+        "t": 0.2,
+        "dy": 0
+      },
+      "dialogueId": "boatman-help"
+    }
+  ],
+  "hazards": [
+    {
+      "art": "sharp-river-rocks",
+      "at": {
+        "surface": 1,
+        "t": 0.8,
+        "dy": 0
+      },
+      "width": 64
+    },
+    {
+      "art": "sharp-river-rocks",
+      "at": {
+        "surface": 5,
+        "t": 0.3,
+        "dy": 0
+      },
+      "width": 64
+    },
+    {
+      "art": "sharp-river-rocks",
+      "at": {
+        "surface": 7,
+        "t": 0.3,
+        "dy": 0
+      },
+      "width": 64
+    }
+  ],
+  "switches": [
+    {
+      "id": "underwater-lever-1",
+      "art": "sunken-lever",
+      "at": {
+        "surface": 3,
+        "t": 0.5,
+        "dy": 20
+      },
+      "kind": "lever"
+    }
+  ],
+  "gates": [
+    {
+      "art": "crystal-wall-gate",
+      "at": {
+        "surface": 4,
+        "t": 0.9,
+        "dy": 0
+      },
+      "opensWith": [
+        "underwater-lever-1"
+      ],
+      "blocksSurface": 5
+    },
+    {
+      "art": "crystal-wall-gate",
+      "at": {
+        "surface": 9,
+        "t": 0.9,
+        "dy": 0
+      },
+      "opensWith": [
+        "ancient-disk-key"
+      ],
+      "blocksSurface": 10
+    }
+  ],
+  "keys": [
+    {
+      "id": "ancient-disk-key",
+      "art": "runic-disk-key",
+      "at": {
+        "surface": 4,
+        "t": 0.8,
+        "dy": 20
+      }
+    }
+  ],
+  "movingPlatforms": [
+    {
+      "art": "log-raft-platform",
+      "at": {
+        "surface": 2,
+        "t": 0.5,
+        "dy": 60
+      },
+      "axis": "horizontal",
+      "distance": 150,
+      "speed": 45,
+      "width": 80
+    },
+    {
+      "art": "log-raft-platform",
+      "at": {
+        "surface": 6,
+        "t": 0.2,
+        "dy": 120
+      },
+      "axis": "vertical",
+      "distance": 180,
+      "speed": 60,
+      "width": 80
+    }
+  ],
+  "secrets": [
+    {
+      "art": "floating-relic",
+      "at": {
+        "surface": 6,
+        "t": 0.5,
+        "dy": -100
+      },
+      "hint": "Hidden in the mist behind the roaring waterfall drop.",
+      "value": 1000
+    }
+  ],
+  "checkpoints": [
+    {
+      "at": {
+        "surface": 3,
+        "t": 0.9,
+        "dy": 10
+      }
+    },
+    {
+      "at": {
+        "surface": 7,
+        "t": 0.1,
+        "dy": 10
+      }
+    }
+  ],
+  "spawn": {
+    "surface": 0,
+    "t": 0.1,
+    "dy": 0
+  },
+  "goal": {
+    "surface": 10,
+    "t": 0.8,
+    "dy": 0
+  }
+}

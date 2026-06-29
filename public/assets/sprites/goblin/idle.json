@@ -1,0 +1,15 @@
+{
+  "name": "idle",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.875,
+  "contentBox": {
+    "minX": 74,
+    "minY": 67,
+    "maxX": 181,
+    "maxY": 224
+  }
+}

@@ -1,6 +1,6 @@
 ---
 title: Current Project State
-updated: 2026-06-28
+updated: 2026-06-29
 status: current
 domain: context
 ---
@@ -52,11 +52,22 @@ The live work queue is `.agent-state/directive.md`.
 - `src/sim/world/camera.ts` — `createCamera` + `followCamera` deadzone scroll,
   level-bounds clamp.
 - `src/sim/world/level.ts` — `parseLevel` ASCII utility + `levelBounds`.
-- `src/sim/world/gameLevel.ts` — `GameLevel` type: invisible collision tilemap +
-  spawns (collectibles, enemies, pots, npcs, goal). The story's three levels:
-  `VILLAGE` (overworld opener) → `DESCENT` (the cave) → `SHRINE` (the climax,
-  the cracked staircase to the golden idol). Paired with their paintings by id in
-  `src/render/levels/registry.ts` (`LEVEL_ORDER` drives the cutscene→level chain).
+- `src/sim/world/levelSpec.ts` — the SINGLE SOURCE OF TRUTH for a level: a
+  `LevelSpec` is an ordered list of surface SEGMENTS (`ground` | `raised` | `gap`)
+  laid left-to-right from x=0, plus overlay `platforms` (rooftops/ledges) stacked
+  above the floor. Props + spawns + goal anchor RELATIVELY (`{seg, t, dy}`) — no
+  absolute world coords. `buildLevel` derives the collision tilemap + world-space
+  spawns + goal; `render/levels/fromSpec.ts` `paintingFromSpec` derives the
+  painting from the SAME segments — so collision and painting cannot drift.
+  NARRATIVE ANCHORING: every raised surface names its `anchorProp` (the beam /
+  staircase / rooftop you stand on) — there is no floating platform.
+- `src/sim/world/specs/*` — the five level specs. `src/sim/world/gameLevel.ts`
+  builds each via `buildLevel`. The story's FIVE levels: `VILLAGE` (overworld
+  opener, with rooftop platforms) → `DESCENT` (the cave) → `SHRINE` (the sanctum
+  approach) → `SHRINE_HEART` (the idol-grab climax) → `ESCAPE_RUN` (the collapsing
+  flight out). Paired with their paintings by id in `src/render/levels/registry.ts`
+  (`LEVEL_ORDER` drives the data-driven cutscene→level chain; the full arc is
+  village → descent → ruins → shrine → catastrophe → escape ending).
 
 ### Sim — player controller
 
@@ -86,10 +97,13 @@ The live work queue is `.agent-state/directive.md`.
 - `src/sim/ecs/world.ts` — `createSimWorld`: constructs + seeds the koota world.
 - `src/sim/ai/steering.ts` — yuka-based steering for chase AI.
 
-### Story — cutscenes + dialogue
+### Story — campaign + cutscenes + dialogue
 
-- `src/sim/story/cutscenes.ts` — `Cutscene` type + registry; `cutsceneById`.
-  "intro" and "escape" cutscenes with GenAI 16-bit painted scenes.
+- `src/sim/story/campaign.ts` — the `CAMPAIGN` array: the SINGLE source of truth for
+  level order + cutscene chain (see `docs/STORY.md`). Level order, first/next level, and
+  the cutscene chain all derive from it.
+- `src/sim/story/cutscenes.ts` — `Cutscene` type + `cutsceneById`; `CUTSCENES` is DERIVED
+  from the campaign (one intro per chapter + the cliffhanger), GenAI 16-bit painted scenes.
 - `src/sim/story/dialogue.ts` — dialogue script registry (NPC lines, pure data).
 
 ### Engine — input
@@ -180,31 +194,78 @@ The live work queue is `.agent-state/directive.md`.
 
 ## Current game state
 
-The game is playable end-to-end:
+A complete **5-level campaign**, playable end-to-end (see `docs/STORY.md`):
 
-- **Landing screen** (`TitleScreen`) with PLAY button.
-- **Opening cutscene** ("intro") — 16-bit GenAI scene + narration, tap to
-  advance.
-- **Playable cave level** ("The Descent"): hand-painted cave with organic shape
-  stamps (no tile grid visible), parallax backdrop, physics, enemies (goblin,
-  skeleton, mushroom, flyingEye), breakable pots, collectible relics, a mine-cart
-  rail segment, and an NPC.
-- **Win condition** — reach the goal-x relic block → ending cutscene ("escape")
-  → result screen with final score and best score.
+- **Landing screen** with PLAY button → the **intro cutscene** (16-bit GenAI scene +
+  narration) → the campaign.
+- **5 live GenAI levels** in story order — Halward's Reach (clifftop village) →
+  The Whispering Jungle → The Rushing Gorge → The Abandoned Mine → The Crystal Cavern.
+  Each is Gemini-authored (Zod `Level` schema, validated), rendered from baked
+  transparent 3D props over curated 2D parallax, with physics, animated enemies
+  (goblin/skeleton/mushroom/flyingEye visuals), breakable pots, collectibles, the
+  problem-solving layer (hazards, switches+gates, moving platforms, secrets), and NPCs.
+- **Bridge cutscenes** between every level; the arc ends on a **cliffhanger** that
+  frames levels 6–10 as the next chapter → win screen.
 - **Lose condition** — lose all lives → result screen.
-- **Score + combo system** — kills and collectibles award points; rapid collection
-  builds a combo multiplier (decays over time).
-- **Audio** — procedural SFX (whip crack, coin, thud, blip) + looping cave-
-  ambience music; unlocked on first user gesture.
-- **Best score persistence** — saved across sessions via `@capacitor/preferences`.
+- **Score + combo system** — kills + collectibles award points; rapid collection builds
+  a decaying combo multiplier.
+- **Audio** — procedural SFX (whip, coin, thud, blip) + looping ambience; gesture-unlocked.
+- **Best score persistence** via `@capacitor/preferences`.
+- **DEV `?level=<id>`** boot override jumps straight into any level for verification.
 
 ---
 
+## Milestone history (shipped — condensed from the old directive)
+
+The directive is kept LEAN (operating mode + the live queue only); shipped history
+lives here so it doesn't reload every session.
+
+- **Scaffold (2026-06-27, PR #1/#3):** the arcade-game stack — Vite + TS + Capacitor
+  + Biome + Playwright + release-please; engine/sim/render/ui foundations; CI →
+  release → cd; Android APK; live on GitHub Pages.
+- **Milestone 2 — the complete cave game (2026-06-28, PR #9):** React 19 + PixiJS 8
+  + koota ECS + xstate FSM; the painting renderer (organic shape stamps, not tiles);
+  all-4 animated enemies, NPC paper-doll factory + dialogue, breakable pots, scoring
+  + combo, mine-cart rails, procedural audio, cutscene flow, persistence, landing.
+- **Milestone 3 — the real narrative (2026-06-28, PR #11-#13):** overworld→cave with
+  cutscenes, NPCs, dialogue; sprite-scale (content-height), flicker, death-plane,
+  cutscene timing, typography fixes; death-loop fix (lost-pointerup phantom joystick).
+- **Milestone 4 — mobile viewport (PR #15-#22):** torch-wall + safe-area + portrait
+  fixes; DEVICE-PROFILE orientation (phones lock, unfolded foldables free; web
+  classifies by physical px + Android UA); multi-aspect GenAI; framed HUD + dialogue
+  bar; visible touch controls; the surface-SPEC level architecture (relative
+  positioning, narrative-anchored platforms) + the 5 hand-built levels (village →
+  cave → shrine → heart → escape); the ground-void/camera-pin/thin-strip framing fix.
+
+- **Milestone 5 — the 3D-baked-to-2D GenAI campaign (2026-06-29):** the binding pivot.
+  3D is a PRODUCTION TOOL, not the runtime: characters + props are generated as 3D GLB
+  via Meshy, baked offline (Blender bpy, alpha) to TRANSPARENT WebP sprites, and rendered
+  by the existing PixiJS 2D engine over Gemini 2D parallax. Gemini authors each level
+  start-to-finish (art manifest + surfaces + the problem-solving layer) via a Zod `Level`
+  schema; `buildFromLevel` + `genaiBundle` adapt it to a live bundle. Shipped: the full
+  baked cast (player 5 clips, 2 enemies, 4 NPCs) + 5 live levels (Halward → jungle → gorge
+  → mine → crystal), each Chrome-verified. Tooling: `bake-prop.py` (`--pitch` for
+  flat-lying disks), `gen-level-parallax.ts`, `gen-cutscenes.ts`, the propBake alpha proof
+  (43 props), the `?level=` dev override.
+  - **Hard-won pipeline rules** (also in the genai-level-pipeline memory): `role:ground`
+    and `role:decor` art (ground tiles, water, waterfall, lava-glow) is OPAQUE from Gemini
+    — it becomes the bundle's `groundFill` or stays in the parallax, NEVER a foreground
+    placement OR surface anchorArt sprite (it stamps a garbage rectangle either way); bake
+    it transparent (e.g. the mine rail) when it must read as a foreground object.
+    Chroma-keying gameplay art is forbidden.
+- **Milestone 6 — the 5-level campaign + cleanup (2026-06-29):** restructured the story so
+  the game ships as a complete 5-level arc with a cliffhanger ending, with a single
+  ordered `CAMPAIGN` array as the source of truth (level order + cutscene chain + flow all
+  derive from it — see `docs/STORY.md`); deleted the legacy shape-stamp level system end to
+  end (5 render modules + 5 sim specs + levelSpec/fromSpec/overworldShapes + 7 test files);
+  generated 6 fresh biome-matched cutscene scenes (Gemini, 3 aspects each); threaded the
+  authored enemy patrol `range` through to the sim; added the switch ON/OFF visual.
+
 ## What comes next
 
-See `.agent-state/directive.md` for the live task queue. Pending areas include:
-
-1. **E2E test suite** — Playwright tests for full flow across phone/tablet/desktop.
-2. **Additional levels** — levels 2 and 3 paintings + collision + enemy layouts.
-3. **Responsive polish** — visual regression for all four form factors.
-4. **Android APK smoke-test** — physical device run.
+See `.agent-state/directive.md` for the live task queue. The next chapter is **levels 6–10**
+(sunken ruins → lava temple → the shrine → catastrophe → the long way up), authored + baked
+the same way and appended to `CAMPAIGN`. They are gated only by Meshy credit (each needs
+~10 baked 3D props). Other pending polish: dedicated baked jungle-enemy + serpent + spider
+characters (currently stand-ins), goblin hurt/death clips, a Playwright E2E pass across
+form factors, and an Android APK device smoke-test.

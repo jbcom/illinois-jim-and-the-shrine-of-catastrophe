@@ -1,0 +1,15 @@
+{
+  "name": "death",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.9063,
+  "contentBox": {
+    "minX": 43,
+    "minY": 22,
+    "maxX": 212,
+    "maxY": 232
+  }
+}

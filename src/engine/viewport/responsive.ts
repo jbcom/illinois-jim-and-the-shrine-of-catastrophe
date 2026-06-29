@@ -20,6 +20,7 @@ import type { DeviceProfile } from "@engine/viewport/deviceProfile.ts";
 import { classifyDevice } from "@engine/viewport/deviceProfile.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { computeViewport } from "@engine/viewport/scaler.ts";
+import { isAndroidUA } from "@engine/viewport/ua.ts";
 
 /** Maximum device-pixel-ratio applied to the canvas backing-store. */
 const MAX_DPR = 2;
@@ -146,6 +147,7 @@ async function resolvePlatform(): Promise<"ios" | "android" | "web"> {
   return "web";
 }
 
+
 function computeState(
   platform: "ios" | "android" | "web",
   canvas: HTMLCanvasElement,
@@ -155,7 +157,10 @@ function computeState(
   const rawDpr = window.devicePixelRatio ?? 1;
   const dpr = Math.min(rawDpr, MAX_DPR);
 
-  const profile = classifyDevice({ width: cssW, height: cssH, dpr, platform });
+  // Classify with the RAW dpr (physical-size signal) + a UA android hint, so the
+  // web build can tell an unfolded foldable from a phone (the deployed Pages build
+  // is always platform:"web"). The capped `dpr` is still used for the backing store.
+  const profile = classifyDevice({ width: cssW, height: cssH, dpr: rawDpr, platform, androidUA: isAndroidUA() });
 
   // Set canvas backing-store size.
   const backingW = Math.round(cssW * dpr);

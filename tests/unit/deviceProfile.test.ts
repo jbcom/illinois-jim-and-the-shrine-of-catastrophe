@@ -115,6 +115,61 @@ describe("classifyDevice — desktop", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Deployed WEB build (GitHub Pages) — platform is ALWAYS "web" (no native
+// Capacitor), so an Android UA hint + physical pixels must tell a big-screen
+// unfolded foldable from a phone. Regression for: unfolded OnePlus Open on the
+// web build was misclassified phone → wrongly landscape-locked + cut off.
+// ---------------------------------------------------------------------------
+
+describe("classifyDevice — deployed web build (platform 'web')", () => {
+  it("an unfolded foldable (OnePlus Open, big inner screen) is NOT phone and is NOT locked", () => {
+    // OnePlus Open unfolded ≈ CSS 1134×1220 at DPR 2 → physical min-dim ~2268.
+    const profile = classifyDevice({ width: 1220, height: 1134, dpr: 2, platform: "web", androidUA: true });
+    expect(profile.deviceClass).not.toBe("phone");
+    expect(profile.lockLandscape).toBe(false); // the KEY fix — no rotate prompt
+  });
+
+  it("an unfolded foldable in PORTRAIT on web is still free (no rotate prompt)", () => {
+    const profile = classifyDevice({ width: 1134, height: 1220, dpr: 2, platform: "web", androidUA: true });
+    expect(profile.deviceClass).not.toBe("phone");
+    expect(profile.lockLandscape).toBe(false);
+  });
+
+  it("a mid-size unfolded foldable (smaller inner screen) classifies foldable, free", () => {
+    // A smaller foldable: CSS ~820×740 at DPR 1.5 → physical min ~1110 (foldable band).
+    const profile = classifyDevice({ width: 820, height: 740, dpr: 1.5, platform: "web", androidUA: true });
+    expect(profile.deviceClass).toBe("foldable");
+    expect(profile.lockLandscape).toBe(false);
+  });
+
+  it("a real Android phone on web stays phone (small physical screen), still unlocked", () => {
+    // CSS 360×800 at DPR 2 → physical min-dim 720 (< the foldable threshold).
+    const profile = classifyDevice({ width: 360, height: 800, dpr: 2, platform: "web", androidUA: true });
+    expect(profile.deviceClass).toBe("phone");
+    // No landscape lock anymore — portrait plays via the slice-wrap.
+    expect(profile.lockLandscape).toBe(false);
+  });
+
+  it("a big Android tablet (Pixel Tablet) on web classifies tablet, free orientation", () => {
+    // CSS ~1024×768-ish at DPR ~2 → physical min-dim ~1500.
+    const profile = classifyDevice({ width: 800, height: 1280, dpr: 2, platform: "web", androidUA: true });
+    expect(profile.deviceClass).toBe("tablet");
+    expect(profile.lockLandscape).toBe(false);
+  });
+
+  it("a desktop browser (no android UA) stays desktop and free", () => {
+    const profile = classifyDevice({ width: 1440, height: 900, dpr: 1, platform: "web", androidUA: false });
+    expect(profile.deviceClass).toBe("desktop");
+    expect(profile.lockLandscape).toBe(false);
+  });
+
+  it("a narrow desktop window (no android UA) is phone-like and locks", () => {
+    const profile = classifyDevice({ width: 420, height: 760, dpr: 1, platform: "web", androidUA: false });
+    expect(profile.deviceClass).toBe("phone");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Profile shape invariants
 // ---------------------------------------------------------------------------
 

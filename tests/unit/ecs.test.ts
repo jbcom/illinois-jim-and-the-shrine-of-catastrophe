@@ -147,6 +147,29 @@ describe("ECS world + systems", () => {
     expect(sim.world.query(Enemy).length).toBe(2);
   });
 
+  it("honors an authored patrol range (wide patrol reads as designed, not ±3-4 tiles)", () => {
+    const level = parseLevel(["o....", "..@..", "#####"], 16);
+    const e0 = level.enemies[0];
+    if (!e0) throw new Error("expected a parsed enemy");
+    // A GameLevel-authored enemy carries `range` (patrol half-width in px); inject it.
+    const authored = { ...e0, range: 200 };
+    const sim = createSimWorld({ ...level, enemies: [authored] }, T);
+    const enemy = sim.world.query(Enemy)[0]?.get(Enemy);
+    if (!enemy) throw new Error("expected a spawned enemy");
+    // Bounds are spawnX ± range (200), far wider than the ±3-4 tile (48-64px) default.
+    expect(enemy.maxX - enemy.minX).toBe(400);
+    expect(enemy.maxX - e0.x).toBe(200);
+  });
+
+  it("falls back to the ±3-4 tile default when no range is authored", () => {
+    const level = parseLevel(["o....", "..@..", "#####"], 16);
+    const sim = createSimWorld(level, T);
+    const enemy = sim.world.query(Enemy)[0]?.get(Enemy);
+    if (!enemy) throw new Error("expected a spawned enemy");
+    // Default span = 3 tiles left + 4 tiles right = 7 × 16px.
+    expect(enemy.maxX - enemy.minX).toBe(7 * 16);
+  });
+
   it("physicsSystem applies gravity to non-player bodies and lands them", () => {
     const level = parseLevel(["....", "....", "####"], 16);
     const sim = createSimWorld(level, T);

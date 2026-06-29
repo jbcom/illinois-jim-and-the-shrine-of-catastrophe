@@ -53,6 +53,65 @@ export async function loadFrames(source: FrameSource): Promise<Texture[]> {
   return Promise.all(source.urls.map((u) => Assets.load<Texture>(u)));
 }
 
+/** The locomotion/action clips the bake pipeline produces per character. */
+export type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack" | "hurt" | "death";
+
+/**
+ * Manifest emitted by the Blender bake pipeline (scripts/bake/pack-sheet.ts) next to
+ * each `<clip>.webp` sheet. Drives frame slicing, playback speed, and the feet anchor.
+ */
+export interface BakedClipManifest {
+  readonly name: string;
+  readonly frameWidth: number;
+  readonly frameHeight: number;
+  readonly frameCount: number;
+  readonly fps: number;
+  /** Anchor as a 0..1 fraction of a tile (horizontal centre, vertical feet). */
+  readonly anchorX: number;
+  readonly anchorY: number;
+}
+
+/** A loaded baked clip: its sliced frame textures plus its manifest. */
+export interface BakedClip {
+  readonly textures: Texture[];
+  readonly manifest: BakedClipManifest;
+}
+
+/**
+ * Load a baked sprite-sheet clip: fetch `<base>/<clip>.json`, slice the sibling
+ * `<base>/<clip>.webp` into `frameCount` square frames, and return both. The sheet is
+ * a horizontal strip (the bake renders square tiles left→right), so `sliceStrip` cuts
+ * it directly.
+ */
+export async function loadBakedClip(base: string, clip: string): Promise<BakedClip> {
+  // Fetch the manifest directly (not via Assets — it's plain JSON, not a Pixi
+  // spritesheet atlas, so the Assets JSON parser's atlas detection doesn't apply).
+  const res = await fetch(`${base}/${clip}.json`);
+  if (!res.ok) throw new Error(`baked clip manifest ${clip}.json: ${res.status}`);
+  const manifest = (await res.json()) as BakedClipManifest;
+  // Validate at runtime — a bad bake (fps:0, no frames, NaN anchor) would otherwise
+  // silently freeze the sprite at frame 0 or mis-anchor it with no error.
+  if (!(manifest.frameCount > 0) || !(manifest.fps > 0)) {
+    throw new Error(`baked clip ${clip}: invalid frameCount/fps in manifest`);
+  }
+  if (!Number.isFinite(manifest.anchorX) || !Number.isFinite(manifest.anchorY)) {
+    throw new Error(`baked clip ${clip}: non-finite anchor in manifest`);
+  }
+  let sheet: Texture;
+  try {
+    sheet = await Assets.load<Texture>(`${base}/${clip}.webp`);
+  } catch (e) {
+    throw new Error(`baked clip ${clip}.webp failed to load: ${(e as Error).message}`);
+  }
+  // The sheet must be exactly frameWidth × frameCount or sliceStrip clips columns.
+  if (sheet.width !== manifest.frameWidth * manifest.frameCount) {
+    throw new Error(
+      `baked clip ${clip}: sheet width ${sheet.width} ≠ frameWidth ${manifest.frameWidth} × ${manifest.frameCount}`,
+    );
+  }
+  return { textures: sliceStrip(sheet, manifest.frameCount), manifest };
+}
+
 export interface AnimOptions {
   /** Playback frames per second (advanced against a 60fps tick). */
   readonly fps?: number;

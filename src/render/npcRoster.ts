@@ -73,3 +73,20 @@ const DEFAULT_NPC: NpcSpec = {
 export function npcSpecFor(dialogueId: string): NpcSpec {
   return NPC_ROSTER[dialogueId] ?? DEFAULT_NPC;
 }
+
+/**
+ * NPCs whose art comes from the 3D→WebP bake pipeline (assets/sprites/<base>/),
+ * keyed by dialogueId. These bypass the paper-doll compositor — the renderer picks
+ * the baked path when an id is listed here. Others stay paper-doll until baked.
+ */
+export const BAKED_NPCS: Record<string, { base: string }> = {
+  "elder-mara": { base: "assets/sprites/elder-mara" },
+  "watchman-pell": { base: "assets/sprites/watchman-pell" },
+  "ferryman-cole": { base: "assets/sprites/ferryman-cole" },
+  "shrine-warden": { base: "assets/sprites/shrine-warden" },
+};
+
+/** A baked NPC's sprite base, or undefined if it uses the paper-doll path. */
+export function bakedNpcBase(dialogueId: string): string | undefined {
+  return BAKED_NPCS[dialogueId]?.base;
+}

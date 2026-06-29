@@ -36,6 +36,8 @@ export interface Placement {
 
 export interface Painting {
   readonly container: Container;
+  /** Sprites that carried a `key` (GenAI art only), so the runtime can mutate them. */
+  readonly byKey?: ReadonlyMap<string, Sprite>;
   destroy(): void;
 }
 
@@ -87,6 +89,53 @@ export async function paintComposition(placements: readonly Placement[]): Promis
   }
   return {
     container,
+    destroy() {
+      container.destroy({ children: true });
+    },
+  };
+}
+
+/** A whole-image art placement scaled so its on-screen height = worldHeight. */
+export interface ArtPlacement {
+  readonly url: string;
+  readonly x: number;
+  readonly y: number;
+  readonly worldHeight: number;
+  readonly z: number;
+  readonly flipX: boolean;
+  /** 'base' bottom-rests the image on (x,y); 'top' top-aligns it at (x,y). */
+  readonly anchor: "base" | "top";
+  /** Optional handle so the runtime can find this sprite later (e.g. a gate to fade). */
+  readonly key?: string;
+}
+
+/**
+ * Paint a GenAI-level composition: each entry is a WHOLE transparent PNG (loaded by
+ * url), scaled so its height = worldHeight (aspect preserved), then anchored. Used
+ * by the schema-Level renderer (render/levels/fromLevel.ts) — the art the design
+ * referenced by key, placed on the same surfaces the collision derives from.
+ */
+export async function paintArt(placements: readonly ArtPlacement[]): Promise<Painting> {
+  const container = new Container();
+  const byKey = new Map<string, Sprite>();
+  const ordered = [...placements].sort((a, b) => a.z - b.z);
+  for (const p of ordered) {
+    const tex = await Assets.load<Texture>(p.url);
+    const sprite = new Sprite(tex);
+    const scale = p.worldHeight / (tex.height || p.worldHeight);
+    const w = tex.width * scale;
+    const h = tex.height * scale;
+    sprite.scale.set(p.flipX ? -scale : scale, scale);
+    // Top-left placement, flip-compensated; 'base' lifts the image so its BOTTOM
+    // sits on y, 'top' places its TOP at y.
+    const topY = p.anchor === "base" ? p.y - h : p.y;
+    sprite.position.set(p.flipX ? p.x + w : p.x, topY);
+    container.addChild(sprite);
+    if (p.key) byKey.set(p.key, sprite);
+  }
+  return {
+    container,
+    byKey,
     destroy() {
       container.destroy({ children: true });
     },

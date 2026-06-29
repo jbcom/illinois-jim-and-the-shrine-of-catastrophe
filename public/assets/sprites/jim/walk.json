@@ -1,0 +1,15 @@
+{
+  "name": "walk",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.9102,
+  "contentBox": {
+    "minX": 71,
+    "minY": 23,
+    "maxX": 184,
+    "maxY": 233
+  }
+}

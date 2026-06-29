@@ -3,510 +3,77 @@
 **Status:** ACTIVE — ENDLESS (never flips to RELEASED)
 **Owner:** jbogaty
 
+Shipped-milestone history lives in `docs/STATE.md`; the campaign/story architecture in
+`docs/STORY.md`. This file = operating mode + the LIVE queue only.
+
 ## ♾️ OPERATING MODE — ENDLESS SELF-DISCOVERY (user directive, NON-NEGOTIABLE)
-**"fix your directives to be a loop endlessly of self-discovery. always find new
-features to add or polish. no more 'we released!'. i will tell you when to end,
-until then i expect you to be always finding something new to do."**
+"fix your directives to be a loop endlessly of self-discovery. always find new
+features to add or polish. no more 'we released!'. i will tell you when to end."
+- Never reaches RELEASED; only the user ends it. Each turn: take the next queue item,
+  build it, PROVE it live (READ the screenshot, zero asset loss), commit, then append
+  1-3 newly-discovered items. The backlog grows faster than it drains — the point.
+- **Look CRITICALLY at every visual; name the defects yourself, fix them before the
+  user has to.** No performing satisfaction on screenshots.
 
-- This directive NEVER reaches RELEASED. There is no "done." Only the user ends it.
-- Every turn: pick the next item from the SELF-DISCOVERY BACKLOG, build it, prove
-  it live (Safari snapshots READ + reviewed, zero asset loss at any viewport),
-  commit, merge to main, redeploy, then ADD 1-3 new things discovered while doing
-  it. The backlog grows faster than it drains — that's the point.
-- Quality bar: dense/complex/coherent/challenging/fun; every visual proven live.
-  [[craft-levels-study-palette]] · [[endless-self-discovery-loop]]
+## 🚀 ACTIVE MILESTONE — 3D BAKED TO 2D WEBP SPRITES (user, 2026-06-29, NON-NEGOTIABLE)
+A 2D side-scroller where 3D is a PRODUCTION TOOL, not the runtime. The Gemini API
+outputs JPEG-only (no alpha), so:
+- PARALLAX BACKGROUNDS = full-screen images via gemini-3.1-flash-image (opaque — fine).
+- CHARACTERS (Jim, NPCs, humanoid enemies) + PROPS/buildings/cave = 3D GLB via Meshy
+  (meshy-6, T-POSE for characters — REQUIRES should_remesh:true or the pose is ignored
+  [[meshy-tpose-needs-should-remesh]]) → texture → rig (free walk/run) → animate.
+- BAKE: render each rigged GLB's animations from a fixed SIDE ortho camera with a real
+  ALPHA channel → TRANSPARENT WEBP sprite frames (Blender bpy; `bake-prop.py` for static
+  props, `bake-character.sh` for rigged actors).
+- RUNTIME: the EXISTING PixiJS 2D sprite engine renders the sprite sheets over the
+  parallax. NO Three.js in the game. Keeps the proven engine + gives real animation.
+The Zod Level schema + 10-level outline + old-school/brutal thesis + relative-surface
+layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-levels]]
+[[genai-level-pipeline-workflow]] [[props-buildings-also-3d]] [[character-bake-pipeline]]
 
-## 🔁 SELF-DISCOVERY BACKLOG (always non-empty — append as you go)
-- [x] PROVE reorientation + scaling: snapshotted the device matrix (desktop
-      1440×900, Pixel Tablet 1280×800, OnePlus Open unfolded 1116×990, iPad
-      portrait 820×1180, Pixel-8a landscape 915×412, iPhone/portrait → rotate
-      prompt). Every aspect picks the right hero variant (16x9/9x16/1x1), gameplay
-      fills edge-to-edge with ZERO asset loss, HUD frames top, dialogue bar frames
-      bottom. Wordmark now clears the hero's face on portrait (scrim + narrower).
-      Folded foldable = phone-class → rotate prompt (verified by policy + tests).
-- [x] HERO FACE: regenerated with a warm friendly smile (was an evil grimace).
-- [x] NPC RICHNESS: full paper-doll stack (sword/boots/underwear all used).
-- [x] NPC SCALE: scale by content height (were tiny next to Jim).
-- [x] FRAMED HUD/UX: top status STRIP (score+lives) frames the upper edge; a
-      DEDICATED BOTTOM TEXT BAR shows NPC dialogue (DialogueBox + dialogueStore +
-      onTalkTarget). Talking pauses the action. Live-verified with Elder Mara.
-- [x] WORDMARK on portrait — pinned clear of the hero's face (own top scrim panel,
-      narrower on portrait, gradient to the true top edge). Shipped PR #21.
-- [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
-- [x] SHRINE biome + level (third act): `shrine-approach` — a ruined inner sanctum
-      built from the cave masonry catalog + 4 GenAI shrine props (idol-altar=goal,
-      cracked staircase, blood-flamed braziers, broken pillars; generated on a
-      magenta field + isolated by scripts/prep-props.mjs incl. a two-key flood +
-      edge-defringe for AA halos). Gatehall colonnade → beam-bridged broken nave →
-      grand staircase to the golden idol. Wired into LEVEL_ORDER after the cave so
-      the data-driven FSM chains cave → ruins-cutscene → shrine → escape-ending with
-      NO machine edits. SHRINE GameLevel (6 enemies, ≥2 chasers — the hardest level),
-      gameLevel.test + gameMachine 3-level-chain tests + a 3-stop shrineRenderer
-      browser test. PROVEN live: gatehall/sanctum/altar screenshots READ — zero asset
-      loss, props in proportion with actors, idol crowns the climb.
-      BACKWARD SWEEP: prop scales were 3-4× too big on first paint (439-717px native
-      props at >1.0 scale overflowed the 390px frame, hid the idol) — recalibrated to
-      scenery weight (~130-190px on screen). The archway prop was dropped after 2
-      regens + 2 isolation passes (debug-loop stop) left a stubborn AA halo / baked
-      ground; the steps prop covers the "cracked staircase" beat better anyway.
-      FORWARD SWEEP: the cutscene script already chains shrine→shrine-heart→
-      catastrophe→escape-run→escape; shrine-heart + escape-run are the two levels
-      that complete the planned arc (added below). The idol sits BESIDE the steps,
-      not atop them — a composition polish item (below).
-- [ ] Audio polish (per-biome music, footsteps, ambience); per-biome boss/setpiece;
-      particle + screen-shake juice; accessibility pass (reduced-motion,
-      colorblind-safe, large-text).
-- [ ] (discovered) POT-SMASHING drops: pots break but the relic/health/secret drop
-      isn't wired to a pickup + HUD feedback — finish the loop.
-- [ ] (discovered) NARRATION in the dialogue bar: now that the bottom bar exists,
-      route in-level story beats (not just NPC talk) through it too.
-- [ ] (discovered) DESCENT cutscene → CAVE: verify the full village→descent→cave
-      chain live end-to-end on the deployed build (cutscene fades, level load).
-- [ ] (discovered) BOUNDED inner viewport: the HUD frames the edges but the canvas
-      is still full-bleed behind it; consider a true bordered cabinet frame so the
-      play area is visually inset from the HUD strips.
-- [ ] (discovered) SHRINE-HEART level (`shrine-heart`): the cutscene script chains
-      the `shrine` beat into it — the idol chamber's deepest room where Jim takes
-      the idol (triggers the `catastrophe` cutscene). Author it like shrine-approach.
-- [ ] (discovered) ESCAPE-RUN level (`escape-run`): the `catastrophe` cutscene
-      chains into it — the collapsing-shrine flight back out (the iconic chase). A
-      right-to-left or forced-scroll panic level; ends → the `escape` ending cutscene.
-- [ ] (discovered) IDOL-ON-STEPS composition: in shrine-approach the golden idol
-      sits beside/above the staircase rather than centered atop its landing — nudge
-      the idol/steps x+scale so the idol visibly crowns the steps as one tableau.
-- [x] (discovered) prep-props.mjs is now a reusable GenAI-prop isolation pipeline
-      (two-key flood + despill + edge-defringe + drop-shadow clear + tight trim) —
-      documented in docs/ASSETS.md (same PR #22). Use it for future biome props.
+## Where things stand (one line)
+A complete 5-level campaign ships LIVE (Halward → jungle → gorge → mine → crystal →
+cliffhanger), all baked-3D-on-parallax, Chrome-verified. `CAMPAIGN` (src/sim/story/
+campaign.ts) is the single source of truth — appending a chapter extends the game.
+Mobile UX is solid: portrait serpentine slice-wrap (both orientations playable, no
+landscape lock, seamless band tiling), pulp-relic 16-bit HUD, and touch zones sized
+from the container CSS box (unfolded-foldable bottom controls reachable). The fake
+"SCORE: ILLINOIS JIM" HUD bar Gemini baked into jungle parallax is stripped, and the
+parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
+`docs/STORY.md`.
 
-## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
-**User feedback (live mobile bugs):** the deployed game was broken on phones —
-torches rendered as a WALL (whole-sheet stamp), text clipped at the bottom (no
-safe-area), and the portrait viewport either zoomed to ~1 screen or left huge
-empty sky.
+## Queue — LIVE
 
-- [x] TORCH/COOKFIRE/STATUE: were placing whole multi-item sheets as one stamp;
-      now slice a single element (audited every catalog slice via a rendered
-      contact sheet). [[craft-levels-study-palette]]
-- [x] SAFE AREAS: Landing + CutscenePlayer pad with env(safe-area-inset-*) so the
-      controls/narration never clip under the home bar.
-- [x] DEVICE-PROFILE ORIENTATION: phones lock landscape; tablets/unfolded
-      foldables/desktop stay free (@capacitor/device profile + screen-orientation
-      + a web RotatePrompt). NOT a blanket lock. orientation.test.ts.
-- [ ] MULTI-ASPECT GENAI: each cutscene + the landing hero generated in 16:9 /
-      9:16 / 1:1; the UI picks the variant for the viewport (aspectImage.ts).
-      In progress.
-- [ ] [DESIGN — Milestone 5] SERPENTINE PORTRAIT (user idea, supersedes landscape
-      lock): instead of locking, design levels so portrait SLICES the horizontal
-      level into stacked bands. Play left→right across the top band; at the right
-      edge the camera "flips up" — scrolls DOWN so the band you just finished
-      becomes the top and the NEXT horizontal slice appears as the new bottom band
-      — boustrophedon/serpentine. Continue until the cutscene, which then stays at
-      the top. This makes landscape-lock OPTIONAL and turns portrait into a
-      feature. Requires: level authoring that's slice-aware, a camera that scrolls
-      both axes with the flip transition, and the collision/spawns mapped to the
-      serpentine path. Big architectural unit — own milestone + directive.
+### Next chapter — levels 6–10 (gated on Meshy credit)
+- [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of
+      levels 6–10 needs ~10 baked 3D props — generating them needs credits I can't purchase
+      without the user's payment authorization. When topped up, per the proven cycle
+      ([[genai-level-pipeline-workflow]]): `pnpm level:gen --level N` → validate (0 dangling,
+      0 broken gates) → bake props (Meshy → bake-prop.py → pack) + `gen-level-parallax` →
+      register the bundle → append a CampaignChapter to CAMPAIGN → live-verify in Chrome.
+      Levels 6–10 = sunken-ruins → lava-temple → the-shrine → catastrophe → the-long-way-up
+      (briefs in scripts/levelBriefs.ts). ALSO swap the 4 Level-5 reuse props for dedicated bakes.
 
-
-## 🎯 Milestone 3 — The REAL coherent narrative (SHIPPED 2026-06-28)
-**User directive (2026-06-28, NON-NEGOTIABLE):** Milestone 2 shipped ONE cave + a
-stub flow — NOT the planned game. The plan was always: the SAME level of authoring
-effort into BOTH overworld AND cave, a REAL coherent STORY using the NPC factory,
-BIG elaborate painted levels with parallax backgrounds, told through fade in/out
-cutscenes. Build that now. No re-asking what was already decided — execute the plan.
-
-SHIPPED via PR #11 (asset paths), #12 (the real narrative), #13 (death-loop fix),
-all squash-merged to `main`, deployed to GitHub Pages, and live-verified on
-jonbogaty.com with Safari GPU screenshots READ + reviewed. NEXT MILESTONE (fresh
-branch + directive when started): the SHRINE biome + level, more overworld/cave
-levels to the ~12-18 total in docs/LEVEL_DESIGN.md, and continued density/fun
-refinement per the standing quality bar below.
-
-### M3 bug fixes (live-verified broken on Pages, measured) — ALL FIXED
-- [x] SPRITE SCALE: scale by MEASURED content-height to a per-kind target world
-      height (src/render/actorScale.ts + scripts/measure-actors.mjs); renderer pulls
-      from it. Jim/enemies now proportional. Live-verified.
-- [x] FLICKER: render-interpolation `prev` was snapshotted per sub-step; now once
-      per frame in gameEcs (+ interpolationTiming.test.ts). Jitter gone.
-- [x] DEATH PLANE: closed-world floor made the map bottom a phantom floor; added a
-      kill-plane death when feet reach the map bottom in a pit (systems.ts + tests).
-- [x] CUTSCENE IMAGE FILL: CutscenePlayer covers the screen + prominent bottom bar.
-- [x] CUTSCENE TIMING: fade in → hold → fade out, tap to skip. Live-verified.
-- [x] TYPOGRAPHY: self-hosted Cinzel / EB Garamond / Jersey 15 (@fontsource).
-- [x] DEATH-LOOP (surfaced in playtest): lost `pointerup` leaked a phantom joystick
-      pointer across the cutscene→play unmount → walked Jim into an enemy → chain-
-      kill. Fixed: input.clear() on pause→play + invuln frames + patrol-only intro
-      (PR #13). Live-verified: 12s idle in the village, lives held at ♦♦♦.
-
-### M3 standing quality bar (user directive, 2026-06-28)
-- KEEP REFINING every level until it reads as DENSE, COMPLEX, narratively
-  coherent, CHALLENGING, and FUN. Not one-and-done — iterate each (village, cave,
-  shrine) to that bar, live-verified each pass.
-- The hero is DEVIL-MAY-CARE — a roguish, swashbuckling pulp adventurer (cocky
-  grin, rakish hat, relaxed confident swagger), not a stiff workman. Bake this
-  into the hero art + sprite direction.
-- Don't stack a CSS wordmark over GenAI art that already has one. Either let the
-  art carry the wordmark, or generate a CLEAN (textless) illustration + a
-  dedicated transparent wordmark asset — never double up.
-
-### M3 narrative build (the planned game) — ALL SHIPPED
-- [x] OVERWORLD authoring: same composition engine as the cave (overworldShapes.ts
-      + DECOR_SHAPES catalog, OVERWORLD_PARALLAX), a crafted ~2240px village level
-      (villageApproach.ts) with depth layers + ground fill. docs/LEVEL_DESIGN.md.
-- [x] LANDING = separate static Landing.tsx: textless devil-may-care GenAI hero
-      key-art + keyed-transparent generated wordmark + story hook + PLAY. Not the
-      live engine.
-- [x] STORY STARTS IN THE OVERWORLD: landing → intro cutscene → village → descent
-      cutscene → cave → ending. FSM tracks levelId; App recreates per level.
-- [x] NPCs: GameLevel.npcs + world spawns + npcRoster.ts paper-doll specs +
-      renderer ensureNpc. Elder Mara / watchman / ferryman stand in the village.
-- [x] Cave RE-CRAFTED (props1/props2): ~2600px, stalactites (flipY), layered rock
-      masses, cavern trees, beam-bridged chasm, ramped spawns. gameLevel.test.ts.
-- [x] Each level proven live (Safari GPU screenshot READ + measured), tests updated.
-
----
-## (archived) Milestone 2 SHIPPED (2026-06-28)
-
-## ✅ Milestone 2 SHIPPED (2026-06-28)
-The complete game merged to `main` (PR #9, squash `bdbc35e`), CI green, deployed to
-GitHub Pages, release cut. A 16-bit story-driven side-scroller: GenAI Illinois Jim
-hero, all-4 animated enemies, painted cave level ("The Descent"), NPC paper-doll
-factory + dialogue, breakable pots, HP/lives bar, story cutscenes (title→cutscene→
-playing→cutscene→won), procedural audio + music, win condition + best-score
-persistence, landing page — all screenshot-proven and live-verified. 160 unit +
-browser tests pass; PixiJS 8 painting renderer / React 19 / koota ECS / xstate FSM.
-
-NEXT MILESTONE (fresh branch + directive when started): overworld + shrine painted
-levels + level-select; the cave/overworld sheets are ORGANIC COMPOSITIONAL SHAPES
-(place/assemble as scenery, not a tile grid) with a separate invisible collision.
-
-## 🎮 Milestone 2 — Complete the game (SHIPPED, 2026-06-28)
-Full-autonomy build-out. **Guiding principle (user directive):** custom code is
-INCREMENTAL scaffolding — replace it with proper, well-maintained libraries for
-every aspect (ECS, physics, tween/easing, state machine, particles, persistence,
-audio). Don't hand-roll what a battle-tested library does better. Determinism
-still matters for replays, so prefer libraries that allow a fixed-step,
-seeded-RNG integration (drive them from our clock + rng) over ones that bury
-wall-clock/Math.random internally. Keep expanding this queue as work surfaces.
-
-## 🛑 OPERATING MODE (user directive, NON-NEGOTIABLE)
-ONE continuous build on branch `feat/scoring-and-renderer` until there is a FULL,
-proven, tested, documented GAME. No stopping at increments. No PR-merge ceremony
-mid-flow — keep building; land/merge only when the whole thing is done. Work as
-long as it takes (days if needed). Set whatever sub-directives/reminders keep
-focus. DO NOT narrate the plan back to the user — execute.
-
-Every VISUAL component must be 100% PROVEN before moving on:
-1. **Vitest browser test in isolation** (real Chromium, renders the component alone).
-2. **Screenshot captured + READ + reviewed** against the intended look — fix until right.
-3. **Fully documented** (what it is, how it's used, the proof screenshot path).
-DEFERRAL IS HOW PROJECTS FAIL. No "later"/"follow-up"/"wire it up next".
-Browser verify: vitest-browser `page.screenshot({path})` (read the saved PNG) or
-Safari MCP headed GPU. The real game uses SPRITE assets (below), each proven this way.
-
-### 🎬 GAME FLOW (user directive, 2026-06-28, DECISIVE)
-The game is a sequence of hand-PAINTED levels split by full-screen 16-bit-style
-CUTSCENES telling Illinois Jim's story: cutscene → painted level → cutscene →
-painted level → … across overworld (surface) → cave (descent) → shrine. I author
-each level as a composition/painting (custom TSX/TS/koota) from the biome SHAPE
-stamps, and author each between-level cutscene as full-screen GenAI 16-bit art +
-a cutscene player. Figure out CAVE composition first, then OVERWORLD the same way.
-Each level: painted scenery + invisible collision + spawns + a story cutscene before it.
-
-### 📖 THIS IS A STORY (user directive, 2026-06-28, NON-NEGOTIABLE)
-Not a sprite tech-demo — a 16-bit story-driven adventure in the mold of the best
-late-80s/early-90s SNES/Genesis games. The provided assets ARE the story kit and
-must all be used for narrative purpose, not decoration:
-- **Overworld biome** (`biomes/overworld`) = the surface world Jim explores +
-  travels FROM (town/forest/statues/boats) → a journey INTO the cave/shrine.
-- **Cave biome** (`biomes/caves`) = the descent toward the Shrine of Catastrophe.
-- **NPC factory** (`classes/npcs`: skin/clothing/hair/hand layers, M/F) = real
-  NPCs Jim talks to (dialogue) — they give the story, hooks, warnings, quests.
-- **Breakable pots** (`breakables/pots`) = pots that smash to reveal relics /
-  health / secrets (classic 16-bit pot-smashing), not just score blocks.
-- **GenAI 16-bit cutscenes** = story beats between levels (Imagen art + a React
-  cutscene player), the way 16-bit games told their story. THIS is what Gemini is
-  for (cutscene backplates/branding), NOT the gameplay sprites.
-  STATUS (2026-06-28): 6 cutscene scenes generated + curated to
-  public/assets/cutscenes/ (intro→descent→ruins→shrine→catastrophe→escape),
-  cutscene script (src/sim/story/cutscenes.ts) + CutscenePlayer.tsx + unit tests
-  done. REMAINING: wire the cutscene→level→cutscene flow into the FSM/App.
-The hero is the ORIGINAL GenAI Illinois Jim (teal vest, brass goggles, relic-
-lantern, grappling hook) — generated via Imagen + isolated to clean transparent
-frames (corner-color-distance flood-fill + foot-shadow clear in prep-sprites.mjs;
-every frame READ + verified clean; jump-2 regenerated to drop a baked floor).
-public/assets/player/illinois-jim-*.png. Enemies: all 4 real animated kinds
-placed PER-LEVEL by design via Enemy.visual (goblin/skeleton/mushroom/flyingEye).
-
-### Build checklist (the FULL game — keep going until ALL done + proven)
-- [x] AnimatedSprite component — browser test + screenshot REVIEWED
-- [x] Parallax background (bg1-4 stack) — browser test + screenshot REVIEWED
-- [x] Cave tile layer (@pixi/tilemap from mainlev_build) — test + screenshot REVIEWED
-- [x] Enemy sprites (goblin/skeleton/mushroom/flying-eye anim) — test + screenshot each
-- [x] Hero = real `classes/adventure` transparent strips (idle/run/attack), NOT Gemini — test + screenshot
-- [x] koota render-layer traits + scene compositor (Layer/ParallaxBg/TileLayerRef/SpriteRef/Anim) — test + screenshot
-- [x] NPC factory: composite skin+clothing+hair+hand layers → an NPC sprite, + dialogue trait — test + screenshot
-- [x] Breakable pots: pot entity, smash-on-hit, drop relic/health/secret — test + screenshot
-- [x] HP/lives UI bar from ux/hp_bar — test + screenshot
-- [x] Composition/painting system + cave shape catalog + first painted level "The Descent"
-      (composition.ts/caveShapes.ts/caveDescent.ts) — screenshot-proven over parallax (caeff75).
-- [x] IN-GAME painting renderer (paintingRenderer.ts): parallax + painted composition +
-      sim-driven sprites (GenAI hero, all-4 enemies via Enemy.visual, pots, relics),
-      camera cover-fill, wired into gameEcs. Invisible collision in gameLevel.ts.
-      Safari GPU screenshot of REAL gameplay. StrictMode canvas-per-Application fix.
-- [x] GenAI Illinois Jim hero (teal vest/goggles/lantern/hook) — generated + isolated
-      (corner-distance key + foot-shadow clear) + screenshot-proven, in-game.
-- [x] Audio sfx wired to events (whip/hurt/pickup/pot-smash/jump/win) + looping cave music.
-- [x] Story: GenAI 16-bit cutscenes (intro→descent→ruins→shrine→catastrophe→escape) +
-      React CutscenePlayer + FSM flow (title→cutscene→playing→cutscene→won). Live-verified.
-- [x] Milestone-boundary integration review of PR #9 — 2 blockers folded (renderer
-      readEach not updateEach; flushViews on rebuildWorld so actors aren't invisible
-      after death) + pot-texture cleanup. Re-verified live. (9e4b846)
-- [x] Milestone-2 SCOPE = the complete playable cave game (this PR). Overworld + shrine
-      painted levels + a level-select are explicitly the NEXT milestone (open a fresh
-      branch + directive after this merges). NOTE for then: cave/overworld sheets are
-      ORGANIC COMPOSITIONAL SHAPES, placed/assembled as scenery (not a tile grid);
-      separate invisible collision backs the physics. Compose with the verified catalog.
-- [x] Landing page (wordmark + story hook + PLAY CTA over the full-bleed live scene).
-- [x] Persistence (best score via @capacitor/preferences) + win condition (reach the relic).
-      Level-select deferred to the next milestone (only one level exists yet).
-- [x] Docs (ARCHITECTURE/STATE/TESTING/CHANGELOG + ASSETS) aligned to the shipped game.
-- [x] Whole game proven end-to-end: landing → intro cutscene → live gameplay (all systems
-      composited, viewport edge-to-edge), production build green, 160 unit + browser tests pass.
-- [ ] [WAIT-CI] PR #9 — CI green (build-test SUCCESS); squash-merge once review folded + threads resolved.
-
-## 🎨 Asset pipeline — Tiled + sprites (DECIDED, replaces ASCII levels + flat rects)
-Assets live in `public/assets/` (user-provided, side-view platformer set). Read +
-catalogued; design:
-- **Player**: `classes/adventure/` is TOP-DOWN 4-dir (768x80 = 8×(96×80), idle/run/
-  attack1/attack2 × down/left/right/up) — MISMATCH for a side-scroller. Need a
-  side-view hero (the enemies are side-view). Decide: source/generate a side hero,
-  or re-scope. (Open design Q — resolve before wiring the player sprite.)
-- **Enemies**: `enemies/{Goblin,Mushroom,Skeleton,Flying eye}/` — side-view, 150×150
-  frames, Idle/Run/Attack/Death/Take Hit (600px=4f or 1200px=8f). Map to our
-  patrol/chase enemies. Goblin=patrol(dagger), Skeleton=chase, Mushroom=tanky.
-- **Cave tileset**: `biomes/caves/mainlev_build.png` (1024² — cave walls, wooden
-  platforms, crates, brick, lava block) → the Tiled tileset. `background1-4` (960×480
-  parallax layers) → parallax bg. `props1/2` → decoration.
-- **Breakables**: `breakables/pots/` 128×128 (32px frames, color variants) → smashable
-  pots dropping relics.
-- **UX**: `ux/hp_bar/` → lives/health bar.
-- **Levels**: design in TILED (.tmj) with the cave tileset; loader → TileMap +
-  collision + object layer (spawns/enemies/relics). Render via **@pixi/tilemap** +
-  parallax. ASCII levels (shrine01-03) are RETIRED.
-- **Reorg**: rename/restructure public/assets into a clean, game-meaningful layout
-  (player/, enemies/, tiles/, bg/, props/, ui/) — current names are vendor dumps.
-
-### Layered biome scene (user directive: use the WHOLE set, not one PNG)
-A biome is a COMPLETE layered system; use all parts together by depth:
-- **Parallax background**: the `background1-4` stack (deepest→nearest), each scrolls
-  at a fraction of camera (depth). NOT one picked image — the full depth stack.
-- **Tile layer (foreground collision)**: `mainlev_build` tileset = the platforms/
-  walls the player stands on (the gameplay layer).
-- **Props**: `props1/2` decoration placed in front of bg, behind/around actors.
-- **Actors**: player, enemies, particles, breakables.
-- **(Optional) foreground overlay**: near tiles drawn over actors for depth.
-
-### koota render-layer traits (model the layers as ECS, decided)
-Add traits describing renderable layers + sprites so the renderer composites by
-z-order + parallax factor:
-- `Sprite` { atlas, frame/anim, flip } — an actor's current sprite.
-- `Anim` { sheet, frames, fps, t, loop } — animation playback state (clock-driven).
-- `Layer` { z, parallaxX, parallaxY } — which composite layer + its scroll factor.
-- `ParallaxBg` { textures[], speeds[] } — the bg depth stack as one entity.
-- `TileLayer` { tilesetId, data } — the Tiled foreground tile layer.
-The renderer iterates layers in z-order; parallax layers offset by camera×factor.
-
-### Build order under the HARD STANDARD (prove each in isolation, screenshot-reviewed)
-1. AnimatedSprite component (PixiJS sheet → playing animation) — browser test + screenshot.
-2. Parallax background (the bg1-4 stack scrolling) — browser test + screenshot.
-3. Tile layer from the cave tileset (@pixi/tilemap) — browser test + screenshot.
-4. Enemy sprites (goblin/skeleton/mushroom anim) — browser test + screenshot each.
-5. Side-view hero (Gemini-generated) — generate, slice, browser test + screenshot.
-6. Tiled .tmj loader + a designed cave level — browser test + screenshot.
-7. Compose the full layered scene in the game; Safari GPU screenshot of real gameplay.
-
-### Library adoption plan (custom code → proper libs) — DECIDED
-- **UI framework: React 19** (replaces SolidJS) — unifies the stack so @pixi/react
-  and koota/react bindings work natively.
-- **Game canvas: @pixi/react** (PixiJS 8 as React components).
-- ECS: **koota** (replaces miniplex) — `koota/react` `WorldProvider`/`useQuery`/
-  `useTrait` drive the HUD reactively, replacing the manual Solid signal bridge.
-  Plain-trait entities stay serializable for replays; systems run in the fixed loop.
-- **UI components: Tailwind CSS + Radix UI / shadcn** — arcade-styled HUD, menus,
-  title/pause/win-lose/level-select screens. Max control, minimal runtime.
-- PRNG: **seedrandom** — **dual-layer**: a `sim` stream (gameplay, replay-critical)
-  and a separate `fx` stream (cosmetic/particles) so visual variation never
-  desyncs the deterministic sim. Replaces the custom mulberry32 facade (keep the
-  Rng interface, swap the engine).
-- State machine: **xstate** v5 (typed FSM for title/play/win/lose game states).
-- Tween/easing: **popmotion** (clock-driven; never self-animates off wall-clock).
-- IDs: **nanoid** (entity + save-slot ids).
-- Persistence: **@capacitor/preferences** (native) + localStorage (web) behind one facade.
-- Audio: keep the custom Web Audio bus (already solid); wire sfx to events.
-- **Renderer: PixiJS 8 (WebGL/WebGPU)** — replaces the hand-rolled canvas2d
-  renderer. Proper sprite batching, container/scene graph, particles, filters.
-  Render is a VIEW of the deterministic sim (sim stays pure; Pixi only draws).
-  Local reference: ~/src/reference-codebases/pixijs.
-- **Enemy AI: Yuka** — steering behaviors (seek/flee/patrol/path) for enemies,
-  driven by our fixed-step clock + seeded sim stream. Local ref: ~/src/reference-codebases/yuka.
-- Physics: keep our AABB swept resolver as the deterministic substrate (tile
-  collision); layer Yuka steering + ECS on top. Full engines (matter/box2d) rejected.
-- Reference codebases (docs/examples cloned locally): ~/src/reference-codebases/
-  {pixijs, yuka, bitECS, matter-js, phaser, pixi-react} — consult before building.
-
-### Queue
-- [x] Research: pick the concrete libs (miniplex/seedrandom/xstate/popmotion/nanoid/preferences)
-- [x] PRNG v2: dual-layer seedrandom (sim + fx streams); createRngPair + restoreRng (16 tests)
-- [x] Adopt ECS (koota): traits + world + playerSystem + collectibleSystem; level
-  parses `*`/`o`/`x` for relics/enemies; 7 ECS tests (player feel preserved, pickup, determinism)
-- [x] Physics v2: generic gravity/collision integration system for non-player bodies
-  + enemySystem (patrol/chase) + lifetimeSystem (particles); enemies spawned from level
-- [x] Enemies: patrol/chase AI + combatSystem (whip kill, stomp+bounce, side-hit hurts);
-  120 tests. NOTE: koota caps 16 live worlds — the loop must world.destroy() on level restart.
-- [x] Combat PR #8 MERGED to main (whip/stomp + robust stomp fix from review).
-- [x] Scoring: Score trait (points/combo/comboTimer/lives) + award() (combo-scaled) +
-  scoreSystem (decay) + collectibleSystem awards through combo. 124 tests.
-- [x] Wire HUD to score: gameEcs onHud pipes Score → hudStore → React HUD (points/lives).
-- [x] Mine-cart rail segments: MineCart trait + mineCartSystem (ride/dismount), rails
-  one-way standable. 127 tests.
-- [x] Adopt PixiJS 8 renderer: pixiRenderer.ts (ECS world → Graphics) + gameEcs.ts
-  (ECS-driven loop replacing canvas2d). TWO bugs fixed + verified on real Safari GPU:
-  (1) StrictMode double-init hang — serialize create/dispose on a ref promise (debugger);
-  (2) `app.destroy(true)` removed React's canvas — use `{removeView:false}`. Safari
-  evaluate confirms responsive + canvas present + HUD renders; pixiStrictMode browser
-  test passes. NOTE: chrome-devtools-mcp hung; Safari MCP screenshot targets wrong
-  window but evaluate works — use safari_evaluate for verification, not screenshot.
-- [x] PR #9 — superseded: now carries the whole milestone-2 game; CI green, awaiting merge (see top checklist).
-- [x] Enemy steering AI: ported Yuka's force-based seek/flee/arrive into pure 2D
-  `src/sim/ai/steering.ts` (Yuka is 3D + Math.random — can't run in the pure sim).
-  Chase now uses arrive (accel toward player, decel when close) — smoother than
-  bang-bang. 6 steering tests, 133 total. Determinism preserved.
-- [x] Particles: Particle trait + spawnBurst (FX rng stream) + particleSystem; bursts
-  on kills (red) + pickups (gold), rendered by pixiRenderer. 3 tests incl. FX-no-desync proof. 136 total.
-- [x] Game-state machine (xstate v5): title → playing → won/lost → restart; React
-  TitleScreen + ResultScreen (brand-styled); gameEcs restart() + onGameOver hook.
-  7 machine tests, 143 total. Verified full flow on Safari GPU (title→PLAY→HUD+game).
-- [x] Persistence: best score via @capacitor/preferences (web localStorage fallback). DONE.
-- [x] Levels: first painted cave level "The Descent" (3+ levels = next milestone, after merge).
-- [x] Audio: sfx wired to events (whip/hurt/pickup/pot-smash/jump/win) + looping cave music. DONE.
-- [x] Pivot stack to React: SolidJS → React 19 + Tailwind v4; @pixi/react + koota wired next
-  (engine/sim untouched, all 123 tests green, verified in browser)
-- [x] Landing page (React): wordmark + story hook + PLAY CTA over the full-bleed live scene. DONE.
-- [x] Cutscenes: GenAI 16-bit cutscene art + React CutscenePlayer, FSM-driven flow. DONE (live-verified).
-- [x] Tests at every step (160 unit + browser; screenshot-proven each visual). Ongoing standard, met.
-- [x] Docs kept in lockstep (ARCHITECTURE/STATE/TESTING/CHANGELOG/ASSETS aligned to the game). DONE.
-- [x] Self-improve: directive refined continuously; decisions + learnings captured to memory.
-
-### Learnings captured this milestone
-- **Run `pnpm lint` (not just `pnpm check`/build) before every commit** — `check`
-  auto-fixes and can mask hard lint errors (Tailwind `@theme` tripped CI lint
-  while local build was green). Lint is the CI gate; reproduce it locally.
-- **Biome needs `css.parser.tailwindDirectives: true`** for Tailwind v4 at-rules.
-- **Cognitive-complexity max is 15** — keep `updateEach` bodies thin by extracting
-  per-entity helpers (applyPlayer*, steerPatrol/steerChase, recordActor).
-- **koota**: `world.query(...)` returns `readonly Entity[]` + `.updateEach((state,
-  entity)=>)`; `entity.destroy()` / `entity.get(Trait)` / `entity.has(Trait)`.
-  Single-subject lookups: `world.query(T)[0]?.get(T)` — guard null (no player on menus).
-- **koota `entity.get()` returns a SNAPSHOT copy** — mutating it is lost; persist
-  via `entity.set(Trait, {...})`. `updateEach`/`readEach` are the in-place paths
-  (updateEach writes back, readEach is read-only — use readEach in the renderer).
-- **PixiJS v8 + React**: `app.destroy(true)` removes the canvas from the DOM
-  (removeView:true) — when React owns the `<canvas>`, use `app.destroy({removeView:false},...)`.
-  Under StrictMode, serialize async create/dispose on a `useRef` promise so one
-  Pixi Application owns the canvas at a time (else a shared GL context infinite-loops
-  in checkMaxIfStatementsInShader → silent main-thread hang, no console error).
-- **Browser verification: chrome-devtools-mcp hung on the WebGL page; Safari MCP
-  works** — but `safari_screenshot` targeted the wrong window. Use `safari_evaluate`
-  (responsive check + DOM/canvas/HUD assertions) for headed-GPU verification.
-- **A tested system is NOT a wired system.** Built+tested mineCartSystem but forgot
-  to call it in gameEcs.step() — feature was dead in the running game (CodeRabbit
-  caught it). When adding a system: write it → test it → CALL it in the loop →
-  verify it runs in the app. Unit tests pass on uncalled code.
-- **Determinism preserved through the lib swaps**: seedrandom dual-stream + koota
-  plain-trait entities + fixed-step systems = replayable. No lib reads wall-clock.
-
-## ✅ Scaffold milestone SHIPPED (2026-06-27)
-PR #1 (scaffold) + PR #3 (PWA icons) squash-merged to main. **Live in
-production:** https://jonbogaty.com/illinois-jim-and-the-shrine-of-catastrophe/
-— verified rendering with zero console errors. CI/release/cd all green;
-Pages deploy working (fixed env branch policy to allow main). 100 unit + 23
-browser + 12 e2e tests. Next milestone: gameplay expansion (sprite rendering
-from the atlas + curated Gemini art, enemies, collectibles, mine-cart rails,
-more levels).
-
-Build **Illinois Jim and the Shrine of Catastrophe** — an original, mobile-first
-2D arcade adventure — in the arcade-game dialect: Vite + TypeScript + Capacitor +
-Biome + Playwright + release-please. Ships to **GitHub Pages (web, primary)** and
-**Android APK (Capacitor)**.
-
-## Locked decisions
-- **Genre: side-scroll platformer + mine-cart.** Run/jump/whip platforming
-  through temple levels with mine-cart rail segments. Gravity + AABB collision,
-  tile-based levels, hazards, collectibles, enemies. Touch-first controls
-  (virtual d-pad/swipe + action buttons).
-- **UI = SolidJS** (signals bridge engine→HUD). **Device profiles** via
-  `@capacitor/device` + `screen-orientation` drive the responsive scaler;
-  `@capacitor/app` pauses the loop on background; `@capacitor/status-bar` for immersion.
-- **Engine foundation done:** `createRng(seed)` (mulberry32) + `createClock()`
-  (fixed-timestep) — sim uses these, never `Math.random`/`performance.now`.
-- **Build fresh.** The original POC HTML is NOT migrated. It lives local-only at
-  `raw-assets/reference/poc_original.html` (gitignored) as inspiration/floor only.
-  The game must EXPAND well beyond the POC.
-- **Original IP.** "Illinois Jim and the Shrine of Catastrophe" — not Indiana Jones.
-  Unique branding, palette, fontography (Gemini-generated where useful).
-- **2D**, canvas/WebGL2 sprites. Render target stays 2D.
-- **Mobile-first.** Touch/mouse primary. Responsive resolution scaling to phones
-  (both rotations), tablets, unfolded foldables — NOT a fixed canvas.
-- **Assets:** primary = `/Volumes/home/assets/2DLowPoly` Kenney packs (Pixel
-  Platformer + expansions, Character Pack, Monster Builder, Explosion Pack, tiles);
-  itch.io downloads (ITCH_API_KEY) → `raw-assets/itch/` (local only); Gemini genai
-  (GEMINI_API_KEY) for unique sprites + branding. Creds pattern from `../martian-trails/.env`.
-- **Repo:** public `jbcom/illinois-jim-and-the-shrine-of-catastrophe`, Pages enabled
-  (workflow build source). gh authed as jbdevprimary.
-- `raw-assets/` is gitignored (POC + raw downloads); processed/atlased assets under
-  `src/` or `public/` are tracked.
-
-## Scaffold the arcade-game stack — make reality match the profiles
-
-- [x] `git init`; import commit on main; public jbcom repo created; Pages enabled
-- [x] `package.json` (pnpm only) with vite, typescript, @biomejs/biome, @playwright/test, vitest — all latest
-- [x] `vite.config.ts`, `tsconfig.json`, `biome.json`, `capacitor.config.ts`, `vitest.config.ts`, `playwright.config.ts`
-- [x] `release-please-config.json` + `.release-please-manifest.json` (node)
-- [x] `index.html` + `src/` entry — building the game FRESH (POC is reference only)
-- [x] `src/sim/` + `src/engine/` + `src/audio/` + `src/render/` + `src/ui/` all landed
-  - [x] engine: rng + fixed-timestep clock facades (17 tests)
-  - [x] sim physics: vec2, AABB, tilemap, swept collision (32 tests cumulative)
-  - [x] sim player: controller (run/jump/whip, coyote, buffer, variable height) (10 tests)
-  - [x] sim world: deadzone camera + level parser + demo level (12 tests)
-  - [x] audio: Web Audio engine + procedural sfx bank (19 browser tests)
-  - [x] engine/viewport: device-profile responsive scaler (47 tests)
-  - [x] render: canvas2d renderer + interpolation + sprite atlas (7 browser/unit tests)
-  - [x] input: touch virtual controls + keyboard → PlayerIntent (7 tests)
-  - [x] engine: main game loop wiring sim+render+audio+viewport+input
-  - [x] ui: SolidJS HUD bridged via signals; verified running in mobile browser
-- [x] Responsive resolution (phone both rotations / tablet / foldable); touch+mouse primary
-- [x] Original branding + fontography (BRAND tokens, src/brand.ts)
-- [x] Asset pipeline: 2DLowPoly CC0 copy + itch.io fetch + Gemini gen (all 3 run)
-- [x] `tests/unit/` + `tests/browser/` + `tests/e2e/` matching the gates (99 + 23 + 12)
-- [x] Capacitor: `android/` platform added; `assembleRelease` builds an APK locally (verified)
-- [x] `.github/workflows/` ci → release → cd (Pages deploy + Android APK), dependabot.yml
-- [x] standard-repo root files: AGENTS.md, README.md, CHANGELOG.md, STANDARDS.md, docs/
-
-## Scaffold complete — next: open PR, merge, then gameplay expansion
-(enemies, collectibles, mine-cart rail segments, more levels, sprite rendering
-from the atlas, curated Gemini sprites sliced into animation frames)
+### Polish (also Meshy-gated)
+- [ ] [WAIT-USER] (Meshy-blocked) Dedicated baked enemy characters to replace the visual
+      stand-ins: jungle canopy-panther (image-to-3d quadruped, not the humanoid rig) +
+      carnivorous-plant (animated snapping prop) + river-serpent + crystal-spider; wire new
+      visual kinds. Currently they render as goblin/mushroom/flyingEye. Needs Meshy credits.
+- [ ] [WAIT-USER] (Meshy-blocked) Goblin hurt/death clips (author non-loop poses) so enemies
+      don't fall back to idle on hit/death; extend author_anim.py + re-bake. Needs credits.
 
 ## What CONTINUOUS means
-1. Never stop for status reports the user didn't ask for.
-2. Never stop for scope caution.
-3. Never stop to summarize — git log is the summary.
-4. Never stop for context pressure — task-batch + PreCompact handle it.
-5. Never stop because a task feels big — pick the next atomic commit.
-6. Only stop on: explicit user halt, red CI blocking, or genuine STOP_FAIL.
+1 never stop for status reports · 2 never stop for scope caution · 3 never stop to
+summarize (git log is the summary) · 4 never stop on context pressure · 5 never stop
+because a task feels big · 6 only stop on explicit user halt / red CI / genuine STOP_FAIL.
+Items prefixed `[WAIT-USER]` are legitimate yields (blocked on the user's payment/input).
 
 ## Operating loop
-while queue has [ ] items: implement → verify → commit → dispatch reviewers → mark [x] → next.
+while queue has actionable (non-WAIT) items: implement → verify (prove live) → commit →
+dispatch reviewers → mark done → append discoveries → next. When only WAIT items remain,
+the queue is parked on the user.
 
 ## Forbidden phrases
-"deferred" | "v2+" | "out of scope" | "future work" | "tracked separately" | "follow-up"
-"TODO" | "FIXME" | "stub" | "placeholder" | "mock for now"
+"deferred" | "v2+" | "out of scope" | "future work" | "follow-up" | "TODO" | "FIXME" |
+"stub" | "placeholder" | "mock for now" | "pause point" | "natural pause" | "next session"
+| "stopping point" | "clean handoff" | "ready to hand off" | "where things stand" (as a stop)

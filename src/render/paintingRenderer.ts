@@ -10,15 +10,16 @@
  * vanishes; positions sync (interpolated) from the sim each frame.
  */
 import { scaleFor } from "@render/actorScale.ts";
+import { bandScrollOffset } from "@render/bandLayout.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
-import { paintComposition, type Painting, type Placement } from "@render/composition.ts";
+import { type ArtPlacement, paintArt, paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
-import { createNpcSprite } from "@render/npc.ts";
-import { npcSpecFor } from "@render/npcRoster.ts";
+import { createBakedNpcSprite, createNpcSprite } from "@render/npc.ts";
+import { bakedNpcBase, npcSpecFor } from "@render/npcRoster.ts";
 import { createParallax, type Parallax } from "@render/parallax.ts";
 import { createPlayerSprite } from "@render/playerSprite.ts";
 import { loadPotFrames } from "@render/pots.ts";
-import { Collectible, Enemy, Facing, Npc, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
+import { Collectible, Enemy, Facing, Gate, Npc, Player, Position, Pot, Size, Switch } from "@sim/ecs/traits.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { Camera } from "@sim/world/camera.ts";
 import type { ParallaxLayerSpec } from "@render/parallax.ts";
@@ -28,9 +29,10 @@ import {
   Application,
   Container,
   Graphics,
+  RenderTexture,
   type Renderer,
   Sprite,
-  type Texture,
+  Texture,
 } from "pixi.js";
 
 export interface PaintingRenderOpts {
@@ -39,6 +41,26 @@ export interface PaintingRenderOpts {
   readonly viewport: ViewportGeometry;
   readonly alpha: number;
   readonly prev: Map<number, { x: number; y: number }>;
+  /**
+   * Portrait serpentine slice-wrap: when the screen is TALLER than the authored band
+   * reads well in (a phone/folded foldable upright), the renderer wraps the horizontal
+   * level into stacked screen-width bands instead of one thin sliver. `portrait` carries
+   * the wrap parameters; omit (or `bands <= 1`) for normal landscape one-band rendering.
+   * See [[portrait-serpentine-slice-wrap]] / src/render/bandLayout.ts.
+   */
+  readonly portrait?: PortraitWrap;
+}
+
+/** Per-frame portrait slice-wrap parameters (computed by the engine from the viewport). */
+export interface PortraitWrap {
+  /** Total bands the level wraps into (>= 2 to engage wrap mode). */
+  readonly bandCount: number;
+  /** Width of one band in WORLD px (how much horizontal level a band shows). */
+  readonly bandWidthWorld: number;
+  /** How many bands are visible on screen at once. */
+  readonly visibleBands: number;
+  /** The player's current (fractional) band index, for the vertical scroll + centering. */
+  readonly playerBand: number;
 }
 
 export interface PaintingRenderer {
@@ -55,11 +77,19 @@ export interface PaintingRenderer {
   readonly app: Application;
   /** The canvas this renderer created and owns (a child of the host container). */
   readonly canvas: HTMLCanvasElement;
+  /** The portrait slice-wrap band stack (test hook — inspect band tiling). */
+  readonly bandStack: Container;
 }
 
 export interface PaintingRendererSpec {
   readonly parallax: readonly ParallaxLayerSpec[];
   readonly painting: readonly Placement[];
+  /**
+   * GenAI-level painting: whole transparent art images (baked props + decor) placed
+   * on the level's surfaces. When present, this is used INSTEAD of `painting` (the
+   * shape-stamp composition) — the schema-Level render path. `painting` stays []`.
+   */
+  readonly artPainting?: readonly ArtPlacement[];
   /**
    * The authored vertical band of the level, in world px (top → bottom). The
    * world is cover-scaled so this band exactly fills the canvas height — the
@@ -142,20 +172,42 @@ export async function createPaintingRenderer(
   app.stage.addChild(parallax.container, worldLayer);
 
   // Solid ground fill behind the painting (biomes with transparent ground
-  // brushes). Drawn from groundY down well past the frame so the floor is opaque.
+  // brushes). Drawn from groundY down to JUST past the authored frame bottom — a
+  // thin under-soil seam beneath the grass, NOT a giant void. The contiguous
+  // grass brushes are sized to cover above it, so no fill shows through.
   if (spec.groundFill) {
     const { color, groundY, width } = spec.groundFill;
+    const depth = Math.max(40, spec.frameBottom - groundY + 24);
     const fill = new Graphics()
-      .rect(-200, groundY, width + 400, spec.frameBottom - groundY + 600)
+      .rect(-200, groundY, width + 400, depth)
       .fill(color);
     worldLayer.addChild(fill);
   }
 
-  const painting: Painting = await paintComposition(spec.painting);
+  // GenAI levels paint whole transparent art (baked props); legacy levels paint
+  // organic shape stamps. Pick the matching painter.
+  const painting: Painting = spec.artPainting
+    ? await paintArt(spec.artPainting)
+    : await paintComposition(spec.painting);
   worldLayer.addChild(painting.container);
 
   const actorsLayer = new Container();
   worldLayer.addChild(actorsLayer);
+
+  // --- Portrait slice-wrap compositor ---------------------------------------
+  // In portrait, the world is rendered to an offscreen band-height RenderTexture
+  // (one screen-wide slice at a time), then drawn as stacked band Sprites so a long
+  // horizontal level wraps into vertical bands. These start empty/unused; landscape
+  // never touches them (worldLayer renders straight to the stage as before).
+  // One RenderTexture PER visible band slot (each band sprite samples its own RT, so
+  // they show different slices of the level simultaneously).
+  const bandRTs: RenderTexture[] = [];
+  const bandStack = new Container();
+  bandStack.visible = false;
+  app.stage.addChild(bandStack);
+  const bandSprites: Sprite[] = [];
+  let bandRTW = 0;
+  let bandRTH = 0;
 
   const views = new Map<Entity, ActorView>();
   const relicTex = makeRelicTexture(app);
@@ -203,38 +255,160 @@ export async function createPaintingRenderer(
         views.delete(e);
       }
     }
+
+    // Reflect gate state on the painted gate art: an OPEN gate fades out (it's now
+    // passable). Gate entities spawn in the level's gate order, so the Nth gate maps
+    // to the `gate:N` painting sprite tagged in paintingFromLevel.
+    const gateSprites = painting.byKey;
+    if (gateSprites) {
+      let gi = 0;
+      o.world.query(Gate).readEach(([gate]) => {
+        const sprite = gateSprites.get(`gate:${gi}`);
+        gi++;
+        if (sprite) sprite.alpha = gate.open ? 0.15 : 1;
+      });
+    }
+
+    // Reflect switch state on the painted lever art: a latched (ON) switch lights up
+    // white-hot so the player can read "this is thrown"; an idle switch stays its base
+    // tint. Switch entities spawn in level order → the Nth maps to `switch:N`.
+    if (gateSprites) {
+      let si = 0;
+      o.world.query(Switch).readEach(([sw]) => {
+        const sprite = gateSprites.get(`switch:${si}`);
+        si++;
+        if (sprite) sprite.tint = sw.on ? 0xffffff : 0x9aa0b0;
+      });
+    }
   }
 
   const frameH = Math.max(1, spec.frameBottom - spec.frameTop);
 
   function render(o: PaintingRenderOpts): void {
-    const { camera: cam } = o;
-    // app.screen is the logical (CSS-px) drawing surface; autoDensity maps it to
-    // the dpr-scaled backing store. We work entirely in these logical units.
-    const screenW = app.screen.width;
-    const screenH = app.screen.height;
-
-    // Cover by HEIGHT: the authored band fills the canvas top-to-bottom with no
-    // letterbox. Gameplay is landscape-locked on phones (see App orientation
-    // guard), so the canvas is always wide enough that this reads correctly.
-    const worldScale = screenH / frameH;
-    const camX = Math.round(cam.x);
-    const camY = Math.round(cam.y);
-
-    // Parallax fills the entire canvas (its own un-cover-scaled space).
-    parallax.resize(screenW, screenH);
-    parallax.update(camX, camY);
-
-    // World: scale by cover factor, then translate so the camera's top-left world
-    // point lands at the canvas origin. frameTop is pinned to the screen top.
-    worldLayer.scale.set(worldScale);
-    worldLayer.position.set(-camX * worldScale, (-camY - spec.frameTop) * worldScale);
-
+    // Always advance the sim→sprite sync + animations first (shared by both modes).
     syncActors(o);
     for (const v of views.values()) {
       if (!v.anim) continue;
       v.acc += v.fps / 60;
       advanceAnim(v.anim, v.acc);
+    }
+
+    if (o.portrait && o.portrait.bandCount >= 2) {
+      renderPortrait(o.portrait);
+    } else {
+      renderLandscape(o);
+    }
+  }
+
+  /** Normal one-band side-scroller: cover the canvas height, scroll horizontally. */
+  function renderLandscape(o: PaintingRenderOpts): void {
+    const { camera: cam } = o;
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+
+    bandStack.visible = false;
+    worldLayer.visible = true;
+
+    // Cover by HEIGHT: the authored band fills the canvas top-to-bottom, no letterbox.
+    const worldScale = screenH / frameH;
+    const camX = Math.round(cam.x);
+    const camY = Math.round(cam.y);
+
+    parallax.resize(screenW, screenH);
+    parallax.update(camX, camY);
+
+    worldLayer.scale.set(worldScale);
+    worldLayer.position.set(-camX * worldScale, (-camY - spec.frameTop) * worldScale);
+  }
+
+  /**
+   * Portrait serpentine slice-wrap: render the world band to an offscreen texture
+   * sized to ONE on-screen band (full level width × band height), then draw stacked
+   * Sprite slices of it — band 0 on top, band 1 below, … — scrolling vertically as the
+   * player advances so they always stay on a centered band. The parallax stays full-
+   * bleed behind the stack (a shared backdrop the bands sit on).
+   */
+  function renderPortrait(wrap: PortraitWrap): void {
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+    const { bandCount, bandWidthWorld, visibleBands, playerBand } = wrap;
+
+    // On-screen band geometry: each band is the full canvas width and 1/visibleBands
+    // of the height. World→screen scale is set so bandWidthWorld maps to screenW.
+    const bandScreenH = screenH / Math.max(1, visibleBands);
+    const scale = screenW / bandWidthWorld;
+    // The play surface is `frameH` tall at this scale. When a band SLOT is taller
+    // than that (the common case — the slot is screenW/BAND_ASPECT, taller than
+    // frameH×scale), we render the band into a FULL-SLOT-height texture and pin the
+    // play surface to the slot's vertical center, letting the world's scenery above
+    // and below the surface fill the rest. Bands then tile edge-to-edge with NO gap
+    // between them (the old centered-with-padding approach left a `yPad` dark seam).
+    const contentH = frameH * scale;
+    // Extra world height (in screen px) to show above the play surface so the band
+    // fills its slot: half the slack, clamped to ≥0 for the rare tighter-than-frame slot.
+    const slotPadTop = Math.max(0, (bandScreenH - contentH) / 2);
+
+    // Parallax: full-bleed shared backdrop behind the band stack.
+    parallax.resize(screenW, screenH);
+    parallax.update(Math.round(playerBand * bandWidthWorld), 0);
+
+    bandStack.visible = true;
+
+    // The vertical scroll: which band sits at the top of the screen (fractional).
+    const topBand = bandScrollOffset(playerBand, bandCount, visibleBands);
+    const firstBand = Math.floor(topBand);
+    const slots = visibleBands + 1;
+
+    // (Re)allocate one RT + sprite per slot, sized to a FULL band slot (width ×
+    // bandScreenH) so each band fills its slot and the stack tiles seamlessly.
+    const rtW = Math.max(1, Math.ceil(screenW));
+    const rtH = Math.max(1, Math.ceil(bandScreenH));
+    ensureBandSlots(slots, rtW, rtH);
+
+    for (let i = 0; i < slots; i++) {
+      const b = firstBand + i;
+      const sprite = bandSprites[i];
+      const rt = bandRTs[i];
+      if (!sprite || !rt) continue;
+      if (b < 0 || b >= bandCount) {
+        sprite.visible = false;
+        continue;
+      }
+      // Render world band `b` into ITS OWN full-slot RT: shift world left by
+      // b*bandWidthWorld so that band's slice lands in [0, screenW]; offset Y by
+      // slotPadTop so the play surface sits centered in the taller slot and the
+      // world's scenery fills the margins (no dark seam between stacked bands).
+      worldLayer.visible = true;
+      worldLayer.scale.set(scale);
+      worldLayer.position.set(-b * bandWidthWorld * scale, slotPadTop - spec.frameTop * scale);
+      app.renderer.render({ container: worldLayer, target: rt, clear: true });
+
+      // Blit: the band's on-screen Y = its band index minus the fractional scroll.
+      // Bands are exactly bandScreenH tall, so consecutive slots abut with no gap.
+      const screenSlot = b - topBand; // 0 = top of screen, in band units
+      sprite.texture = rt;
+      sprite.visible = true;
+      sprite.position.set(0, Math.round(screenSlot * bandScreenH));
+    }
+    // The live worldLayer was only a render SOURCE for the RTs — hide it on the stage.
+    worldLayer.visible = false;
+  }
+
+  /** Ensure `n` band slots (RT + sprite), each a full-width × `h`-tall band. */
+  function ensureBandSlots(n: number, w: number, h: number): void {
+    if (w !== bandRTW || h !== bandRTH) {
+      for (const rt of bandRTs) rt.destroy(true);
+      bandRTs.length = 0;
+      for (const s of bandSprites) s.texture = Texture.EMPTY;
+      bandRTW = w;
+      bandRTH = h;
+    }
+    while (bandRTs.length < n) bandRTs.push(RenderTexture.create({ width: w, height: h, resolution: 1 }));
+    while (bandSprites.length < n) {
+      const s = new Sprite(Texture.EMPTY);
+      s.visible = false;
+      bandStack.addChild(s);
+      bandSprites.push(s);
     }
   }
 
@@ -248,6 +422,8 @@ export async function createPaintingRenderer(
     canvas,
     render,
     flushViews,
+    /** The portrait slice-wrap band stack (test hook — inspect band tiling). */
+    bandStack,
     destroy() {
       flushViews();
       // Pot frames are standalone Texture slices sharing an Assets-owned source;
@@ -255,6 +431,8 @@ export async function createPaintingRenderer(
       for (const frames of potCache.values()) for (const t of frames) t.destroy(false);
       potCache.clear();
       relicTex.destroy(true); // standalone RenderTexture — not in the Assets cache
+      for (const rt of bandRTs) rt.destroy(true); // portrait band RTs (if any were made)
+      bandRTs.length = 0;
       painting.destroy();
       parallax.destroy();
       // removeView:true so Pixi drops the canvas; we also detach it from the DOM.
@@ -278,7 +456,8 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
       p.destroy();
       return;
     }
-    p.sprite.anchor.set(0.5, 1);
+    // Anchor is set from the baked clip manifest inside createPlayerSprite (feet
+    // contact, horizontal centre of mass) — don't override it here.
     p.sprite.scale.set(scaleFor("player"));
     layer.addChild(p.sprite);
     ph.parent?.removeChild(ph);
@@ -322,7 +501,16 @@ function ensureNpc(
   const ph = placeholder(0x6f9a4a);
   layer.addChild(ph);
   views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
-  void createNpcSprite(renderer, npcSpecFor(dialogueId))
+  const bakedBase = bakedNpcBase(dialogueId);
+  // Baked NPC first; if its sheet fails to load, fall back to the paper-doll so a
+  // missing bake leaves a real NPC, not a permanent placeholder.
+  const built = bakedBase
+    ? createBakedNpcSprite(bakedBase).catch((err) => {
+        console.error(`[render] baked npc ${dialogueId} failed; using paper-doll:`, err);
+        return createNpcSprite(renderer, npcSpecFor(dialogueId));
+      })
+    : createNpcSprite(renderer, npcSpecFor(dialogueId));
+  void built
     .then((npc) => {
       if (!views.has(e)) {
         npc.destroy();

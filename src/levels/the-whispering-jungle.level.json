@@ -1,0 +1,561 @@
+{
+  "id": "the-whispering-jungle",
+  "title": "The Whispering Jungle",
+  "order": 2,
+  "biome": "deep-jungle",
+  "types": [
+    "platformer",
+    "multidirectional"
+  ],
+  "targetMinutes": 12,
+  "story": {
+    "beat": "The trail plunges into a humid, ancient jungle that swallows sound. The trees are older than the village; something watches from the canopy.",
+    "narration": [
+      "The air grows heavy, smelling of damp earth and sweet, rotten orchids.",
+      "Illinois Jim pauses. The birds have stopped singing. The canopy is listening.",
+      "To go forward, we must climb. The ancient ruins lay somewhere beneath the roots."
+    ]
+  },
+  "baselineY": 250,
+  "art": [
+    {
+      "key": "jungle-sky-parallax",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit SNES style deep background of a misty jungle canopy, twilight sky with teal and tarnished gold hues, silhouettes of giant ancient trees, dramatic retro lighting, pixel art landscape",
+      "aspect": "16:9",
+      "worldHeight": 360
+    },
+    {
+      "key": "jungle-trunks-parallax",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit Genesis style midground layer of massive gnarled tree trunks, hanging vines, shadowed mosses, obsidian and deep teal color palette, dramatic volumetric fog, pixel art",
+      "aspect": "16:9",
+      "worldHeight": 360
+    },
+    {
+      "key": "jungle-ferns-parallax",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit style foreground parallax layer of giant tropical ferns, glowing spores, blood red jungle flowers, dark silhouettes, retro pixel art game background",
+      "aspect": "16:9",
+      "worldHeight": 360
+    },
+    {
+      "key": "jungle-leaves-parallax",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit retro pixel art very close foreground framing elements, dangling jungle leaves and vines, dark obsidian shadows with teal highlights, dramatic atmosphere",
+      "aspect": "16:9",
+      "worldHeight": 360
+    },
+    {
+      "key": "jungle-ground-tile",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit SNES style ground tileset, ancient moss-covered soil, tangled dark roots, scattered gold pollen, obsidian-colored stones, clean looping edge, pixel art",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "giant-root-platform",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A massive, thick gnarled tree root curling upwards to form a flat standable platform. Mossy, with tiny glowing teal mushrooms on a solid flat magenta background, 16-bit pixel art.",
+      "aspect": "4:3",
+      "worldHeight": 120
+    },
+    {
+      "key": "vine-bridge",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A rustic bridge woven from thick jungle vines, sagging slightly, secured with ancient rope, on a solid flat magenta background, retro 16-bit pixel art.",
+      "aspect": "16:9",
+      "worldHeight": 60
+    },
+    {
+      "key": "strangler-fig-platform",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A vertical wooden platform formed by tangled strangler fig bark, flat mossy top, dark bark with tarnished gold sap, on a solid flat magenta background, retro pixel art.",
+      "aspect": "3:4",
+      "worldHeight": 180
+    },
+    {
+      "key": "mushroom-shelf",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A large, sturdy bracket fungus shelf growing from a tree trunk, glowing with faint blood red spores, flat walkable surface, on a solid flat magenta background, 16-bit pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "canopy-walkway",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "An ancient, moss-covered wooden walkway built into the high branches, crumbling edge, ropes dangling, on a solid flat magenta background, Genesis pixel art style.",
+      "aspect": "16:9",
+      "worldHeight": 80
+    },
+    {
+      "key": "collapsing-log",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A decayed, moss-covered hollow log used as a bridge, rotting bark with glowing teal fungi, showing signs of breaking, on a solid flat magenta background, pixel art.",
+      "aspect": "16:9",
+      "worldHeight": 70
+    },
+    {
+      "key": "ancient-stone-foundation",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "Overgrown ancient ruins made of tarnished gold bricks, tangled with vines, forming a flat platform, on a solid flat magenta background, 16-bit pixel art.",
+      "aspect": "4:3",
+      "worldHeight": 110
+    },
+    {
+      "key": "guardian-npc",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "A mysterious jungle guardian wrapped in a cloak of leaves, wearing a wooden tiki-style mask with glowing teal eyes, on a solid flat magenta background, retro pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "carnivorous-plant",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "A snapping carnivorous plant with blood-red petals, sharp thorn teeth, and a pulsing stem, ready to strike, on a solid flat magenta background, 16-bit retro pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 50
+    },
+    {
+      "key": "canopy-panther",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "A sleek, dark obsidian-furred jungle predator with glowing gold eyes, tensed to pounce, pixel art animal on a solid flat magenta background, Genesis style.",
+      "aspect": "1:1",
+      "worldHeight": 40
+    },
+    {
+      "key": "glow-fruit",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A rare glowing jungle fruit, pear-shaped and radiating soft tarnished gold light, on a solid flat magenta background, retro game pickup pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 24
+    },
+    {
+      "key": "jungle-thorns",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "Sharp, obsidian-colored brambles and thorns dripping with red poison, on a solid flat magenta background, hazard sprite in retro 16-bit pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "vine-tangle-gate",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "A heavy barrier of interlocking thick vines and thorns blocking passage, with a central glowing gold rune socket, on a solid flat magenta background, 16-bit pixel art.",
+      "aspect": "3:4",
+      "worldHeight": 120
+    },
+    {
+      "key": "jungle-weight-lever",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "An ancient stone pedestal with a heavy hanging stone counterweight on a vine pulley, a brass handle, on a solid flat magenta background, retro pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "jungle-totem",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A moss-covered stone totem with a carved face, eyes glowing with soft teal fire, serving as a checkpoint, on a solid flat magenta background, 16-bit style.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "golden-orchid",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A dazzling, intricately detailed golden orchid blossom, sparkling with legendary energy, on a solid flat magenta background, retro 16-bit secret item.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "jungle-urn",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A weathered clay jar wrapped in moss, containing hidden supplies, on a solid flat magenta background, classic destructible pot sprite in pixel art.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    }
+  ],
+  "parallax": [
+    {
+      "art": "jungle-sky-parallax",
+      "factor": 0.1
+    },
+    {
+      "art": "jungle-trunks-parallax",
+      "factor": 0.3
+    },
+    {
+      "art": "jungle-ferns-parallax",
+      "factor": 0.6
+    },
+    {
+      "art": "jungle-leaves-parallax",
+      "factor": 0.9
+    }
+  ],
+  "surfaces": [
+    {
+      "kind": "ground",
+      "length": 450,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 140,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 350,
+      "top": 80,
+      "anchorArt": "giant-root-platform"
+    },
+    {
+      "kind": "raised",
+      "length": 400,
+      "top": 130,
+      "anchorArt": "vine-bridge"
+    },
+    {
+      "kind": "gap",
+      "length": 160,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 500,
+      "top": 180,
+      "anchorArt": "strangler-fig-platform"
+    },
+    {
+      "kind": "raised",
+      "length": 250,
+      "top": 270,
+      "anchorArt": "mushroom-shelf"
+    },
+    {
+      "kind": "raised",
+      "length": 250,
+      "top": 360,
+      "anchorArt": "mushroom-shelf"
+    },
+    {
+      "kind": "raised",
+      "length": 550,
+      "top": 450,
+      "anchorArt": "canopy-walkway"
+    },
+    {
+      "kind": "gap",
+      "length": 200,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 450,
+      "top": 240,
+      "anchorArt": "collapsing-log"
+    },
+    {
+      "kind": "gap",
+      "length": 150,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 500,
+      "top": 100,
+      "anchorArt": "ancient-stone-foundation"
+    },
+    {
+      "kind": "raised",
+      "length": 450,
+      "top": 40,
+      "anchorArt": "giant-root-platform"
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    }
+  ],
+  "placements": [],
+  "enemies": [
+    {
+      "art": "carnivorous-plant",
+      "at": {
+        "surface": 0,
+        "t": 0.7,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 40
+    },
+    {
+      "art": "canopy-panther",
+      "at": {
+        "surface": 3,
+        "t": 0.5,
+        "dy": 0
+      },
+      "behavior": "chase",
+      "range": 0
+    },
+    {
+      "art": "carnivorous-plant",
+      "at": {
+        "surface": 5,
+        "t": 0.3,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 60
+    },
+    {
+      "art": "canopy-panther",
+      "at": {
+        "surface": 8,
+        "t": 0.4,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 100
+    },
+    {
+      "art": "carnivorous-plant",
+      "at": {
+        "surface": 13,
+        "t": 0.5,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 50
+    }
+  ],
+  "collectibles": [
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 2,
+        "t": 0.5,
+        "dy": 30
+      },
+      "value": 150
+    },
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 3,
+        "t": 0.2,
+        "dy": 40
+      },
+      "value": 150
+    },
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 6,
+        "t": 0.5,
+        "dy": 30
+      },
+      "value": 150
+    },
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 7,
+        "t": 0.5,
+        "dy": 30
+      },
+      "value": 150
+    },
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 8,
+        "t": 0.8,
+        "dy": 40
+      },
+      "value": 150
+    },
+    {
+      "art": "glow-fruit",
+      "at": {
+        "surface": 10,
+        "t": 0.5,
+        "dy": 50
+      },
+      "value": 200
+    }
+  ],
+  "pots": [
+    {
+      "art": "jungle-urn",
+      "at": {
+        "surface": 0,
+        "t": 0.3,
+        "dy": 0
+      },
+      "drop": "health"
+    },
+    {
+      "art": "jungle-urn",
+      "at": {
+        "surface": 5,
+        "t": 0.8,
+        "dy": 0
+      },
+      "drop": "relic"
+    },
+    {
+      "art": "jungle-urn",
+      "at": {
+        "surface": 12,
+        "t": 0.1,
+        "dy": 0
+      },
+      "drop": "secret"
+    }
+  ],
+  "npcs": [
+    {
+      "art": "guardian-npc",
+      "at": {
+        "surface": 0,
+        "t": 0.9,
+        "dy": 0
+      },
+      "dialogueId": "guardian-warning"
+    }
+  ],
+  "hazards": [
+    {
+      "art": "jungle-thorns",
+      "at": {
+        "surface": 1,
+        "t": 0.5,
+        "dy": -80
+      },
+      "width": 140
+    },
+    {
+      "art": "jungle-thorns",
+      "at": {
+        "surface": 4,
+        "t": 0.5,
+        "dy": -130
+      },
+      "width": 160
+    },
+    {
+      "art": "jungle-thorns",
+      "at": {
+        "surface": 9,
+        "t": 0.5,
+        "dy": -240
+      },
+      "width": 200
+    }
+  ],
+  "switches": [
+    {
+      "id": "jungle-canopy-weight",
+      "art": "jungle-weight-lever",
+      "at": {
+        "surface": 8,
+        "t": 0.9,
+        "dy": 0
+      },
+      "kind": "weight"
+    }
+  ],
+  "gates": [
+    {
+      "art": "vine-tangle-gate",
+      "at": {
+        "surface": 12,
+        "t": 0.9,
+        "dy": 0
+      },
+      "opensWith": [
+        "jungle-canopy-weight"
+      ],
+      "blocksSurface": 13
+    }
+  ],
+  "keys": [],
+  "movingPlatforms": [
+    {
+      "art": "mushroom-shelf",
+      "at": {
+        "surface": 8,
+        "t": 0.1,
+        "dy": -50
+      },
+      "axis": "vertical",
+      "distance": 120,
+      "speed": 50,
+      "width": 64
+    }
+  ],
+  "secrets": [
+    {
+      "art": "golden-orchid",
+      "at": {
+        "surface": 5,
+        "t": 0.05,
+        "dy": 150
+      },
+      "hint": "Climb high and leap backward onto the hidden branch extending left over the chasm.",
+      "value": 1000
+    }
+  ],
+  "checkpoints": [
+    {
+      "art": "jungle-totem",
+      "at": {
+        "surface": 5,
+        "t": 0.5,
+        "dy": 0
+      }
+    },
+    {
+      "art": "jungle-totem",
+      "at": {
+        "surface": 12,
+        "t": 0.2,
+        "dy": 0
+      }
+    }
+  ],
+  "spawn": {
+    "surface": 0,
+    "t": 0.1,
+    "dy": 0
+  },
+  "goal": {
+    "surface": 14,
+    "t": 0.9,
+    "dy": 0
+  }
+}

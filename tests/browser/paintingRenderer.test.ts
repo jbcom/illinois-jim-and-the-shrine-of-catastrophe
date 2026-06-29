@@ -1,6 +1,5 @@
-import { CAVE_PARALLAX } from "@render/parallax.ts";
 import { createPaintingRenderer } from "@render/paintingRenderer.ts";
-import { CAVE_DESCENT } from "@render/levels/caveDescent.ts";
+import { levelBundle } from "@render/levels/registry.ts";
 import {
   Collectible,
   Enemy,
@@ -13,26 +12,30 @@ import {
   Velocity,
 } from "@sim/ecs/traits.ts";
 import { createCamera } from "@sim/world/camera.ts";
-import { DESCENT } from "@sim/world/gameLevel.ts";
 import { page } from "vitest/browser";
 import { createWorld } from "koota";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-/** Build a sim world populated from the DESCENT level's spawns. */
-function buildDescentWorld() {
+// The live painting renderer, driven by a real GenAI level bundle (The Whispering
+// Jungle) — its baked-prop artPainting + parallax + sim spawns. Proves the renderer
+// composes the painting and the sim sprites together in-engine.
+const BUNDLE = levelBundle("the-whispering-jungle");
+
+/** Build a sim world populated from the bundle's spawns. */
+function buildJungleWorld() {
   const world = createWorld();
   world.spawn(
-    Position({ x: DESCENT.spawnX, y: DESCENT.spawnY }),
+    Position({ x: BUNDLE.sim.spawnX, y: BUNDLE.sim.spawnY }),
     Velocity({ x: 0, y: 0 }),
     Size({ w: 12, h: 16 }),
     Facing({ dir: 1 }),
     Gravity({ scale: 1 }),
     Player({ grounded: true, coyote: 0, buffer: 0, whip: 0, dead: false }),
   );
-  for (const c of DESCENT.collectibles) {
+  for (const c of BUNDLE.sim.collectibles) {
     world.spawn(Position({ x: c.x, y: c.y }), Size({ w: 10, h: 10 }), Collectible({ value: c.value, taken: false }));
   }
-  for (const e of DESCENT.enemies) {
+  for (const e of BUNDLE.sim.enemies) {
     world.spawn(
       Position({ x: e.x, y: e.y }),
       Velocity({ x: 0, y: 0 }),
@@ -42,7 +45,7 @@ function buildDescentWorld() {
       Enemy({ kind: e.kind, speed: 40, minX: e.x - 48, maxX: e.x + 48, alive: true }),
     );
   }
-  for (const p of DESCENT.pots) {
+  for (const p of BUNDLE.sim.pots) {
     world.spawn(Position({ x: p.x, y: p.y }), Size({ w: 16, h: 16 }), Pot({ color: p.color, drop: p.drop, broken: false, breakTimer: 0 }));
   }
   return world;
@@ -63,16 +66,18 @@ describe("painting renderer (in-game integration)", () => {
     host?.remove();
   });
 
-  it("renders the real game (painting + sim sprites) (visual proof)", async () => {
+  it("renders the real game (baked painting + sim sprites) (visual proof)", async () => {
     renderer = await createPaintingRenderer(host!, {
-      parallax: CAVE_PARALLAX,
-      painting: CAVE_DESCENT,
-      frameTop: -20,
-      frameBottom: 360,
+      parallax: BUNDLE.parallax,
+      painting: [],
+      artPainting: BUNDLE.artPainting ?? [],
+      frameTop: BUNDLE.frame.top,
+      frameBottom: BUNDLE.frame.bottom,
     });
-    const world = buildDescentWorld();
-    // Camera in WORLD px: view height = the authored frame (380), width = aspect.
-    const camera = { ...createCamera(675, 380), x: 60, y: 0 };
+    const world = buildJungleWorld();
+    // Camera in WORLD px: view height = the authored frame, width = aspect.
+    const frameH = BUNDLE.frame.bottom - BUNDLE.frame.top;
+    const camera = { ...createCamera(Math.round((frameH * 480) / 270), frameH), x: 60, y: BUNDLE.frame.top };
     const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 480, viewH: 270 };
 
     // Two renders: first creates the async actor sprites, second shows them once loaded.
@@ -80,8 +85,57 @@ describe("painting renderer (in-game integration)", () => {
     await new Promise((r) => setTimeout(r, 300)); // let hero/enemy/pot textures resolve
     renderer.render({ world, camera, viewport, alpha: 0, prev: new Map() });
 
-    await page.screenshot({ path: "game-descent-live.png" });
+    await page.screenshot({ path: "game-jungle-live.png" });
     expect(renderer.app.stage.children.length).toBeGreaterThan(0);
+    world.destroy();
+  });
+
+  it("portrait slice-wrap stacks bands seamlessly — no dark seam between them", async () => {
+    // A TALL portrait host engages the slice-wrap. The regression: bands used to be
+    // centered in their slot with vertical padding, leaving a dark gap (seam) between
+    // consecutive bands. They must now tile edge-to-edge and cover the full height.
+    host!.style.width = "390px";
+    host!.style.height = "844px";
+    renderer = await createPaintingRenderer(host!, {
+      parallax: BUNDLE.parallax,
+      painting: [],
+      artPainting: BUNDLE.artPainting ?? [],
+      frameTop: BUNDLE.frame.top,
+      frameBottom: BUNDLE.frame.bottom,
+    });
+    const world = buildJungleWorld();
+    const frameH = BUNDLE.frame.bottom - BUNDLE.frame.top;
+    const camera = { ...createCamera(frameH, frameH), x: 60, y: BUNDLE.frame.top };
+    const screenH = renderer.app.screen.height;
+    const visibleBands = 3;
+    const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 390, viewH: 844 };
+    const portrait = { bandCount: 6, bandWidthWorld: frameH * 1.6, visibleBands, playerBand: 1.5 };
+
+    renderer.render({ world, camera, viewport, alpha: 0, prev: new Map(), portrait });
+    await new Promise((r) => setTimeout(r, 300));
+    renderer.render({ world, camera, viewport, alpha: 0, prev: new Map(), portrait });
+
+    // Inspect ONLY the band stack's sprites (not the parallax layers), top→bottom.
+    const bands = (renderer.bandStack.children as { visible: boolean; y: number; height: number }[])
+      .filter((s) => s.visible && s.height > 1)
+      .sort((a, b) => a.y - b.y);
+
+    expect(bands.length).toBeGreaterThanOrEqual(visibleBands);
+    const bandScreenH = screenH / visibleBands;
+    // Each band fills a full slot (no centered-with-padding shrink)…
+    for (const s of bands) {
+      expect(s.height).toBeGreaterThanOrEqual(bandScreenH - 2);
+    }
+    // …and consecutive bands abut with no gap (next.y ≈ prev.y + prev.height ± 1px).
+    for (let i = 1; i < bands.length; i++) {
+      const prev = bands[i - 1];
+      const cur = bands[i];
+      if (!prev || !cur) continue;
+      const gap = cur.y - (prev.y + prev.height);
+      expect(Math.abs(gap)).toBeLessThanOrEqual(2);
+    }
+
+    await page.screenshot({ path: "game-jungle-portrait-bands.png" });
     world.destroy();
   });
 });
