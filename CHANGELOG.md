@@ -14,6 +14,13 @@ do not edit version numbers manually.
 
 ---
 
+## [1.1.2](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/compare/illinois-jim-and-the-shrine-of-catastrophe-v1.1.1...illinois-jim-and-the-shrine-of-catastrophe-v1.1.2) (2026-06-29)
+
+
+### Bug Fixes
+
+* landscape-only phones, rotate prompt, remove portrait snake mode, arcade BGM ([#32](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/32)) ([5ded5ec](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/5ded5ec0c0e817a61aea1ea4ea3baea988c2afbc))
+
 ## [1.1.1](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/compare/illinois-jim-and-the-shrine-of-catastrophe-v1.1.0...illinois-jim-and-the-shrine-of-catastrophe-v1.1.1) (2026-06-29)
 
 
