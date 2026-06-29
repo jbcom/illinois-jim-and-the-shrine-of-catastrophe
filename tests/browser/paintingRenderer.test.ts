@@ -135,6 +135,16 @@ describe("painting renderer (in-game integration)", () => {
       expect(Math.abs(gap)).toBeLessThanOrEqual(2);
     }
 
+    // Band RTs must render at the app's device resolution. A resolution-1 RT blitted
+    // onto a resolution-2 canvas was 2×-upscaled, dithering semi-transparent content
+    // (waterfall foam) into a transparency checkerboard. Assert RT res == app res.
+    const appRes = renderer.app.renderer.resolution;
+    const bandTexRes = (renderer.bandStack.children as { visible: boolean; texture?: { source?: { resolution: number } } }[])
+      .filter((s) => s.visible && s.texture?.source)
+      .map((s) => s.texture!.source!.resolution);
+    expect(bandTexRes.length).toBeGreaterThan(0);
+    for (const r of bandTexRes) expect(r).toBe(appRes);
+
     await page.screenshot({ path: "game-jungle-portrait-bands.png" });
     world.destroy();
   });

@@ -44,6 +44,20 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 
 ## Queue — LIVE
 
+### Render polish (agent-doable, NOT Meshy-gated)
+- [x] Gorge bottom-right transparency CHECKERBOARD — FIXED (0eea22d). Root cause (via
+      stuck-loop-debugger): portrait band RenderTextures were created at resolution:1 while
+      the app runs at resolution:2, so each band buffer was half-density and 2×-upscaled on
+      blit (antialias:false), dithering the waterfall foam's semi-transparent texels into a
+      checkerboard. Fix: create band RTs at app.renderer.resolution (+ reallocate on dpr
+      change). Gross checkerboard gone, render crisp; browser test asserts RT res == app res.
+- [ ] [WAIT-CI] PR #25 (band-resolution checkerboard fix) — CI green, ready to squash-merge.
+- [x] Live deploy VERIFIED. The production site (jonbogaty.com/illinois-jim-…) serves the
+      current GenAI build: live index-BTEG_bK-.js references bandStack (slice-wrap),
+      jungle-leaves-parallax (the regenerated clean art), the-rushing-gorge/the-whispering-jungle;
+      the level WEBP returns HTTP 200. The "old blocky render" seen earlier was local BROWSER
+      CACHE, not a stale deploy (live hash == CI build hash for b2ee2d8; x-cache MISS, age 0).
+
 ### Next chapter — levels 6–10 (gated on Meshy credit)
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of
       levels 6–10 needs ~10 baked 3D props — generating them needs credits I can't purchase
