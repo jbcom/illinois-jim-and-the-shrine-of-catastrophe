@@ -38,6 +38,15 @@ export interface Level {
     top: number;
     bottom: number;
   }[];
+  /** Moving platforms (optional) that oscillate and carry the player. */
+  readonly movingPlatforms?: readonly {
+    x: number;
+    y: number;
+    axis: "horizontal" | "vertical";
+    distance: number;
+    speed: number;
+    width: number;
+  }[];
 }
 
 const CHAR_TO_KIND: Record<string, TileKind> = {

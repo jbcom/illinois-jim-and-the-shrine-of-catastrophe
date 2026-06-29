@@ -58,6 +58,15 @@ export interface GameLevel {
     top: number;
     bottom: number;
   }[];
+  /** Moving platforms that oscillate and carry the player. */
+  readonly movingPlatforms?: readonly {
+    x: number;
+    y: number;
+    axis: "horizontal" | "vertical";
+    distance: number;
+    speed: number;
+    width: number;
+  }[];
   /** World-x past which the level is "won" (reaching the relic block). */
   readonly goalX: number;
 }

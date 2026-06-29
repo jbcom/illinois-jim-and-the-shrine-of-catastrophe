@@ -14,6 +14,7 @@ import {
   Gate,
   Gravity,
   MineCart,
+  MovingPlatform,
   Npc,
   Player,
   Position,
@@ -115,6 +116,14 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
     world.spawn(
       Position({ x: g.x, y: g.y }),
       Gate({ opensWith: g.opensWith[0] ?? "", open: false, x0: g.x0, x1: g.x1, top: g.top, bottom: g.bottom }),
+    );
+  }
+  // Moving platforms that oscillate and carry the player riding their top.
+  for (const m of level.movingPlatforms ?? []) {
+    world.spawn(
+      Position({ x: m.x, y: m.y }),
+      Size({ w: m.width, h: 12 }),
+      MovingPlatform({ originX: m.x, originY: m.y, axis: m.axis, distance: m.distance, speed: m.speed, width: m.width, phase: 0 }),
     );
   }
 

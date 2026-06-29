@@ -114,6 +114,15 @@ export interface BuiltSchemaLevel {
   readonly npcs: readonly { x: number; y: number; dialogueId: string; art: string }[];
   readonly hazards: readonly { x: number; y: number; width: number; art: string }[];
   readonly switches: readonly { x: number; y: number; id: string; art: string }[];
+  readonly movingPlatforms: readonly {
+    x: number;
+    y: number;
+    art: string;
+    axis: "horizontal" | "vertical";
+    distance: number;
+    speed: number;
+    width: number;
+  }[];
   /** Gates: position + the world rect they block (the blocked surface span) until open. */
   readonly gates: readonly {
     x: number;
@@ -144,6 +153,14 @@ export function buildFromLevel(level: Level): BuiltSchemaLevel {
     npcs: level.npcs.map((n: LevelNpc) => ({ ...at(n.at), dialogueId: n.dialogueId, art: n.art })),
     hazards: level.hazards.map((h: LevelHazard) => ({ ...at(h.at), width: h.width, art: h.art })),
     switches: level.switches.map((s) => ({ ...at(s.at), id: s.id, art: s.art })),
+    movingPlatforms: level.movingPlatforms.map((m) => ({
+      ...at(m.at),
+      art: m.art,
+      axis: m.axis,
+      distance: m.distance,
+      speed: m.speed,
+      width: m.width,
+    })),
     gates: level.gates.map((g) => {
       const pos = at(g.at);
       // The gate blocks its `blocksSurface` span: a vertical wall over that surface's

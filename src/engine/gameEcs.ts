@@ -23,6 +23,7 @@ import {
   gateSwitchSystem,
   lifetimeSystem,
   mineCartSystem,
+  movingPlatformSystem,
   npcInteractionSystem,
   particleSystem,
   physicsSystem,
@@ -205,6 +206,8 @@ export async function createGame(
     physicsSystem(sim.world, level.map, sim.tuning, dt);
     // Gate/switch puzzle: latch switches on overlap, open gates, block closed ones.
     gateSwitchSystem(sim.world);
+    // Moving platforms oscillate and carry the player riding them.
+    movingPlatformSystem(sim.world, dt);
     const wasGrounded = sim.world.query(Player)[0]?.get(Player)?.grounded ?? true;
     const combat = combatSystem(sim.world, sim.tuning);
     const pots = potSystem(sim.world, sim.tuning, dt);
