@@ -113,10 +113,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       (Baked goblin walk also seen animating live on the next level's cave parallax.)
 
 ### Queue
+- [ ] IMPLEMENT THE PROBLEM-SOLVING LAYER in the live sim (review P0s — the schema
+      authors hazards/gates/switches/movingPlatforms/secrets, but createSimWorld spawns
+      NONE of them on ANY level, so the baked spike/gate/platform/relic art paints a
+      danger/puzzle that does nothing). Wire each through GameLevel + createSimWorld +
+      the ECS: hazards (Hazard trait exists → damage on contact) FIRST since spikes that
+      don't kill is the most misleading, then gates+switches (lever opens gate), moving
+      platforms (rideable collision), secrets (hidden pickup). Live-verify each. [TOP]
+- [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
+      Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
 - [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
-      shrine biomes) so the whole 10-level adventure runs on the baked pipeline, not just
-      Level 1. Start with Level 2 (collapsing-mine / cave): bake its structures/props,
-      add a genaiBundle entry, live-verify. [TOP]
+      shrine biomes) so the whole 10-level adventure runs on the baked pipeline. Start
+      with Level 2 (collapsing-mine / cave): bake its structures/props, genaiBundle entry.
 - [ ] Author the remaining GenAI level JSONs (Levels 2-10) via the scripts/genai-level
       pipeline per the 10-level outline; each needs its parallax (gemini) + baked props.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
