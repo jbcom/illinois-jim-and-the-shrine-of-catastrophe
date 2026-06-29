@@ -1,0 +1,550 @@
+{
+  "id": "the-crystal-cavern",
+  "title": "The Crystal Cavern",
+  "order": 5,
+  "biome": "crystal-cavern",
+  "types": [
+    "puzzle",
+    "platformer"
+  ],
+  "targetMinutes": 13,
+  "story": {
+    "beat": "The cart derails into a vast cavern of glowing crystal — beautiful and lethal. The crystals sing; the song is a warning.",
+    "narration": [
+      "The crash left Jim in a breathtaking world of razor-sharp light.",
+      "The cavern walls hum with a strange, harmonic vibration.",
+      "A lost miner's journal warns of light beams that seal the path forward."
+    ]
+  },
+  "baselineY": 250,
+  "art": [
+    {
+      "key": "crystal-parallax-sky",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit SNES style deep cavern background, towering obsidian structures, massive veins of glowing teal crystals, distant cavern ceilings, dramatic lighting, limited retro palette of obsidian, tarnished gold, and teal.",
+      "aspect": "16:9",
+      "worldHeight": 400
+    },
+    {
+      "key": "crystal-parallax-cavern",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit Genesis style cave midground, jagged translucent blood-red crystals, ancient ruins embedded in rock walls, rim lighting, atmospheric dust, obsidian and blood red palette.",
+      "aspect": "16:9",
+      "worldHeight": 400
+    },
+    {
+      "key": "crystal-ground-tile",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit pixel-art cave floor tile, dark obsidian rock laced with glowing teal and gold crystal veins, horizontally-seamless, gritty retro texture.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "crystal-platform-art",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "One ornate standable crystal cluster platform, brilliant gold and teal translucent facets, sharp jagged angles, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 80
+    },
+    {
+      "key": "fragile-bridge-art",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A delicate, fractured horizontal lattice of pale blood-red crystal, glowing faintly, looking highly fragile and ready to shatter, on a flat solid magenta background, no border.",
+      "aspect": "3:4",
+      "worldHeight": 40
+    },
+    {
+      "key": "geode-prop-art",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A large cracked geode showing sparkling tarnished gold and deep red crystal interior, resting on dark rough rock, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "light-receiver-switch-art",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A grand, multi-faceted teal crystal prism held in an ornate tarnished gold stand, awaiting a beam of light, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "lever-switch-art",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "An ancient brass and gold pull-lever mounted on a glowing obsidian pedestal, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "crystal-gate-art",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "A massive, shimmering vertical lattice barrier of blood-red and gold crystals, humming with magical seals, on a flat solid magenta background, no border.",
+      "aspect": "3:4",
+      "worldHeight": 128
+    },
+    {
+      "key": "crystal-spider-art",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "A terrifying multi-legged automaton spider made of razor-sharp obsidian and glowing teal crystal eyes, 16-bit retro sprite, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "lost-miner-art",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "An old, weathered dwarf explorer in tattered parchment robes, holding a dim brass lantern, 16-bit retro character sprite, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 56
+    },
+    {
+      "key": "glowing-shard-art",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A spinning, brilliant teal crystal shard emitting a faint retro pixel glow, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 24
+    },
+    {
+      "key": "rare-geode-art",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A magnificent, multi-colored heart-shaped geode pulsing with rich crimson and gold light, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "crystal-spikes-art",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "Jagged, razor-sharp crystal shards sticking straight up from the floor, glowing blood-red, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "key-relic-art",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A glowing, ancient golden key wrapped in spinning teal crystal rings, on a flat solid magenta background, no border.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    }
+  ],
+  "parallax": [
+    {
+      "art": "crystal-parallax-sky",
+      "factor": 0.15
+    },
+    {
+      "art": "crystal-parallax-cavern",
+      "factor": 0.4
+    }
+  ],
+  "surfaces": [
+    {
+      "kind": "ground",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 200,
+      "top": 80,
+      "anchorArt": "crystal-platform-art"
+    },
+    {
+      "kind": "gap",
+      "length": 120,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 300,
+      "top": 120,
+      "anchorArt": "crystal-platform-art"
+    },
+    {
+      "kind": "ground",
+      "length": 250,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 350,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 150,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 300,
+      "top": 140,
+      "anchorArt": "crystal-platform-art"
+    },
+    {
+      "kind": "ground",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 250,
+      "top": 100,
+      "anchorArt": "crystal-platform-art"
+    },
+    {
+      "kind": "raised",
+      "length": 300,
+      "top": 180,
+      "anchorArt": "crystal-platform-art"
+    },
+    {
+      "kind": "gap",
+      "length": 200,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 80,
+      "top": 120,
+      "anchorArt": "fragile-bridge-art"
+    },
+    {
+      "kind": "gap",
+      "length": 100,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 80,
+      "top": 120,
+      "anchorArt": "fragile-bridge-art"
+    },
+    {
+      "kind": "gap",
+      "length": 100,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 80,
+      "top": 120,
+      "anchorArt": "fragile-bridge-art"
+    },
+    {
+      "kind": "gap",
+      "length": 120,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 400,
+      "top": 0
+    }
+  ],
+  "placements": [
+    {
+      "art": "geode-prop-art",
+      "at": {
+        "surface": 0,
+        "t": 0.3,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    },
+    {
+      "art": "geode-prop-art",
+      "at": {
+        "surface": 5,
+        "t": 0.8,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": true
+    },
+    {
+      "art": "geode-prop-art",
+      "at": {
+        "surface": 18,
+        "t": 0.1,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    }
+  ],
+  "enemies": [
+    {
+      "art": "crystal-spider-art",
+      "at": {
+        "surface": 0,
+        "t": 0.8,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 60
+    },
+    {
+      "art": "crystal-spider-art",
+      "at": {
+        "surface": 5,
+        "t": 0.4,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 80
+    },
+    {
+      "art": "crystal-spider-art",
+      "at": {
+        "surface": 8,
+        "t": 0.5,
+        "dy": 0
+      },
+      "behavior": "chase",
+      "range": 0
+    },
+    {
+      "art": "crystal-spider-art",
+      "at": {
+        "surface": 18,
+        "t": 0.4,
+        "dy": 0
+      },
+      "behavior": "patrol",
+      "range": 90
+    }
+  ],
+  "collectibles": [
+    {
+      "art": "glowing-shard-art",
+      "at": {
+        "surface": 1,
+        "t": 0.5,
+        "dy": 40
+      },
+      "value": 150
+    },
+    {
+      "art": "glowing-shard-art",
+      "at": {
+        "surface": 3,
+        "t": 0.2,
+        "dy": 30
+      },
+      "value": 150
+    },
+    {
+      "art": "glowing-shard-art",
+      "at": {
+        "surface": 7,
+        "t": 0.8,
+        "dy": 50
+      },
+      "value": 150
+    },
+    {
+      "art": "glowing-shard-art",
+      "at": {
+        "surface": 10,
+        "t": 0.5,
+        "dy": 40
+      },
+      "value": 150
+    }
+  ],
+  "pots": [
+    {
+      "art": "geode-prop-art",
+      "at": {
+        "surface": 3,
+        "t": 0.8,
+        "dy": 0
+      },
+      "drop": "health"
+    },
+    {
+      "art": "geode-prop-art",
+      "at": {
+        "surface": 8,
+        "t": 0.2,
+        "dy": 0
+      },
+      "drop": "relic"
+    }
+  ],
+  "npcs": [
+    {
+      "art": "lost-miner-art",
+      "at": {
+        "surface": 18,
+        "t": 0.2,
+        "dy": 0
+      },
+      "dialogueId": "lost-miner-warning"
+    }
+  ],
+  "hazards": [
+    {
+      "art": "crystal-spikes-art",
+      "at": {
+        "surface": 8,
+        "t": 0.7,
+        "dy": 0
+      },
+      "width": 64
+    }
+  ],
+  "switches": [
+    {
+      "id": "light-receiver-1",
+      "art": "light-receiver-switch-art",
+      "at": {
+        "surface": 3,
+        "t": 0.5,
+        "dy": 0
+      },
+      "kind": "light-receiver"
+    },
+    {
+      "id": "lever-switch-1",
+      "art": "lever-switch-art",
+      "at": {
+        "surface": 5,
+        "t": 0.2,
+        "dy": 0
+      },
+      "kind": "lever"
+    },
+    {
+      "id": "light-receiver-2",
+      "art": "light-receiver-switch-art",
+      "at": {
+        "surface": 10,
+        "t": 0.5,
+        "dy": 0
+      },
+      "kind": "light-receiver"
+    }
+  ],
+  "gates": [
+    {
+      "art": "crystal-gate-art",
+      "at": {
+        "surface": 4,
+        "t": 0.9,
+        "dy": 0
+      },
+      "opensWith": [
+        "light-receiver-1"
+      ],
+      "blocksSurface": 5
+    },
+    {
+      "art": "crystal-gate-art",
+      "at": {
+        "surface": 9,
+        "t": 0.8,
+        "dy": 0
+      },
+      "opensWith": [
+        "lever-switch-1"
+      ],
+      "blocksSurface": 10
+    },
+    {
+      "art": "crystal-gate-art",
+      "at": {
+        "surface": 18,
+        "t": 0.8,
+        "dy": 0
+      },
+      "opensWith": [
+        "crystal-key-1",
+        "light-receiver-2"
+      ],
+      "blocksSurface": 19
+    }
+  ],
+  "keys": [
+    {
+      "id": "crystal-key-1",
+      "art": "key-relic-art",
+      "at": {
+        "surface": 7,
+        "t": 0.5,
+        "dy": 0
+      }
+    }
+  ],
+  "movingPlatforms": [
+    {
+      "art": "crystal-platform-art",
+      "at": {
+        "surface": 6,
+        "t": 0,
+        "dy": 50
+      },
+      "axis": "horizontal",
+      "distance": 150,
+      "speed": 50,
+      "width": 64
+    }
+  ],
+  "secrets": [
+    {
+      "art": "rare-geode-art",
+      "at": {
+        "surface": 10,
+        "t": 0.9,
+        "dy": 80
+      },
+      "hint": "Hovering precariously high above the second crystal receiver. A blind jump rewards the brave.",
+      "value": 1000
+    }
+  ],
+  "checkpoints": [
+    {
+      "at": {
+        "surface": 5,
+        "t": 0.5,
+        "dy": 0
+      }
+    },
+    {
+      "at": {
+        "surface": 18,
+        "t": 0.05,
+        "dy": 0
+      }
+    }
+  ],
+  "spawn": {
+    "surface": 0,
+    "t": 0.1,
+    "dy": 0
+  },
+  "goal": {
+    "surface": 19,
+    "t": 0.8,
+    "dy": 0
+  }
+}

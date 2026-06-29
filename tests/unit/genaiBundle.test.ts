@@ -182,3 +182,40 @@ describe("GenAI Level 4 bundle (the-abandoned-mine)", () => {
     }
   });
 });
+
+/**
+ * The GenAI Level 5 (the-crystal-cavern) is the live fifth level — the puzzle
+ * cavern. Its crystal platform/bridge anchorArt + every prop must resolve to a
+ * baked transparent prop (six new + four reused), the crystal-spider adapts to a
+ * runtime visual, and the crystal-ground-tile stays a groundFill, not a sprite.
+ */
+describe("GenAI Level 5 bundle (the-crystal-cavern)", () => {
+  const ID = "the-crystal-cavern";
+
+  it("is registered and plays right after Level 4", () => {
+    expect(LEVEL_ORDER).toContain(ID);
+    expect(nextLevelId("the-abandoned-mine")).toBe(ID);
+  });
+
+  it("adapts the crystal-spider enemy + lost-miner npc", () => {
+    const b = levelBundle(ID);
+    expect(b.sim.enemies.length).toBeGreaterThan(0);
+    for (const e of b.sim.enemies) {
+      expect(["patrol", "chase"]).toContain(e.kind);
+      expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+    }
+    for (const n of b.sim.npcs) {
+      expect(["elder-mara", "watchman-pell", "ferryman-cole"]).toContain(n.dialogueId);
+    }
+  });
+
+  it("resolves every painted art to a baked transparent prop (no opaque ground sprite)", () => {
+    const b = levelBundle(ID);
+    expect(b.groundFill).toBeDefined();
+    for (const p of b.artPainting ?? []) {
+      // Crystal platform/bridge anchorArt + props all serve from /assets/props/;
+      // the opaque crystal-ground-tile never reaches the painting.
+      expect(p.url).not.toMatch(/\/levels\/the-crystal-cavern\/(crystal-ground-tile|parallax)/);
+    }
+  });
+});

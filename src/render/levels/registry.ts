@@ -22,6 +22,7 @@ import halwardJson from "@/levels/halward-s-reach.level.json";
 import whisperingJungleJson from "@/levels/the-whispering-jungle.level.json";
 import rushingGorgeJson from "@/levels/the-rushing-gorge.level.json";
 import abandonedMineJson from "@/levels/the-abandoned-mine.level.json";
+import crystalCavernJson from "@/levels/the-crystal-cavern.level.json";
 import {
   type EnemySpawn,
   type GameLevel,
@@ -75,6 +76,9 @@ const ENEMY_VISUAL: Record<string, EnemySpawn["visual"]> = {
   // Level 4 — The Abandoned Mine. The cave bat is a flying cave creature — the
   // flyingEye's hovering visual is an exact fit.
   "cave-bat": "flyingEye",
+  // Level 5 — The Crystal Cavern. The crystal spider is a scuttling ground predator;
+  // the goblin's chase/melee gait reads closest until a baked spider.
+  "crystal-spider-art": "goblin",
 };
 
 /** Schema NPC dialogueId → baked roster id. Unmapped ids pass through (warned). */
@@ -88,6 +92,9 @@ const NPC_ALIAS: Record<string, string> = {
   // Level 3 — the stranded boatman who tips Jim off about the gorge crossing.
   boatman_help: "ferryman-cole",
   "boatman-help": "ferryman-cole",
+  // Level 5 — the lost miner who warns Jim about the singing crystals.
+  lost_miner_warning: "watchman-pell",
+  "lost-miner-warning": "watchman-pell",
 };
 
 function genaiBundle(json: unknown, groundFill?: LevelBundle["groundFill"]): LevelBundle {
@@ -146,12 +153,16 @@ const RUSHING_GORGE = genaiBundle(rushingGorgeJson, { color: 0x1b3a44, groundY: 
 // The mine floor is dark rock — a near-black warm-brown band (the rocky/rail
 // textures are ground/parallax, never sprites). baselineY 250, map 305 tiles × 16px.
 const ABANDONED_MINE = genaiBundle(abandonedMineJson, { color: 0x231a14, groundY: 276, width: 4880 });
+// The crystal cavern floor is a deep indigo-violet rock band (the crystal-ground-tile
+// is a ground texture, never a sprite). baselineY 250, map 293 tiles × 16px.
+const CRYSTAL_CAVERN = genaiBundle(crystalCavernJson, { color: 0x1e1830, groundY: 276, width: 4688 });
 
 const REGISTRY: Record<string, LevelBundle> = {
   [HALWARD.id]: HALWARD,
   [WHISPERING_JUNGLE.id]: WHISPERING_JUNGLE,
   [RUSHING_GORGE.id]: RUSHING_GORGE,
   [ABANDONED_MINE.id]: ABANDONED_MINE,
+  [CRYSTAL_CAVERN.id]: CRYSTAL_CAVERN,
   "village-approach": {
     id: "village-approach",
     sim: VILLAGE,
@@ -213,6 +224,7 @@ export const LEVEL_ORDER: readonly string[] = [
   WHISPERING_JUNGLE.id,
   RUSHING_GORGE.id,
   ABANDONED_MINE.id,
+  CRYSTAL_CAVERN.id,
   "village-approach",
   "cave-descent",
   "shrine-approach",

@@ -77,6 +77,20 @@ const BAKED_PROP: Record<string, string> = {
   "relic-old-lantern": "relic-old-lantern",
   "gate-barricade": "gate-barricade",
   "pot-clay": "pot-clay",
+  // Level 5 — The Crystal Cavern. Six baked crystal props; the remaining four reuse
+  // existing baked props (a shard→secret-relic glow, the rare geode→the geode art, the
+  // crystal spikes→the spike hazard, the crystal key→the runic disk key) so the level
+  // ships complete without re-spend ([[no-blocking-on-asset-licensing]]).
+  "crystal-platform-art": "crystal-platform-art",
+  "fragile-bridge-art": "fragile-bridge-art",
+  "geode-prop-art": "geode-prop-art",
+  "light-receiver-switch-art": "light-receiver-switch-art",
+  "lever-switch-art": "lever-switch-art",
+  "crystal-gate-art": "crystal-gate-art",
+  "glowing-shard-art": "secret-relic",
+  "rare-geode-art": "geode-prop-art",
+  "crystal-spikes-art": "hazard-spikes",
+  "key-relic-art": "runic-disk-key",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */

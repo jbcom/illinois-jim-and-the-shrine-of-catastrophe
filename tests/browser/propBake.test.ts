@@ -74,6 +74,13 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "relic-old-lantern",
     "gate-barricade",
     "pot-clay",
+    // Level 5 — The Crystal Cavern (the six newly-baked crystal props).
+    "crystal-platform-art",
+    "fragile-bridge-art",
+    "geode-prop-art",
+    "light-receiver-switch-art",
+    "lever-switch-art",
+    "crystal-gate-art",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {
