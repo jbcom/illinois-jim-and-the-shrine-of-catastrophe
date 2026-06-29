@@ -79,13 +79,15 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
 - [x] Baked the last Level 1 props (switch-lever, gate-trailhead, relic-coin). All 8
       transparent baked-3D props shipped to public/assets/props/, covered by propBake.test.
 
+- [x] Level 1 structure/prop art pointed at the baked transparent props (fromLevel
+      BAKED_PROP map). levelRenderer.test now renders the baked cottage on the parallax,
+      no checkerboard — the broken Gemini building art is replaced.
+
 ### Queue
-- [ ] POINT Level 1 art at the baked prop WebPs — in halward-s-reach.level.json (+ the
-      fromLevel renderer), map each structure/prop art key to public/assets/props/<name>
-      so the broken Gemini-checkerboard structure art is replaced; live-verify. [TOP]
-- [ ] LEVEL 1 ASSEMBLY: compose baked actors (Jim + elder-mara + watchman-pell + a
-      goblin) + the baked props on the parallax; live-verify the FULL scene screenshot —
-      craft + zero asset loss + reads like an old SNES adventure.
+- [ ] LEVEL 1 ASSEMBLY: a browser test composing the FULL scene — parallax + baked
+      props (painting) + baked actors (Jim + elder-mara + watchman-pell + a goblin) on
+      their surfaces; live-verify the screenshot reads like an old SNES adventure with
+      zero asset loss. [TOP]
 - [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d (or keep strip art).
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
