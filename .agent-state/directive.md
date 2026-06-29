@@ -45,12 +45,13 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 ## Queue — LIVE
 
 ### Render polish (agent-doable, NOT Meshy-gated)
-- [x] Halftone-dither sweep across ALL 12 level parallax layers — DONE. The Explore audit
-      flagged 3 more with the same Gemini dot-screen defect: halward parallax-distant-sea-mountain
-      (water surface), crystal-parallax-sky (gradient sky), jungle-trunks-parallax (fog/mist).
-      Regenerated all 3 with the hardened no-dither prompt (solid water / smooth glow / solid
-      mist clouds) and re-prepped their WebPs — verified clean. The other 9 were already clean.
-      Bundled into PR #28 with the gorge fix.
+- [x] Halftone-dither sweep across ALL level parallax/scene layers — DONE (PR #28).
+      Gemini fakes translucency/gradients with a dot-screen that reads as speckle. Regenerated
+      4 dithered layers with the hardened no-dither prompt: gorge parallax-mid (foam),
+      halward distant-sea-mountain (water), crystal-parallax-sky (gradient), jungle-trunks (mist).
+      Visual audit FALSE-NEGATIVED a 5th (crystal-parallax-cavern, faint top-sky band) — caught
+      it in-game, regenerated. Built `scripts/check-dither.py`, a DETERMINISTIC checkerboard
+      detector (no visual false-negatives) — confirms all 19 scene images now clean (<1.5%).
 - [x] Gorge bottom-right transparency CHECKERBOARD — FIXED (0eea22d). Root cause (via
       stuck-loop-debugger): portrait band RenderTextures were created at resolution:1 while
       the app runs at resolution:2, so each band buffer was half-density and 2×-upscaled on
