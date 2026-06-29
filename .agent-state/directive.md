@@ -91,11 +91,15 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       ALL 11 Level 1 structure/prop art keys are now transparent baked-3D — zero Gemini
       checkerboard art remains in the level.
 
+- [x] DECISION: mushroom + flyingEye keep their vendor strip art — verified genuinely
+      transparent (alpha 0–255), real animated sprites, NOT the broken Gemini checkerboard.
+      Replacing working transparent art with Meshy 3D isn't worth the spend; the strip
+      path already serves them correctly. (Revisit only if their style clashes in-scene.)
+
 ### Queue
-- [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d → bake; wire into the
-      enemySprites BAKED backend. Then they too animate transparent in-engine. [TOP]
-- [ ] Wire the live game loop (App.tsx) to mount the painting renderer on Level 1 so
-      the assembled scene runs interactively, not just in tests — live-verify in browser.
+- [ ] Wire the live game loop (App.tsx) to mount the painting renderer on Level 1 so the
+      assembled scene RUNS interactively (not just in tests) — drive Jim with input, the
+      camera follows, actors/props/parallax on screen; live-verify in a real browser. [TOP]
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
