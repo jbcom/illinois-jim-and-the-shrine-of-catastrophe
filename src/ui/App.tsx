@@ -18,6 +18,7 @@ import { Hud } from "@ui/Hud.tsx";
 import { hudStore, useHud } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
+import { RotatePrompt } from "@ui/RotatePrompt.tsx";
 import { TouchControls } from "@ui/TouchControls.tsx";
 import { useOrientation } from "@ui/orientationStore.ts";
 import { useMachine } from "@xstate/react";
@@ -41,10 +42,12 @@ export function App() {
   // Backgrounded/hidden is recorded in the HUD store; the pause effect composes it.
   const hudPaused = useHud().paused;
 
-  // Mount the orientation store for its side-effect: it keeps the NATIVE screen
-  // unlocked (free rotation) now that the portrait slice-wrap makes both orientations
-  // playable — no landscape lock, no rotate prompt. We don't read its value anymore.
-  useOrientation();
+  // Track orientation: on phones we show a rotate prompt during gameplay if the
+  // device is portrait (landscape lock). Tablets/foldables/desktop are always free.
+  const orientation = useOrientation();
+  // Pause the game loop while the rotate prompt is up — no point running the sim
+  // when the canvas is in the wrong aspect ratio.
+  const rotateBlocking = state === "playing" && orientation.needsRotatePrompt;
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -118,10 +121,10 @@ export function App() {
     const g = gameRef.current;
     if (!g) return;
     // SINGLE pause source — composes every reason: not in `playing`, mid-
-    // conversation, or the app backgrounded/hidden (hudPaused). None overwrites
-    // another, so e.g. backgrounding during a talk stays paused on resume.
-    g.setPaused(!(state === "playing" && !talking && !hudPaused));
-  }, [state, levelId, talking, hudPaused]);
+    // conversation, the app backgrounded/hidden (hudPaused), or a phone held in
+    // portrait (rotateBlocking). None overwrites another.
+    g.setPaused(!(state === "playing" && !talking && !hudPaused && !rotateBlocking));
+  }, [state, levelId, talking, hudPaused, rotateBlocking]);
 
   // Seed the persisted best score once on mount.
   useEffect(() => {
@@ -139,8 +142,11 @@ export function App() {
     <main className="relative h-full w-full">
       <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
-      {state === "playing" && <TouchControls />}
+      {state === "playing" && !rotateBlocking && <TouchControls />}
       {state === "playing" && <DialogueBox />}
+      {/* Rotate prompt: shown only for phones in portrait during gameplay.
+          Tablets, unfolded foldables, and desktop never trigger this. */}
+      {rotateBlocking && <RotatePrompt />}
       {state === "cutscene" && cutscene && (
         <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />
       )}
@@ -166,8 +172,6 @@ export function App() {
           onTitle={() => send({ type: "TO_TITLE" })}
         />
       )}
-      {/* No rotate prompt: the portrait serpentine slice-wrap makes upright play
-          first-class, so the game runs in either orientation with no landscape lock. */}
     </main>
   );
 }

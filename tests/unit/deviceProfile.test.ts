@@ -11,21 +11,25 @@ describe("classifyDevice — phone", () => {
     expect(profile.deviceClass).toBe("phone");
     expect(profile.designResolution).toEqual({ width: 480, height: 270 });
     expect(profile.uiScale).toBeGreaterThan(0);
+    expect(profile.lockLandscape).toBe(true);
   });
 
   it("classifies iOS landscape phone", () => {
     const profile = classifyDevice({ width: 844, height: 390, dpr: 3, platform: "ios" });
     expect(profile.deviceClass).toBe("phone");
+    expect(profile.lockLandscape).toBe(true);
   });
 
   it("classifies Android portrait phone (small)", () => {
     const profile = classifyDevice({ width: 360, height: 800, dpr: 2, platform: "android" });
     expect(profile.deviceClass).toBe("phone");
+    expect(profile.lockLandscape).toBe(true);
   });
 
   it("classifies Android landscape phone", () => {
     const profile = classifyDevice({ width: 800, height: 360, dpr: 2, platform: "android" });
     expect(profile.deviceClass).toBe("phone");
+    expect(profile.lockLandscape).toBe(true);
   });
 
   it("applies larger uiScale for phones with minDim >= 414", () => {
@@ -142,12 +146,12 @@ describe("classifyDevice — deployed web build (platform 'web')", () => {
     expect(profile.lockLandscape).toBe(false);
   });
 
-  it("a real Android phone on web stays phone (small physical screen), still unlocked", () => {
+  it("a real Android phone on web stays phone (small physical screen), locked to landscape", () => {
     // CSS 360×800 at DPR 2 → physical min-dim 720 (< the foldable threshold).
     const profile = classifyDevice({ width: 360, height: 800, dpr: 2, platform: "web", androidUA: true });
     expect(profile.deviceClass).toBe("phone");
-    // No landscape lock anymore — portrait plays via the slice-wrap.
-    expect(profile.lockLandscape).toBe(false);
+    // Phones lock to landscape — portrait shows a rotate prompt.
+    expect(profile.lockLandscape).toBe(true);
   });
 
   it("a big Android tablet (Pixel Tablet) on web classifies tablet, free orientation", () => {

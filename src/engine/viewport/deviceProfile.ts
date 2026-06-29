@@ -8,6 +8,13 @@
  *   tablet:   min-dim >= 600 and < 900, or (android with large min-dim and wide aspect)
  *   foldable: android with very tall aspect ratio (> 2.1) or large min-dim >= 900 on android
  *   desktop:  web platform with min-dim >= 600
+ *
+ * Orientation policy:
+ *   Phones lock to landscape — the side-scroller is a horizontal band; portrait
+ *   would show a thin sliver. On web we surface a rotate prompt; on native we
+ *   hard-lock via @capacitor/screen-orientation.
+ *   Tablets, unfolded foldables, and desktop are free in either orientation (the
+ *   scene just letterboxes/pillarboxes to fit), so NO rotate gate is ever shown.
  */
 
 export type DeviceClass = "phone" | "tablet" | "foldable" | "desktop";
@@ -44,22 +51,23 @@ export interface DeviceProfile {
   /** Recommended UI scale factor (1 = 100 %). Applied to HUD/UI elements. */
   uiScale: number;
   /**
-   * Whether gameplay should be LOCKED to landscape. ALWAYS false now: the portrait
-   * serpentine slice-wrap (src/render/bandLayout.ts) wraps the horizontal level into
-   * stacked screen-width bands, so a tall portrait screen is FULLY playable — no lock,
-   * no "rotate your device" nag. Both orientations are first-class. Kept on the profile
-   * for back-compat with the orientation store; it just never asks for a lock anymore.
-   * See [[portrait-serpentine-slice-wrap]].
+   * Whether gameplay should be LOCKED to landscape on this device.
+   * True only for phones — they display a thin sliver in portrait and the user
+   * should rotate. Tablets, unfolded foldables, and desktop are free in either
+   * orientation (scene letterboxes/pillarboxes). A folded foldable cover screen
+   * classifies as `foldable` with a tall-aspect guard, not as phone.
    */
   lockLandscape: boolean;
 }
 
 /**
- * Gameplay no longer locks to landscape on any device — the portrait slice-wrap makes
- * upright play first-class. Returns false for every class (signature kept for callers).
+ * Phones lock to landscape — the game is a horizontal side-scroller that can't
+ * fill a tall portrait screen without extreme zoom or a broken sliver view.
+ * Tablets, unfolded foldables, and desktop are wide enough in either rotation
+ * that the scene letterboxes gracefully, so they remain free.
  */
-export function shouldLockLandscape(_deviceClass: DeviceClass): boolean {
-  return false;
+export function shouldLockLandscape(deviceClass: DeviceClass): boolean {
+  return deviceClass === "phone";
 }
 
 /**

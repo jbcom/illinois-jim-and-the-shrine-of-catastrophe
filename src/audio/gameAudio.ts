@@ -9,8 +9,8 @@
 import {
   type AudioEngine,
   createAudioEngine,
+  renderArcadeBgm,
   renderBlip,
-  renderCaveAmbience,
   renderCoin,
   renderThud,
   renderWhipCrack,
@@ -35,7 +35,7 @@ export function createGameAudio(engine: AudioEngine = createAudioEngine()): Game
   const thud = renderThud(ctx);
   const coin = renderCoin(ctx);
   const crack = renderWhipCrack(ctx);
-  const ambience = renderCaveAmbience(ctx);
+  const bgm = renderArcadeBgm(ctx);
   let music: SfxHandle | undefined;
 
   // Map each event to a buffer + a touch of volume variety so repeats don't fatigue.
@@ -52,8 +52,8 @@ export function createGameAudio(engine: AudioEngine = createAudioEngine()): Game
   return {
     async unlock() {
       await engine.unlock();
-      // Start the looping ambient music bed once, after the gesture unlock.
-      if (!music) music = engine.playMusic(ambience, { gain: 0.35, loop: true });
+      // Start the looping arcade BGM once, after the gesture unlock.
+      if (!music) music = engine.playMusic(bgm, { gain: 0.45, loop: true });
     },
     play(sound) {
       const s = SOUND[sound];
