@@ -58,11 +58,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       BAKED_NPCS registry; ensureNpc picks baked vs paper-doll by dialogueId.
       Screenshot-verified in-engine. Baked actors now cover player + 2 enemies + 1 NPC.
 
+- [x] ALL FOUR story NPCs baked-3D + wired (elder-mara, watchman-pell, ferryman-cole,
+      shrine-warden). Registry-driven npc test. Warden needed an arms-out re-gen (crossed
+      arms fail Meshy rigging — captured in [[character-bake-pipeline]]). Full baked cast:
+      player(5) + 2 enemies + 4 NPCs.
+
 ### Queue
-- [ ] Remaining story NPCs (watchman-pell w/ sword, ferryman-cole, shrine-warden) via
-      Meshy → bake idle+walk → add to BAKED_NPCS. [TOP]
 - [ ] Bake goblin/skeleton hurt + death clips (author non-loop poses) so enemies don't
-      fall back to idle on hit/death; extend author_anim.py with those clip types.
+      fall back to idle on hit/death; extend author_anim.py with those clip types. [TOP]
+- [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d (or keep strip art);
+      decide per-enemy. Then props/buildings/cave GLBs via Meshy → bake (static).
+- [ ] Assemble + live-verify a full Level 1 scene (baked actors + props on a gemini
+      parallax background), reading the screenshot for craft + zero asset loss.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
