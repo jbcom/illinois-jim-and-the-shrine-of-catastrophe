@@ -60,12 +60,30 @@ describe("gameMachine", () => {
     expect(a.getSnapshot().context.levelId).toBe("shrine-approach");
   });
 
-  it("WIN on the LAST level (shrine) → ending cutscene → won, records score + bestScore", () => {
+  it("the full story chains village → cave → shrine → heart → escape → ending", () => {
+    const a = boot();
+    toPlaying(a); // village
+    clearLevel(a, 100); // village → ruins-cutscene? no: descent → cave
+    expect(a.getSnapshot().context.levelId).toBe("cave-descent");
+    clearLevel(a, 200); // cave → ruins → shrine-approach
+    expect(a.getSnapshot().context.levelId).toBe("shrine-approach");
+    clearLevel(a, 300); // shrine-approach → shrine → shrine-heart
+    expect(a.getSnapshot().context.levelId).toBe("shrine-heart");
+    clearLevel(a, 400); // shrine-heart → catastrophe → escape-run
+    expect(a.getSnapshot().context.levelId).toBe("escape-run");
+    // escape-run is the LAST level → the escape ending.
+    a.send({ type: "WIN", score: 500 });
+    expect(a.getSnapshot().context.cutsceneId).toBe("escape");
+  });
+
+  it("WIN on the LAST level (escape-run) → ending cutscene → won, records score", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 800); // → cave
-    clearLevel(a, 1000); // → shrine
-    a.send({ type: "WIN", score: 1200 }); // clear the shrine (last level)
+    clearLevel(a, 1000); // → shrine-approach
+    clearLevel(a, 1100); // → shrine-heart
+    clearLevel(a, 1150); // → escape-run
+    a.send({ type: "WIN", score: 1200 }); // clear escape-run (last level)
     expect(a.getSnapshot().value).toBe("cutscene");
     expect(a.getSnapshot().context.cutsceneId).toBe("escape");
     a.send({ type: "CUTSCENE_DONE" });
@@ -79,8 +97,10 @@ describe("gameMachine", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 900); // → cave
-    clearLevel(a, 0); // → shrine
-    a.send({ type: "WIN", score: 900 }); // clear the shrine (last) → ending cutscene
+    clearLevel(a, 0); // → shrine-approach
+    clearLevel(a, 0); // → shrine-heart
+    clearLevel(a, 0); // → escape-run
+    a.send({ type: "WIN", score: 900 }); // clear escape-run (last) → ending cutscene
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "RESTART" });
     a.send({ type: "LOSE", score: 300 });
@@ -102,8 +122,10 @@ describe("gameMachine", () => {
     const a = boot();
     toPlaying(a); // village
     clearLevel(a, 500); // → cave
-    clearLevel(a, 500); // → shrine
-    a.send({ type: "WIN", score: 500 }); // clear the shrine (last) → ending cutscene
+    clearLevel(a, 500); // → shrine-approach
+    clearLevel(a, 500); // → shrine-heart
+    clearLevel(a, 500); // → escape-run
+    a.send({ type: "WIN", score: 500 }); // clear escape-run (last) → ending cutscene
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "TO_TITLE" });
     expect(a.getSnapshot().value).toBe("title");

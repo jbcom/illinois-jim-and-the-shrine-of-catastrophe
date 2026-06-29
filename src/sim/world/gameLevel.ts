@@ -8,6 +8,9 @@
  * This is the sim-side half of a "level as a painting": the renderer imports the
  * matching Placement[] painting by the same id.
  */
+import { buildLevel } from "@sim/world/levelSpec.ts";
+import { ESCAPE_RUN_SPEC } from "@sim/world/specs/escapeRun.ts";
+import { SHRINE_HEART_SPEC } from "@sim/world/specs/shrineHeart.ts";
 import { createTileMap, setTile, TileKind, type TileMap } from "@sim/world/tilemap.ts";
 
 export interface GameLevelSpawn {
@@ -182,6 +185,21 @@ export const SHRINE: GameLevel = {
   // the level ends (a goalX at the idol's front edge would end the run too early).
   goalX: 2160,
 };
+
+/**
+ * "The Heart of the Shrine" — the 4th level, the climax: Jim reaches the idol and
+ * TAKES it (→ the `catastrophe` cutscene). DERIVED from a single LevelSpec
+ * (render/levels/shrineHeart.ts), so its collision + spawns + goal all match the
+ * painting built from the same spec — no parallel hand-authored geometry.
+ */
+export const SHRINE_HEART: GameLevel = buildLevel(SHRINE_HEART_SPEC);
+
+/**
+ * "The Escape" — the 5th and final level: the collapsing-shrine sprint to the
+ * cave mouth (→ the `escape` ending). DERIVED from ESCAPE_RUN_SPEC, so collision +
+ * spawns + goal match the painting built from the same spec.
+ */
+export const ESCAPE_RUN: GameLevel = buildLevel(ESCAPE_RUN_SPEC);
 
 /**
  * "Halward's Reach" collision — a continuous solid road across the bottom (the

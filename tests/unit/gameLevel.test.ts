@@ -1,4 +1,4 @@
-import { DESCENT, SHRINE, VILLAGE } from "@sim/world/gameLevel.ts";
+import { DESCENT, ESCAPE_RUN, SHRINE, SHRINE_HEART, VILLAGE } from "@sim/world/gameLevel.ts";
 import { TileKind, tileAt } from "@sim/world/tilemap.ts";
 import { describe, expect, it } from "vitest";
 
@@ -97,4 +97,37 @@ describe("game levels", () => {
     const xs = SHRINE.enemies.map((e) => e.x);
     expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(1400);
   });
+
+  // The two climax-sequence levels (the idol grab + the escape) — same invariants:
+  // a bridged chasm, spawns in-bounds and before the goal, real enemy visuals.
+  for (const [name, lvl] of [
+    ["shrine-heart", SHRINE_HEART],
+    ["escape-run", ESCAPE_RUN],
+  ] as const) {
+    it(`${name} is a bridged chamber with reachable spawns and a deep goal`, () => {
+      const m = lvl.map;
+      expect(m.tileSize).toBe(16);
+      // A real chasm bridged by one-way platforms.
+      let gap = 0;
+      for (let c = 1; c < m.width - 1; c++) {
+        if (tileAt(m, c, FLOOR_ROW) !== TileKind.Solid) gap++;
+      }
+      expect(gap).toBeGreaterThan(8);
+      let platforms = 0;
+      for (let r = 0; r < FLOOR_ROW; r++) {
+        for (let c = 0; c < m.width; c++) {
+          if (tileAt(m, c, r) === TileKind.Platform) platforms++;
+        }
+      }
+      expect(platforms).toBeGreaterThan(0);
+      // Goal deep in the level; EVERY enemy + pot reachable before it (win is x>=goalX).
+      expect(lvl.goalX).toBeGreaterThan(1600);
+      expect(lvl.goalX).toBeLessThan(m.width * m.tileSize);
+      for (const e of lvl.enemies) expect(e.x).toBeLessThan(lvl.goalX);
+      for (const p of lvl.pots) expect(p.x).toBeLessThan(lvl.goalX);
+      for (const e of lvl.enemies) {
+        expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+      }
+    });
+  }
 });

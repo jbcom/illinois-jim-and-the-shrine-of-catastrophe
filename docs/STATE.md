@@ -53,10 +53,12 @@ The live work queue is `.agent-state/directive.md`.
   level-bounds clamp.
 - `src/sim/world/level.ts` — `parseLevel` ASCII utility + `levelBounds`.
 - `src/sim/world/gameLevel.ts` — `GameLevel` type: invisible collision tilemap +
-  spawns (collectibles, enemies, pots, npcs, goal). The story's three levels:
-  `VILLAGE` (overworld opener) → `DESCENT` (the cave) → `SHRINE` (the climax,
-  the cracked staircase to the golden idol). Paired with their paintings by id in
-  `src/render/levels/registry.ts` (`LEVEL_ORDER` drives the cutscene→level chain).
+  spawns (collectibles, enemies, pots, npcs, goal). The story's FIVE levels:
+  `VILLAGE` (overworld opener) → `DESCENT` (the cave) → `SHRINE` (the sanctum
+  approach) → `SHRINE_HEART` (the idol-grab climax) → `ESCAPE_RUN` (the collapsing
+  flight out). Paired with their paintings by id in `src/render/levels/registry.ts`
+  (`LEVEL_ORDER` drives the data-driven cutscene→level chain; the full arc is
+  village → descent → ruins → shrine → catastrophe → escape ending).
 
 ### Sim — player controller
 
