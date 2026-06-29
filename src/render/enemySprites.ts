@@ -30,6 +30,11 @@ const BAKED: Partial<Record<EnemyKind, { base: string; clip: Record<EnemyState, 
     base: "assets/sprites/goblin",
     clip: { idle: "idle", move: "run", attack: "attack", hurt: "idle", death: "idle" },
   },
+  skeleton: {
+    base: "assets/sprites/skeleton",
+    // Skeletons shamble — map "move" to the walk clip, not run.
+    clip: { idle: "idle", move: "walk", attack: "attack", hurt: "idle", death: "idle" },
+  },
 };
 
 const SHEETS: Record<EnemyKind, { dir: string; states: Record<EnemyState, StateSheet> }> = {

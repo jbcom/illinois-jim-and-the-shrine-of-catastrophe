@@ -49,29 +49,35 @@ describe("enemy sprites", () => {
     expect(app.stage.children.length).toBe(4);
   });
 
-  it("renders the baked goblin's idle/move/attack clips (visual proof)", async () => {
-    app = new Application();
-    await app.init({ canvas: canvas!, width: 400, height: 120, background: "#17110b", resolution: 1 });
-
-    const states = ["idle", "move", "attack"] as const;
-    let x = 50;
-    for (const state of states) {
-      const sprite = await createEnemySprite("goblin", state);
-      sprite.currentFrame = Math.floor(sprite.textures.length / 2);
-      sprite.scale.set(0.42);
-      sprite.x = x;
-      sprite.y = 116;
-      app.stage.addChild(sprite);
-      x += 130;
-    }
-    app.render();
-
-    await page.screenshot({ path: "goblin-baked.png" });
-    expect(app.stage.children.length).toBe(3);
-    // Prove real opaque pixels rendered (not a 404/blank).
+  function opaque(app: Application): number {
     const { pixels } = app.renderer.extract.pixels(app.stage);
-    let opaque = 0;
-    for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
-    expect(opaque).toBeGreaterThan(1500);
-  });
+    let n = 0;
+    for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) n++;
+    return n;
+  }
+
+  it.each(["goblin", "skeleton"] as const)(
+    "renders the baked %s's idle/move/attack clips (visual proof)",
+    async (kind) => {
+      app = new Application();
+      await app.init({ canvas: canvas!, width: 400, height: 120, background: "#17110b", resolution: 1 });
+
+      const states = ["idle", "move", "attack"] as const;
+      let x = 50;
+      for (const state of states) {
+        const sprite = await createEnemySprite(kind, state);
+        sprite.currentFrame = Math.floor(sprite.textures.length / 2);
+        sprite.scale.set(0.42);
+        sprite.x = x;
+        sprite.y = 116;
+        app.stage.addChild(sprite);
+        x += 130;
+      }
+      app.render();
+
+      await page.screenshot({ path: `${kind}-baked.png` });
+      expect(app.stage.children.length).toBe(3);
+      expect(opaque(app)).toBeGreaterThan(1500);
+    },
+  );
 });

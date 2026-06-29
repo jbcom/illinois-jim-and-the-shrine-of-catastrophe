@@ -1,0 +1,15 @@
+{
+  "name": "attack",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.8945,
+  "contentBox": {
+    "minX": 64,
+    "minY": 15,
+    "maxX": 191,
+    "maxY": 229
+  }
+}
