@@ -56,6 +56,17 @@ describe("Jim baked sprite sheets", () => {
     expect(sizes.size).toBe(1);
   });
 
+  it("all clips share a feet anchor within tolerance (no snap between animations)", () => {
+    // Every clip is baked at one shared ortho scale + ground centre, so the anchor
+    // (feet contact + horizontal centre of mass) must agree to within a few percent.
+    const base = manifest("walk");
+    for (const c of CLIPS) {
+      const m = manifest(c);
+      expect(Math.abs(m.anchorX - base.anchorX), `${c} anchorX`).toBeLessThanOrEqual(0.05);
+      expect(Math.abs(m.anchorY - base.anchorY), `${c} anchorY`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   it("each sheet's pixel width equals frameWidth × frameCount and carries alpha", async () => {
     for (const clip of CLIPS) {
       const m = manifest(clip);

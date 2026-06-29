@@ -21,26 +21,31 @@ trap 'rm -rf "$TMP"' EXIT
 
 CLIPS=(idle walk run jump)
 
-# Pass 1: author + bake the reference clip (walk) to learn the shared scale/centre.
-echo "→ deriving shared scale from walk…"
-"$BL" --background --python "$ROOT/scripts/bake/author_anim.py" -- \
-  --glb "$GLB" --clip walk --out "$TMP/walk.glb" >/dev/null 2>&1
+LOG="$TMP/blender.log"  # Blender stderr goes here (not /dev/null) so failures are diagnosable.
+
+# Pass 1: derive the shared scale/centre from the clip with the LARGEST deformed
+# envelope (jump — overhead reach + tuck). Every clip then bakes at this scale so the
+# tallest pose never clips and no clip jitters in size. Author each clip's GLB once.
+echo "→ authoring clips + deriving shared scale (from jump)…"
+for CLIP in "${CLIPS[@]}"; do
+  "$BL" --background --python "$ROOT/scripts/bake/author_anim.py" -- \
+    --glb "$GLB" --clip "$CLIP" --out "$TMP/$CLIP.glb" >>"$LOG" 2>&1
+done
 META=$("$BL" --background --python "$ROOT/scripts/bake/bake.py" -- \
-  --glb "$TMP/walk.glb" --out "$TMP/bake-walk" --name walk --frames "$FRAMES" --size "$SIZE" \
-  2>/dev/null | grep '^BAKE_META ' | sed 's/^BAKE_META //')
+  --glb "$TMP/jump.glb" --out "$TMP/scale-probe" --name jump --frames "$FRAMES" --size "$SIZE" \
+  2>>"$LOG" | grep '^BAKE_META ' | sed 's/^BAKE_META //')
+if [ -z "$META" ]; then echo "✗ scale derivation failed — see $LOG" >&2; tail -20 "$LOG" >&2; exit 1; fi
 SCALE=$(node -e "process.stdout.write(String(JSON.parse(process.argv[1]).orthoScale))" "$META")
 CZ=$(node -e "process.stdout.write(String(JSON.parse(process.argv[1]).centerZ))" "$META")
 echo "  shared orthoScale=$SCALE centerZ=$CZ"
 
-# Pass 2: author + bake + pack every clip at the shared scale.
+# Pass 2: bake + pack every clip ONCE at the shared scale.
 for CLIP in "${CLIPS[@]}"; do
   echo "→ $CLIP"
-  "$BL" --background --python "$ROOT/scripts/bake/author_anim.py" -- \
-    --glb "$GLB" --clip "$CLIP" --out "$TMP/$CLIP.glb" >/dev/null 2>&1
   "$BL" --background --python "$ROOT/scripts/bake/bake.py" -- \
     --glb "$TMP/$CLIP.glb" --out "$TMP/bake-$CLIP" --name "$CLIP" \
     --frames "$FRAMES" --size "$SIZE" --ortho-scale "$SCALE" --center-z "$CZ" \
-    2>/dev/null | grep '^BAKE_DONE'
+    2>>"$LOG" | grep '^BAKE_DONE'
   (cd "$ROOT" && pnpm exec tsx scripts/bake/pack-sheet.ts \
     --frames "$TMP/bake-$CLIP/frames" --out "$OUTDIR" --name "$CLIP" --fps 24)
 done

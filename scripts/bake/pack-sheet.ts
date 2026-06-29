@@ -67,12 +67,18 @@ async function main(): Promise<void> {
 
   const paths = files.map((f) => join(FRAMES_DIR, f));
   const meta0 = await sharp(paths[0]).metadata();
-  const tile = meta0.width ?? Number(arg("--tile", "256"));
+  if (meta0.width === undefined) throw new Error(`first frame ${paths[0]} has no width (corrupt?)`);
+  const tile = meta0.width;
 
   // Shared content bbox across all frames (union of opaque pixels) → stable anchor.
   const box = { minX: tile, minY: tile, maxX: 0, maxY: 0 };
   for (const p of paths) await unionOpaqueBox(p, box);
   const { minX, minY, maxX, maxY } = box;
+  // Guard: if no opaque pixel was ever found the bake is blank — refuse to emit a
+  // manifest with a bogus anchorY=0 (sprite would float at the tile top in-game).
+  if (maxX < minX || maxY < minY) {
+    throw new Error(`all ${paths.length} frames in ${FRAMES_DIR} are transparent — bake produced no character`);
+  }
   // Anchor = horizontal centre of content, vertical bottom of content (feet).
   const anchorX = (minX + maxX) / 2 / tile;
   const anchorY = maxY / tile;

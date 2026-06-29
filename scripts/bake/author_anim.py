@@ -27,7 +27,12 @@ argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 
 
 def arg(flag, default=None, cast=str):
-    return cast(argv[argv.index(flag) + 1]) if flag in argv else default
+    if flag not in argv:
+        return default
+    i = argv.index(flag) + 1
+    if i >= len(argv):
+        raise SystemExit(f"{flag} given without a value")
+    return cast(argv[i])
 
 
 GLB = arg("--glb")
