@@ -214,7 +214,7 @@ Source: docs/plans/five-level-campaign-and-directive-compression.prq.md
 Started: 2026-06-29T11:55:58Z
 
 ### task-001 Create CAMPAIGN single-source-of-truth
-- [ ] task-001 src/sim/story/campaign.ts exports CAMPAIGN (5 GenAI levels + intro cutscene each); tsc 0
+- [x] task-001 src/sim/story/campaign.ts exports CAMPAIGN (5 GenAI levels + intro cutscene each); tsc 0
 ### task-002 Rewrite cutscenes for the 5-level chain + cliffhanger
 - [ ] task-002 CUTSCENES = intro + 4 bridges + cliffhanger; no legacy ids; beats from briefs; unit test
 ### task-003 Derive registry order from CAMPAIGN
