@@ -13,7 +13,7 @@
  * processing — nothing is isolated uninformed.
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -72,17 +72,31 @@ async function main() {
   const mb = (n: number) => (n / 1024 / 1024).toFixed(1);
   console.warn(`Done. Curated → public/assets/levels/${id}/ (${mb(before)}MB png → ${mb(after)}MB webp)`);
 
-  // Flag any halftone dither Gemini baked into the curated scene layers (parallax /
-  // ground / overlays). Gemini fakes translucency with a dot-screen that reads as ugly
-  // checkerboard speckle in-game; check-dither.py catches it deterministically (visual
-  // audits false-negatived faint top-edge bands). Non-fatal — just surfaces the layer
-  // to re-roll with the no-dither prompt in gen-level-parallax.
-  const check = spawnSync("python3", [join(ROOT, "scripts", "check-dither.py"), join(outDir, "*.webp")], {
-    encoding: "utf8",
-  });
-  if (check.stdout?.includes("DITHER")) {
+  warnOnDither(outDir);
+}
+
+/**
+ * Flag any halftone dither Gemini baked into the curated scene layers. Gemini fakes
+ * translucency with a dot-screen that reads as ugly checkerboard speckle in-game;
+ * check-dither.py catches it deterministically (visual audits false-negatived faint
+ * top-edge bands). Non-fatal — surfaces the layer to re-roll with the no-dither prompt.
+ */
+function warnOnDither(outDir: string): void {
+  // Expand the glob HERE (spawnSync runs no shell, so a literal "*.webp" wouldn't expand
+  // reliably) and pass explicit paths.
+  const webps = readdirSync(outDir)
+    .filter((f) => f.endsWith(".webp"))
+    .map((f) => join(outDir, f));
+  if (webps.length === 0) return;
+  const check = spawnSync("python3", [join(ROOT, "scripts", "check-dither.py"), ...webps], { encoding: "utf8" });
+  if (check.error) {
+    console.warn(`  ⚠ dither check skipped (${check.error.message}) — run 'python3 scripts/check-dither.py' manually.`);
+    return;
+  }
+  if (check.stdout?.includes("DITHER") || check.status !== 0) {
     console.warn("\n⚠ Halftone dither detected in a curated layer — re-roll it with gen-level-parallax --only <key>:");
-    console.warn(check.stdout);
+    console.warn(check.stdout ?? "");
+    if (check.stderr) console.warn(check.stderr);
   }
 }
 
