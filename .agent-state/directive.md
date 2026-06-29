@@ -226,7 +226,7 @@ Started: 2026-06-29T11:55:58Z
 ### task-006 Remove/rewrite the 7 legacy-level test files
 - [x] task-006 legacy test files deleted/retargeted; pnpm test + test:browser green
 ### task-007 Generate + curate 6 fresh cutscene scenes (Gemini)
-- [ ] task-007 intro/jungle/gorge/mine/crystal/cliffhanger art curated to public/assets/cutscenes (3 aspects); no 404
+- [x] task-007 intro/jungle/gorge/mine/crystal/cliffhanger art curated to public/assets/cutscenes (3 aspects); no 404
 ### task-008 Live-verify the full 5-level campaign in Chrome
 - [ ] task-008 intro→jungle→gorge→mine→crystal→cliffhanger, zero console errors; pnpm build 0
 ### task-009 Compress directive — completed items → pillar docs
