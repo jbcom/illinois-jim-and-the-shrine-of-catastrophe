@@ -47,8 +47,29 @@ blob-report/
 .agent-state/cursor.md
 .agent-state/.indexed-sha
 .agent-state/.last-stop-sha
+.agent-state/.last-stop-fingerprint
 .agent-state/.last-compaction
 .agent-state/batch.json
+
+# Dead level reference art: prep-level regenerates a Gemini 2D image for EVERY art
+# key in a level (props, NPCs, obstacles, structures), but the runtime renders all
+# of those from baked-3D sprites (src/render/levels/fromLevel.ts ART_TO_BAKED_PROP) —
+# only the parallax/ground/decor LAYERS are actually loaded. Rather than chase a
+# per-prop list across all five levels (incomplete by construction as levels grow),
+# ignore EVERYTHING under each level dir, then un-ignore the finite, stable set of
+# runtime layers by name. New props are ignored automatically; a new runtime layer
+# just needs one un-ignore line here.
+public/assets/levels/*/*.webp
+# — runtime layers (kept tracked): parallax backdrops, ground/tile strips, overlays —
+!public/assets/levels/*/*parallax*.webp
+!public/assets/levels/*/*-ground-*.webp
+!public/assets/levels/*/ground-*.webp
+!public/assets/levels/*/*-tile.webp
+!public/assets/levels/*/water-surface.webp
+!public/assets/levels/*/waterfall-overlay.webp
+!public/assets/levels/*/lava-glow.webp
+!public/assets/levels/*/checkpoint-bell.webp
+!public/assets/levels/*/rail-straight.webp
 
 # Logs
 *.log
