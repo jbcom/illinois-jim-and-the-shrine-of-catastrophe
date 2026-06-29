@@ -96,10 +96,17 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       Replacing working transparent art with Meshy 3D isn't worth the spend; the strip
       path already serves them correctly. (Revisit only if their style clashes in-scene.)
 
+- [x] The GenAI Level 1 now renders through the REAL painting renderer
+      (paintingRenderer.artPainting branch) — level1Live.test drives it with sim actors
+      over the baked props + parallax. Fixed baked-actor scale (CONTENT_H was old
+      small-frame values; updated to 256-tile baked heights — actors were 2.5× too big).
+
 ### Queue
-- [ ] Wire the live game loop (App.tsx) to mount the painting renderer on Level 1 so the
-      assembled scene RUNS interactively (not just in tests) — drive Jim with input, the
-      camera follows, actors/props/parallax on screen; live-verify in a real browser. [TOP]
+- [ ] Register halward-s-reach as a LIVE level bundle: adapt BuiltSchemaLevel→GameLevel
+      (map enemies behavior/art→kind/visual, npcs, pots, hazards), add an optional
+      artPainting to LevelBundle, thread it through gameEcs's renderer spec, and point
+      FIRST_LEVEL_ID at it (or add a registry entry) so App.tsx runs the GenAI Level 1
+      interactively. Live-verify Jim moves + camera follows in a real browser. [TOP]
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
