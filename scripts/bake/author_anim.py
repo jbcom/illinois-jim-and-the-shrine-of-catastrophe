@@ -48,6 +48,8 @@ PARAMS = {
     "walk": dict(frames=24, swing=24.0, bob=0.045, lean=6.0, knee=42.0, elbow=12.0, arm_scale=0.55),
     "run": dict(frames=18, swing=42.0, bob=0.09, lean=20.0, knee=82.0, elbow=58.0, arm_scale=0.8),
     "jump": dict(frames=18, swing=34.0, bob=0.0, lean=10.0, knee=62.0, elbow=44.0, arm_scale=0.7),
+    # attack params are read by author_attack(); gait fields kept for the shared rest setup.
+    "attack": dict(frames=16, swing=0.0, bob=0.0, lean=0.0, knee=8.0, elbow=20.0, arm_scale=1.0),
 }
 P = PARAMS[CLIP]
 N = P["frames"]
@@ -184,8 +186,38 @@ def author_jump():
         key_x("Spine01", f, -lean * 0.3)
 
 
+def author_attack():
+    """Non-looping whip crack: planted stagger stance, right arm winds back/overhead
+    then snaps forward as the torso twists into it; left arm counterbalances. Arm
+    angles are deg about local X from the hanging rest (positive = forward/up swing)."""
+    # (phase, R-arm deg, R-forearm deg, L-arm deg, spine lean deg, front-knee deg)
+    poses = [
+        (0.00, 0.0, 10.0, 0.0, 0.0, 10.0),     # ready stance
+        (0.25, -70.0, 60.0, 20.0, -10.0, 14.0),  # wind up: arm cocks back, elbow bent
+        (0.45, -95.0, 75.0, 28.0, -16.0, 16.0),  # peak coil
+        (0.62, 120.0, 20.0, -30.0, 18.0, 24.0),   # CRACK: arm whips forward, torso lunges
+        (0.80, 70.0, 12.0, -10.0, 10.0, 18.0),    # follow-through
+        (1.00, 0.0, 10.0, 0.0, 0.0, 10.0),     # recover to stance
+    ]
+    # A small planted stagger: left leg forward, right leg back, held all clip.
+    for ph, rarm, rfore, larm, lean, fknee in poses:
+        f = 1 + round(ph * (N - 1))
+        key_x("LeftUpLeg", f, 14.0)
+        key_x("RightUpLeg", f, -16.0)
+        key_x("LeftLeg", f, fknee)
+        key_x("RightLeg", f, 10.0)
+        key_x("RightArm", f, rarm, rest=ARM_REST["RightArm"])
+        key_x("RightForeArm", f, rfore, rest=FORE_REST["RightForeArm"])
+        key_x("LeftArm", f, larm, rest=ARM_REST["LeftArm"])
+        key_x("LeftForeArm", f, 18.0, rest=FORE_REST["LeftForeArm"])
+        key_x("Spine", f, lean * 0.5)
+        key_x("Spine01", f, lean * 0.3)
+
+
 if CLIP == "jump":
     author_jump()
+elif CLIP == "attack":
+    author_attack()
 else:
     author_gait()
 

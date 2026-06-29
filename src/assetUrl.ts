@@ -10,7 +10,7 @@
  * `BASE_URL` is a build-time string constant — safe to use anywhere, including
  * the pure sim layer (no DOM, no clock, no randomness).
  *
- * @param path asset path WITHOUT a leading slash, e.g. "assets/player/idle.png"
+ * @param path asset path WITHOUT a leading slash, e.g. "assets/sprites/jim/idle.webp"
  */
 export function assetUrl(path: string): string {
   const base = import.meta.env.BASE_URL; // always ends with "/"

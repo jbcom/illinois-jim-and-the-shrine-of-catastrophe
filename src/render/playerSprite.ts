@@ -13,7 +13,7 @@ import { type BakedClipManifest, loadBakedClip } from "@render/frameSource.ts";
 export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
 
 /** Baked clips that physically exist under assets/sprites/jim/. */
-type BakedClipName = "idle" | "walk" | "run" | "jump";
+type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack";
 
 const BASE = assetUrl("assets/sprites/jim");
 
@@ -27,7 +27,7 @@ const STATE_TO_CLIP: Record<PlayerState, BakedClipName> = {
   run: "run",
   jump: "jump",
   fall: "jump",
-  attack: "idle",
+  attack: "attack",
 };
 
 /**
@@ -70,7 +70,7 @@ interface Clip {
 
 /** Load every distinct baked clip once; gameplay states share clip instances. */
 async function loadAllClips(): Promise<Record<BakedClipName, Clip>> {
-  const names: BakedClipName[] = ["idle", "walk", "run", "jump"];
+  const names: BakedClipName[] = ["idle", "walk", "run", "jump", "attack"];
   const loaded = await Promise.all(names.map((n) => loadBakedClip(BASE, n)));
   const out = {} as Record<BakedClipName, Clip>;
   names.forEach((n, i) => {

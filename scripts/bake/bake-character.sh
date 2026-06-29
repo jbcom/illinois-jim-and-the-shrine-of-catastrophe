@@ -19,7 +19,7 @@ GLB="$1"; OUTDIR="$2"; NAME="$3"; FRAMES="${4:-16}"; SIZE="${5:-256}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-CLIPS=(idle walk run jump)
+CLIPS=(idle walk run jump attack)
 
 LOG="$TMP/blender.log"  # Blender stderr goes here (not /dev/null) so failures are diagnosable.
 

@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 
 const SPRITES = join(__dirname, "..", "..", "public", "assets", "sprites");
 const JIM = join(SPRITES, "jim");
-const CLIPS = ["idle", "walk", "run", "jump"] as const;
+const CLIPS = ["idle", "walk", "run", "jump", "attack"] as const;
 
 interface SheetManifest {
   name: string;
