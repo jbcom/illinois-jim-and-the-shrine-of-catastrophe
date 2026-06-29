@@ -58,6 +58,14 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
       jungle-leaves-parallax (the regenerated clean art), the-rushing-gorge/the-whispering-jungle;
       the level WEBP returns HTTP 200. The "old blocky render" seen earlier was local BROWSER
       CACHE, not a stale deploy (live hash == CI build hash for b2ee2d8; x-cache MISS, age 0).
+- [x] RESIDUAL waterfall-spray dither at the gorge pool — FIXED. The true source was a
+      HALFTONE DITHER pattern Gemini baked into parallax-mid.webp's waterfall foam (its way of
+      faking translucency — NOT a render artifact; nearest-sampling on the band RT did nothing,
+      confirming it was in the source pixels). Fix: hardened the parallax gen STYLE to forbid
+      halftone/stipple/dot-screen shading ("foam, mist, spray are SOLID light shapes, not
+      dithered"), regenerated parallax-mid (clean solid-foam waterfalls), re-prepped its WebP.
+      Verified in-browser: gorge renders crisp, zero dither. Also dropped the dead
+      waterfall-overlay un-ignore (declared-but-never-placed decor). 66 browser tests pass.
 
 ### Next chapter — levels 6–10 (gated on Meshy credit)
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of

@@ -66,7 +66,6 @@ public/assets/levels/*/*.webp
 !public/assets/levels/*/ground-*.webp
 !public/assets/levels/*/*-tile.webp
 !public/assets/levels/*/water-surface.webp
-!public/assets/levels/*/waterfall-overlay.webp
 !public/assets/levels/*/lava-glow.webp
 !public/assets/levels/*/checkpoint-bell.webp
 !public/assets/levels/*/rail-straight.webp
