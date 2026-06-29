@@ -32,7 +32,24 @@ until then i expect you to be always finding something new to do."**
       onTalkTarget). Talking pauses the action. Live-verified with Elder Mara.
 - [x] WORDMARK on portrait — pinned clear of the hero's face (own top scrim panel,
       narrower on portrait, gradient to the true top edge). Shipped PR #21.
+- [x] LEVEL ARCHITECTURE: relative SURFACE positioning (user directive — "you're
+      using absolute positioning across the board... build each level from the ground
+      up with PLATFORMS"). All 5 levels now derive from a single LevelSpec
+      (src/sim/world/levelSpec.ts + specs/*): ordered ground/raised/gap SEGMENTS +
+      overlay PLATFORMS, props/spawns/goal anchored RELATIVELY. buildLevel derives
+      collision; paintingFromSpec derives the painting from the SAME segments — they
+      can't drift (the root cause of unreachable-Warden/goal-past-spawn bugs).
+      NARRATIVE ANCHORING (2nd directive — "nothing floats; raised platforms HAVE a
+      reason"): every raised surface names its anchorProp (beam/staircase/rooftop);
+      the village gained jump-on rooftops anchored to the house + tent with reward
+      collectibles. [[levels-relative-surface-positioning]]
+      BACKWARD SWEEP: the spec is net-shorter than the old parallel hand-authoring
+      and made the bug class impossible (spawnsBeforeGoal is an invariant test). My
+      own new test caught the same unreachable-pot bug in shrine-heart immediately.
+      FORWARD SWEEP: future levels MUST be authored as specs (never absolute coords);
+      the SERPENTINE PORTRAIT camera can now operate on segment surfaces, not magic x.
 - [ ] SERPENTINE PORTRAIT camera (stacked bands, flip-up) — big architectural unit.
+      Now buildable on the surface spec (segments give the band boundaries).
 - [x] SHRINE biome + level (third act): `shrine-approach` — a ruined inner sanctum
       built from the cave masonry catalog + 4 GenAI shrine props (idol-altar=goal,
       cracked staircase, blood-flamed braziers, broken pillars; generated on a
