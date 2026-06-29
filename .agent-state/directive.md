@@ -142,36 +142,41 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       tsconfig path for @sim aliases). Parallax + reference art generating via Gemini.
 
 ### Queue
-- [ ] Bake Level 2's ~12 transparent jungle props as static Meshy 3D (giant-root/
-      strangler-fig platforms, vine-bridge, canopy-walkway, mushroom-shelf, carnivorous-
-      plant, glow-fruit, jungle-thorns, vine-tangle-gate, jungle-weight-lever, etc.) →
-      public/assets/props + BAKED_PROP map. Then register the-whispering-jungle bundle in
-      registry + LEVEL_ORDER; live-verify Level 2 runs baked-3D in Chrome. [TOP]
-- [ ] Author Levels 3-10 GenAI JSONs per the outline; bake each biome's props; register
-      all bundles so the full adventure runs on the baked pipeline.
-- [ ] Author Levels 3-10 GenAI JSONs per the 10-level outline; bake each biome's props +
-      parallax; register all bundles so the full adventure runs on the baked pipeline.
-- [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
-      so the whole 10-level adventure runs on the baked pipeline.
+- [x] Bake Level 2's transparent jungle props as static Meshy 3D (giant-root/strangler-fig
+      platforms, vine-bridge, canopy-walkway, mushroom-shelf, carnivorous-plant, glow-fruit,
+      jungle-thorns, vine-tangle-gate, jungle-weight-lever, totem, urn, foundation, orchid,
+      collapsing-log = 15) → public/assets/props + BAKED_PROP map. Registered the-whispering-
+      jungle bundle in registry + LEVEL_ORDER (2nd); live-verified baked-3D in Chrome, zero
+      errors. Fixed: Gemini ground-tile is a parallax floor, not a foreground placement
+      (groundFill on the bundle). Added DEV `?level=<id>` boot override for level verify.
+- [x] Level 3 (The Rushing Gorge — river-gorge) authored, validated (0 dangling/broken),
+      9 props baked (added bake-prop.py --pitch for flat-lying disks), river parallax curated
+      via the new gen-level-parallax tool, bundle registered (3rd), live-verified in Chrome.
+      Rule established: role:ground/decor art (riverbed/water/waterfall) is parallax/groundFill,
+      NEVER a foreground placement sprite (Gemini 2D is opaque; chroma-key is forbidden).
+- [ ] Author Level 4 (The Abandoned Mine — collapsing-mine, minecart/autoscroller) per its
+      brief: pnpm level:gen --level 4 → validate → bake props (rusted cart, rail segments,
+      support beams, dynamite crates, ore) → gen-level-parallax (mine-shaft layers) → register
+      bundle (4th) → live-verify in Chrome. The mine-cart rail-riding hook already exists. [TOP]
+- [ ] Author Levels 5-10 GenAI JSONs per their briefs; bake each biome's props + curate
+      parallax; register each bundle in LEVEL_ORDER so the full adventure runs baked. One
+      level per work cycle, each live-verified in Chrome before the next.
+- [ ] Jungle enemies (canopy-panther, carnivorous-plant) render as goblin/mushroom stand-ins.
+      Bake dedicated jungle-enemy characters: panther via image-to-3d (quadruped, not the
+      humanoid rig) + carnivorous-plant as an animated snapping prop; wire new visual kinds.
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
       Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
-- [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
-      shrine biomes) so the whole 10-level adventure runs on the baked pipeline. Start
-      with Level 2 (collapsing-mine / cave): bake its structures/props, genaiBundle entry.
-- [ ] Author the remaining GenAI level JSONs (Levels 2-10) via the scripts/genai-level
-      pipeline per the 10-level outline; each needs its parallax (gemini) + baked props.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
-- [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
-      per-enemy. Props/buildings/cave GLBs via Meshy → bake (static) for Level 1.
-- [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
-- [ ] PROPS / BUILDINGS / CAVE / obstacle / collectible GLBs via Meshy → bake to webp
-      (static or simple anims) for Level 1.
-- [ ] Extend the schema/manifest + genai-level pipeline: art entries = parallax (gemini
-      image) vs model (meshy GLB → baked sprite); generate both.
-- [ ] Assemble + live-verify Level 1 (baked actors + props on the gemini parallax) —
-      READ the screenshot, zero asset loss, reads crafted.
-- [ ] Levels 2-10 once the path is solid; per-level mechanic types as built.
+- [x] Mushroom + flyingEye non-humanoid: kept strip art (decided per-enemy). Level 1
+      props/buildings/cave GLBs via Meshy → baked static. (Level 1 ships live.)
+- [x] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → baked.
+- [x] PROPS / BUILDINGS / CAVE / obstacle / collectible GLBs via Meshy → baked to webp.
+- [x] Schema/manifest + genai-level pipeline: art entries = parallax (gemini) vs model
+      (meshy GLB → baked sprite); both generated.
+- [x] Assembled + live-verified Level 1 (baked actors + props on the gemini parallax) —
+      zero asset loss, reads crafted.
+- [ ] Levels 2-10 once the path is solid; per-level mechanic types as built. (Level 2 done.)
 
 ## What CONTINUOUS means
 1 never stop for status reports · 2 never stop for scope caution · 3 never stop to
