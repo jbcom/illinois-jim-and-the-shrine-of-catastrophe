@@ -15,6 +15,7 @@ const WORDMARK = assetUrl("assets/branding/title-wordmark.png");
 
 export function Landing(props: { onStart: () => void }) {
   const aspect = useViewportAspect();
+  const wordmarkWidth = aspect === "9x16" ? "min(66vw, 520px)" : "min(78vw, 640px)";
   return (
     <section className="absolute inset-0 overflow-hidden bg-[#1a120b]">
       {/* GenAI hero key-art — the aspect variant composed for this viewport, so a
@@ -58,15 +59,19 @@ export function Landing(props: { onStart: () => void }) {
           <img
             src={WORDMARK}
             alt={TITLE}
-            className="w-[min(78vw,640px)] portrait:w-[min(66vw,520px)] drop-shadow-[0_6px_16px_rgba(0,0,0,0.85)]"
-            style={{ imageRendering: "pixelated" }}
+            className="h-auto drop-shadow-[0_6px_16px_rgba(0,0,0,0.85)]"
+            style={{
+              imageRendering: "pixelated",
+              width: wordmarkWidth,
+              maxHeight: "min(28dvh, 220px)",
+            }}
           />
         </div>
 
-        <div className="flex flex-col items-center gap-5 px-6">
+        <div className="flex flex-col items-center gap-3 px-6">
           <p
             className="font-body max-w-2xl text-center text-[#f3e9d2] leading-relaxed"
-            style={{ fontSize: "clamp(0.95rem, 3.4vw, 1.4rem)", textShadow: "0 2px 6px rgba(0,0,0,0.8)" }}
+            style={{ fontSize: "clamp(0.9rem, 2.6vmin, 1.25rem)", textShadow: "0 2px 6px rgba(0,0,0,0.8)" }}
           >
             The village of Halward's Reach has feared the mountain for a hundred years.
             The last seal has cracked — and the Shrine of Catastrophe is waking. Take up
@@ -76,7 +81,7 @@ export function Landing(props: { onStart: () => void }) {
             type="button"
             onClick={props.onStart}
             className="font-display pointer-events-auto rounded-lg border-2 border-[#5a3a12] bg-[#e3b341] px-10 py-3 font-extrabold tracking-[0.2em] text-[#1a120b] shadow-[0_4px_0_#5a3a12,0_8px_20px_rgba(0,0,0,0.5)] transition-transform hover:scale-105 active:translate-y-1 active:shadow-[0_1px_0_#5a3a12]"
-            style={{ fontSize: "clamp(1.1rem, 5vw, 1.6rem)" }}
+            style={{ fontSize: "clamp(1rem, 3.4vmin, 1.45rem)" }}
           >
             PLAY
           </button>

@@ -24,6 +24,11 @@ export default defineConfig({
       name: "phone-landscape",
       use: { ...devices["Pixel 7 landscape"] },
     },
+    { name: "foldable-unfolded-portrait", use: { ...devices["Galaxy Z Fold 6"] } },
+    {
+      name: "foldable-unfolded-landscape",
+      use: { ...devices["Galaxy Z Fold 6 landscape"] },
+    },
     { name: "tablet", use: { ...devices["iPad Pro 11"] } },
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
   ],
