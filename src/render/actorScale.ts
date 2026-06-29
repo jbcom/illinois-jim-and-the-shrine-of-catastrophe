@@ -24,12 +24,14 @@ export type ActorKind = "player" | "goblin" | "skeleton" | "mushroom" | "flyingE
  * within its native frame. Source: alpha bbox of the art (idle/flight frame).
  */
 export const CONTENT_H: Record<ActorKind, number> = {
-  player: 83, // 96² frame
-  goblin: 36, // 150² frame
-  skeleton: 51, // 150² frame
+  // Baked 3D→WebP actors: alpha-bbox height of the idle frame in the 256² tile.
+  player: 211, // baked jim/idle
+  goblin: 159, // baked goblin/idle
+  skeleton: 184, // baked skeleton/idle
+  // Still on vendor strip art (non-humanoid) — original small-frame content heights.
   mushroom: 37, // 150² frame
   flyingEye: 31, // 150² frame
-  npc: 45, // composited paper-doll, 80×64 frame (idle)
+  npc: 212, // baked NPC idle (elder-mara), 256² tile
 };
 
 /**

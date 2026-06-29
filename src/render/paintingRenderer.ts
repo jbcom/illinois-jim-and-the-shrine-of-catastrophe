@@ -11,7 +11,7 @@
  */
 import { scaleFor } from "@render/actorScale.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
-import { paintComposition, type Painting, type Placement } from "@render/composition.ts";
+import { type ArtPlacement, paintArt, paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
 import { createBakedNpcSprite, createNpcSprite } from "@render/npc.ts";
 import { bakedNpcBase, npcSpecFor } from "@render/npcRoster.ts";
@@ -60,6 +60,12 @@ export interface PaintingRenderer {
 export interface PaintingRendererSpec {
   readonly parallax: readonly ParallaxLayerSpec[];
   readonly painting: readonly Placement[];
+  /**
+   * GenAI-level painting: whole transparent art images (baked props + decor) placed
+   * on the level's surfaces. When present, this is used INSTEAD of `painting` (the
+   * shape-stamp composition) — the schema-Level render path. `painting` stays []`.
+   */
+  readonly artPainting?: readonly ArtPlacement[];
   /**
    * The authored vertical band of the level, in world px (top → bottom). The
    * world is cover-scaled so this band exactly fills the canvas height — the
@@ -154,7 +160,11 @@ export async function createPaintingRenderer(
     worldLayer.addChild(fill);
   }
 
-  const painting: Painting = await paintComposition(spec.painting);
+  // GenAI levels paint whole transparent art (baked props); legacy levels paint
+  // organic shape stamps. Pick the matching painter.
+  const painting: Painting = spec.artPainting
+    ? await paintArt(spec.artPainting)
+    : await paintComposition(spec.painting);
   worldLayer.addChild(painting.container);
 
   const actorsLayer = new Container();
