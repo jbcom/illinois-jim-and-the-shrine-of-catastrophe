@@ -207,3 +207,27 @@ reviewers → mark done → append discoveries → next.
 "deferred" | "v2+" | "out of scope" | "future work" | "follow-up" | "TODO" | "FIXME" |
 "stub" | "placeholder" | "mock for now" | "pause point" | "natural pause" | "next session"
 | "stopping point" | "clean handoff" | "ready to hand off" | "where things stand"
+
+## Batch — five-level-campaign-and-directive-compression (batch-20260629-065501)
+
+Source: docs/plans/five-level-campaign-and-directive-compression.prq.md
+Started: 2026-06-29T11:55:58Z
+
+### task-001 Create CAMPAIGN single-source-of-truth
+- [ ] task-001 src/sim/story/campaign.ts exports CAMPAIGN (5 GenAI levels + intro cutscene each); tsc 0
+### task-002 Rewrite cutscenes for the 5-level chain + cliffhanger
+- [ ] task-002 CUTSCENES = intro + 4 bridges + cliffhanger; no legacy ids; beats from briefs; unit test
+### task-003 Derive registry order from CAMPAIGN
+- [ ] task-003 LEVEL_ORDER/FIRST_LEVEL_ID/nextLevelId derive from CAMPAIGN; genaiBundle.test asserts the 5 ids
+### task-004 Simplify gameMachine chaining to CAMPAIGN lookups
+- [ ] task-004 levelAfterCutscene/cutsceneAfterLevel via CAMPAIGN; gameMachine.test covers intro→…→crystal→cliffhanger→won
+### task-005 Delete legacy shape-stamp levels + callers
+- [ ] task-005 remove render+sim legacy level modules/exports; no legacy id refs in src/; tsc 0
+### task-006 Remove/rewrite the 7 legacy-level test files
+- [ ] task-006 legacy test files deleted/retargeted; pnpm test + test:browser green
+### task-007 Generate + curate 6 fresh cutscene scenes (Gemini)
+- [ ] task-007 intro/jungle/gorge/mine/crystal/cliffhanger art curated to public/assets/cutscenes (3 aspects); no 404
+### task-008 Live-verify the full 5-level campaign in Chrome
+- [ ] task-008 intro→jungle→gorge→mine→crystal→cliffhanger, zero console errors; pnpm build 0
+### task-009 Compress directive — completed items → pillar docs
+- [ ] task-009 37 [x] items → docs pillar; directive trimmed to live CAMPAIGN plan + WAIT items + levels 6-10
