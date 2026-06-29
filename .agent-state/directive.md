@@ -107,12 +107,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       zero console errors. genaiBundle.test locks the adapter. The 3D-bake art pipeline
       is now end-to-end LIVE in the actual game.
 
+- [x] Live Level 1 polish-verified in Chrome: fresh PLAY shows Halward's Reach with
+      Jim's run animation PLAYING, Elder Mara, baked house/tent/coin/spikes/torch on the
+      grass+parallax, HUD, zero console errors — actors + props read at correct scale.
+      (Baked goblin walk also seen animating live on the next level's cave parallax.)
+
 ### Queue
-- [ ] Polish the live Level 1: drive Jim with keyboard input + camera-follow in Chrome
-      and screenshot mid-run (confirm movement/collision feel); tune any actor/prop
-      scale or ground-anchor that reads off against the live parallax. [TOP]
-- [ ] Bake the OTHER levels' props (cave/shrine biomes) + register their GenAI bundles
-      so the whole 10-level adventure runs on the baked pipeline, not just Level 1.
+- [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
+      shrine biomes) so the whole 10-level adventure runs on the baked pipeline, not just
+      Level 1. Start with Level 2 (collapsing-mine / cave): bake its structures/props,
+      add a genaiBundle entry, live-verify. [TOP]
+- [ ] Author the remaining GenAI level JSONs (Levels 2-10) via the scripts/genai-level
+      pipeline per the 10-level outline; each needs its parallax (gemini) + baked props.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
