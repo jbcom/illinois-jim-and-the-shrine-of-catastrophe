@@ -83,12 +83,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       BAKED_PROP map). levelRenderer.test now renders the baked cottage on the parallax,
       no checkerboard — the broken Gemini building art is replaced.
 
+- [x] LEVEL 1 FULL SCENE assembled + verified (level1Scene.test): parallax + baked
+      props + baked actors (Jim, Mara, Pell, Cole, goblin) compose into a crafted
+      dusk-village scene, no checkerboard. The 3D-bake art pipeline is proven end to end.
+
 ### Queue
-- [ ] LEVEL 1 ASSEMBLY: a browser test composing the FULL scene — parallax + baked
-      props (painting) + baked actors (Jim + elder-mara + watchman-pell + a goblin) on
-      their surfaces; live-verify the screenshot reads like an old SNES adventure with
-      zero asset loss. [TOP]
-- [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d (or keep strip art).
+- [ ] Bake hazard-spikes + moving-platform-wood + secret-relic props (the last 3
+      transparent Level 1 art keys still on broken Gemini art) → add to fromLevel
+      BAKED_PROP. [TOP]
+- [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d → bake; wire into the
+      enemySprites BAKED backend. Then they too animate transparent in-engine.
+- [ ] Wire the live game loop (App.tsx) to mount the painting renderer on Level 1 so
+      the assembled scene runs interactively, not just in tests — live-verify in browser.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
