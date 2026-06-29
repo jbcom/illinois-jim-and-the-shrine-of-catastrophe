@@ -15,42 +15,46 @@ features to add or polish. no more 'we released!'. i will tell you when to end."
 - **Look CRITICALLY at every visual; name the defects yourself, fix them before the
   user has to.** No performing satisfaction on screenshots.
 
-## 🚀 ACTIVE MILESTONE — FULL GENAI PIVOT (user, 2026-06-29, NON-NEGOTIABLE)
-Gemini crafts each level START TO FINISH — art (parallax, structures, props, NPCs,
-obstacles, collectibles) AND layout — and I RENDER the structured contract. An
-OLD-SCHOOL, BRUTAL, problem-solving adventure (commitment, not disposable mobile; no
-month-one speedrun exploits) across 10 unique long levels (~120 min), diverse biomes.
-[[gemini-crafts-whole-levels]] [[old-school-commitment-not-mobile]]
-[[genai-latest-models-native-transparency]] [[levels-relative-surface-positioning]]
+## 🚀 ACTIVE MILESTONE — 3D BAKED TO 2D WEBP SPRITES (user, 2026-06-29, NON-NEGOTIABLE)
+A 2D side-scroller where 3D is a PRODUCTION TOOL, not the runtime. The Gemini API
+outputs JPEG-only (no alpha), so:
+- PARALLAX BACKGROUNDS = full-screen images via gemini-3.1-flash-image (opaque — fine).
+- CHARACTERS (Jim, NPCs, humanoid enemies) + PROPS/buildings/cave = 3D GLB via Meshy
+  (meshy-6, T-POSE for characters — REQUIRES should_remesh:true or the pose is ignored
+  [[meshy-tpose-needs-should-remesh]]) → texture → rig (free walk/run) → animate.
+- BAKE: render each rigged GLB's animations from a fixed SIDE ortho camera with a real
+  ALPHA channel (Three.js WebGLRenderer alpha:true → canvas → WebP) → TRANSPARENT WEBP
+  sprite frames. THIS is how we stage perfect transparent webp ourselves.
+- RUNTIME: the EXISTING PixiJS 2D sprite engine renders the sprite sheets over the
+  parallax. NO Three.js in the game. Keeps the proven engine + gives real animation.
+The Zod Level schema + 10-level outline + old-school/brutal thesis + relative-surface
+layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-levels]]
 
-### Done (the pipeline foundation)
-- [x] Zod `Level` schema (levelSchema.ts) — art manifest + relative surfaces +
-      entities + problem-solving layer (switches/gates/keys/moving-platforms/secrets/
-      checkpoints) + blended `types` + biome; parse/dangling/brokenGates/before-goal
-      validators (12 tests). 10-level OUTLINE + paper-playtested ~117-min balance +
-      the governing thesis (docs/LEVEL_OUTLINE.md, scripts/levelBriefs.ts).
-- [x] LATEST models (live-API-verified): Nano Banana (gemini-3.1-flash-image /
-      gemini-3-pro-image) via generateContent with NATIVE TRANSPARENCY (no magenta) +
-      gemini-3.5-flash for the JSON. WebP curation (mobile, full-res).
-- [x] PIPELINE: genai-level.ts (Gemini→valid Level→art) + prep-level.ts (trim+WebP) +
-      buildFromLevel.ts (sim collision+spawns) + render/levels/fromLevel.ts (parallax+
-      painting) + composition.paintArt. Level 1 generated + proven (clean art, alpha).
+### Done
+- [x] Zod Level schema + validators, 10-level outline + balance + thesis, gemini-3.1-
+      flash-image proven for parallax. Three.js installed; dev/viewer model inspector
+      (orbit/zoom/animation playback, DevTools-drivable). Jim: T-pose GLB (should_remesh
+      fix) → textured → rigging (walk/run). Meshy pipeline learnings captured.
+- [x] BAKER (Blender bpy, not Three.js — more robust + scriptable): author_anim.py poses
+      real idle/walk/run/jump cycles on Jim's rig (Meshy's free clips were degenerate
+      T-pose jitter), bake.py renders an ortho side cam with film_transparent → alpha
+      frames, pack-sheet.ts → one WebP sheet + manifest (shared feet anchor). All driven
+      by bake-character.sh / `pnpm bake:jim` at one shared scale. 4 clips shipped to
+      public/assets/sprites/jim/. Contract test tests/unit/spriteSheets.test.ts (4 pass).
+      Screenshot-verified: clean side profile facing right, real stride, arms at sides.
 
 ### Queue
-- [ ] WIRE the schema-Level into the running engine: gameEcs/App load a `Level` →
-      buildFromLevel + fromLevel + paintArt + spawn entities by art key. Make Level 1
-      PLAYABLE on screen, live-verify (READ the screenshot), zero asset loss. [TOP]
-- [ ] RETIRE the old level system once Level 1 plays via the schema path: delete the
-      hand-built registry/levelSpec/specs/* + their render levels + vendor-pack shape
-      catalogs + dead biome assets. One level system (the schema).
-- [ ] CURATION sizing: trim isn't shrinking 2048² sprites; size source to ~2-3×
-      worldHeight (match display × DPR headroom, NOT a dev downscale) — sane bundle.
-- [ ] REGENERATE hero / cutscenes / wordmark / landing through Nano Banana (old
-      Imagen). "all text all images go through the LATEST."
-- [ ] Generate levels 2-10 once the engine path + curation are solid; live-playtest +
-      re-tune lengths to the budget.
-- [ ] Per-level types beyond platformer (autoscroller/minecart/swim/chase/puzzle/boss/
-      run-and-gun/cinematic/multidirectional) need engine support — add per level built.
+- [ ] Wire the baked Jim sprite sheets into the existing PixiJS playerSprite/renderer
+      (slice by manifest frameWidth, anchor by anchorX/Y, swap clip by player state) →
+      live-verify in-game (READ the screenshot). [TOP]
+- [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
+- [ ] PROPS / BUILDINGS / CAVE / obstacle / collectible GLBs via Meshy → bake to webp
+      (static or simple anims) for Level 1.
+- [ ] Extend the schema/manifest + genai-level pipeline: art entries = parallax (gemini
+      image) vs model (meshy GLB → baked sprite); generate both.
+- [ ] Assemble + live-verify Level 1 (baked actors + props on the gemini parallax) —
+      READ the screenshot, zero asset loss, reads crafted.
+- [ ] Levels 2-10 once the path is solid; per-level mechanic types as built.
 
 ## What CONTINUOUS means
 1 never stop for status reports · 2 never stop for scope caution · 3 never stop to

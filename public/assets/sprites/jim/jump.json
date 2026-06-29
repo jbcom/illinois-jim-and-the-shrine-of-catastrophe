@@ -1,0 +1,15 @@
+{
+  "name": "jump",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.6543,
+  "anchorY": 0.9102,
+  "contentBox": {
+    "minX": 97,
+    "minY": 22,
+    "maxX": 238,
+    "maxY": 233
+  }
+}

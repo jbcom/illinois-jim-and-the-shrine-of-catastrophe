@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Illinois Jim — 3D Model Viewer</title>
+    <style>
+      * { margin: 0; box-sizing: border-box; }
+      html, body { height: 100%; background: #14110d; color: #e3d8c2; font-family: ui-monospace, monospace; overflow: hidden; }
+      #app { position: fixed; inset: 0; }
+      #ui {
+        position: fixed; top: 12px; right: 12px; z-index: 10; background: rgba(20,17,13,0.92);
+        border: 1px solid #5a3a12; border-radius: 8px; padding: 12px 14px; width: 300px; font-size: 13px;
+      }
+      #ui h1 { font-size: 14px; color: #e3b341; margin-bottom: 8px; }
+      #ui label { display: block; margin: 6px 0 2px; color: #c9a14a; }
+      #ui select, #ui button { width: 100%; padding: 6px; background: #2a2118; color: #e3d8c2; border: 1px solid #5a3a12; border-radius: 4px; font-family: inherit; margin-bottom: 4px; }
+      #ui button { cursor: pointer; }
+      #ui button:hover { background: #3a2e20; }
+      #info { font-size: 11px; color: #8a7a5a; margin-top: 8px; white-space: pre-wrap; line-height: 1.5; }
+      .row { display: flex; gap: 6px; }
+      .row button { flex: 1; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="ui">
+      <h1>🗿 Model Viewer</h1>
+      <label for="model">Model</label>
+      <select id="model"></select>
+      <label for="anim">Animation</label>
+      <select id="anim"><option value="">(static)</option></select>
+      <div class="row">
+        <button id="play">▶ Play</button>
+        <button id="pause">⏸ Pause</button>
+      </div>
+      <div class="row">
+        <button id="reset">↺ Reset view</button>
+        <button id="spin">⟳ Auto-spin</button>
+      </div>
+      <label for="bg">Background</label>
+      <select id="bg">
+        <option value="studio">Studio grey</option>
+        <option value="dark">Dark stage</option>
+        <option value="side">Side-scroller (parallax test)</option>
+      </select>
+      <div id="info">Loading…</div>
+    </div>
+    <script type="module" src="./viewer.ts"></script>
+  </body>
+</html>
