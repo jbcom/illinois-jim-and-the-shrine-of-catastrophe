@@ -13,8 +13,12 @@ import { ESCAPE_RUN, ESCAPE_RUN_FRAME } from "@render/levels/escapeRun.ts";
 import { SHRINE_APPROACH, SHRINE_APPROACH_FRAME } from "@render/levels/shrineApproach.ts";
 import { SHRINE_HEART, SHRINE_HEART_FRAME } from "@render/levels/shrineHeart.ts";
 import { VILLAGE_APPROACH, VILLAGE_APPROACH_FRAME } from "@render/levels/villageApproach.ts";
+import { frameFromLevel, paintingFromLevel, parallaxFromLevel } from "@render/levels/fromLevel.ts";
 import { CAVE_PARALLAX, OVERWORLD_PARALLAX, type ParallaxLayerSpec } from "@render/parallax.ts";
-import type { Placement } from "@render/composition.ts";
+import type { ArtPlacement, Placement } from "@render/composition.ts";
+import { buildFromLevel } from "@sim/world/buildFromLevel.ts";
+import { parseLevel } from "@sim/world/levelSchema.ts";
+import halwardJson from "@/levels/halward-s-reach.level.json";
 import {
   type GameLevel,
   DESCENT,
@@ -28,8 +32,13 @@ export interface LevelBundle {
   readonly id: string;
   /** Sim half: collision tilemap + spawns + goal. */
   readonly sim: GameLevel;
-  /** Render half: the painted composition. */
+  /** Render half: the painted composition (legacy shape-stamp levels). */
   readonly painting: readonly Placement[];
+  /**
+   * Render half (GenAI levels): whole transparent baked-prop art on the surfaces.
+   * When set, the renderer uses this instead of `painting` (which stays []).
+   */
+  readonly artPainting?: readonly ArtPlacement[];
   /** Render half: the parallax depth stack. */
   readonly parallax: readonly ParallaxLayerSpec[];
   /** Authored vertical band (cover-scaled to fill the canvas height). */
@@ -38,7 +47,52 @@ export interface LevelBundle {
   readonly groundFill?: { readonly color: number; readonly groundY: number; readonly width: number };
 }
 
+/**
+ * Adapt a validated GenAI schema Level into a live LevelBundle: collision + spawns
+ * from buildFromLevel (mapped to the GameLevel shape), the baked-prop art painting,
+ * the parallax + frame. Enemy `behavior`→`kind`; the schema's free-form enemy/npc art
+ * is mapped to the baked visual kinds + dialogue roster ids the renderer expects.
+ */
+function genaiBundle(json: unknown): LevelBundle {
+  const level = parseLevel(json);
+  const built = buildFromLevel(level);
+  // The level's enemies are crows/birds → the non-humanoid flyingEye sprite; humanoid
+  // foes would map to goblin/skeleton. NPC dialogueIds are aliased to baked roster ids.
+  const NPC_ALIAS: Record<string, string> = {
+    mara_farewell: "elder-mara",
+    watchman_warning: "watchman-pell",
+    ferryman_tip: "ferryman-cole",
+  };
+  const sim: GameLevel = {
+    id: built.id,
+    map: built.map,
+    spawnX: built.spawnX,
+    spawnY: built.spawnY,
+    collectibles: built.collectibles.map((c) => ({ x: c.x, y: c.y, value: c.value })),
+    enemies: built.enemies.map((e) => ({
+      x: e.x,
+      y: e.y,
+      kind: e.behavior,
+      visual: "flyingEye" as const,
+    })),
+    pots: built.pots.map((p) => ({ x: p.x, y: p.y, color: "gray" as const, drop: p.drop })),
+    npcs: built.npcs.map((n) => ({ x: n.x, y: n.y, dialogueId: NPC_ALIAS[n.dialogueId] ?? n.dialogueId })),
+    goalX: built.goalX,
+  };
+  return {
+    id: level.id,
+    sim,
+    painting: [],
+    artPainting: paintingFromLevel(level),
+    parallax: parallaxFromLevel(level),
+    frame: frameFromLevel(level),
+  };
+}
+
+const HALWARD = genaiBundle(halwardJson);
+
 const REGISTRY: Record<string, LevelBundle> = {
+  [HALWARD.id]: HALWARD,
   "village-approach": {
     id: "village-approach",
     sim: VILLAGE,
@@ -85,7 +139,7 @@ const REGISTRY: Record<string, LevelBundle> = {
 };
 
 /** The level the story opens on (the overworld village, NOT the cave). */
-export const FIRST_LEVEL_ID = "village-approach";
+export const FIRST_LEVEL_ID = HALWARD.id;
 
 const FIRST_BUNDLE = REGISTRY[FIRST_LEVEL_ID] as LevelBundle;
 

@@ -86,6 +86,7 @@ export async function createGame(
   const renderer: PaintingRenderer = await createPaintingRenderer(container, {
     parallax: bundle.parallax,
     painting: bundle.painting,
+    ...(bundle.artPainting ? { artPainting: bundle.artPainting } : {}),
     frameTop: bundle.frame.top,
     frameBottom: bundle.frame.bottom,
     ...(bundle.groundFill ? { groundFill: bundle.groundFill } : {}),
