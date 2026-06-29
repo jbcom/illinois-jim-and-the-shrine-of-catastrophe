@@ -89,4 +89,53 @@ describe("painting renderer (in-game integration)", () => {
     expect(renderer.app.stage.children.length).toBeGreaterThan(0);
     world.destroy();
   });
+
+  it("portrait slice-wrap stacks bands seamlessly — no dark seam between them", async () => {
+    // A TALL portrait host engages the slice-wrap. The regression: bands used to be
+    // centered in their slot with vertical padding, leaving a dark gap (seam) between
+    // consecutive bands. They must now tile edge-to-edge and cover the full height.
+    host!.style.width = "390px";
+    host!.style.height = "844px";
+    renderer = await createPaintingRenderer(host!, {
+      parallax: BUNDLE.parallax,
+      painting: [],
+      artPainting: BUNDLE.artPainting ?? [],
+      frameTop: BUNDLE.frame.top,
+      frameBottom: BUNDLE.frame.bottom,
+    });
+    const world = buildJungleWorld();
+    const frameH = BUNDLE.frame.bottom - BUNDLE.frame.top;
+    const camera = { ...createCamera(frameH, frameH), x: 60, y: BUNDLE.frame.top };
+    const screenH = renderer.app.screen.height;
+    const visibleBands = 3;
+    const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 390, viewH: 844 };
+    const portrait = { bandCount: 6, bandWidthWorld: frameH * 1.6, visibleBands, playerBand: 1.5 };
+
+    renderer.render({ world, camera, viewport, alpha: 0, prev: new Map(), portrait });
+    await new Promise((r) => setTimeout(r, 300));
+    renderer.render({ world, camera, viewport, alpha: 0, prev: new Map(), portrait });
+
+    // Inspect ONLY the band stack's sprites (not the parallax layers), top→bottom.
+    const bands = (renderer.bandStack.children as { visible: boolean; y: number; height: number }[])
+      .filter((s) => s.visible && s.height > 1)
+      .sort((a, b) => a.y - b.y);
+
+    expect(bands.length).toBeGreaterThanOrEqual(visibleBands);
+    const bandScreenH = screenH / visibleBands;
+    // Each band fills a full slot (no centered-with-padding shrink)…
+    for (const s of bands) {
+      expect(s.height).toBeGreaterThanOrEqual(bandScreenH - 2);
+    }
+    // …and consecutive bands abut with no gap (next.y ≈ prev.y + prev.height ± 1px).
+    for (let i = 1; i < bands.length; i++) {
+      const prev = bands[i - 1];
+      const cur = bands[i];
+      if (!prev || !cur) continue;
+      const gap = cur.y - (prev.y + prev.height);
+      expect(Math.abs(gap)).toBeLessThanOrEqual(2);
+    }
+
+    await page.screenshot({ path: "game-jungle-portrait-bands.png" });
+    world.destroy();
+  });
 });

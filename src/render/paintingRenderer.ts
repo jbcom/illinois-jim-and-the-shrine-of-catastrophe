@@ -77,6 +77,8 @@ export interface PaintingRenderer {
   readonly app: Application;
   /** The canvas this renderer created and owns (a child of the host container). */
   readonly canvas: HTMLCanvasElement;
+  /** The portrait slice-wrap band stack (test hook — inspect band tiling). */
+  readonly bandStack: Container;
 }
 
 export interface PaintingRendererSpec {
@@ -335,10 +337,16 @@ export async function createPaintingRenderer(
     // of the height. World→screen scale is set so bandWidthWorld maps to screenW.
     const bandScreenH = screenH / Math.max(1, visibleBands);
     const scale = screenW / bandWidthWorld;
-    // The authored band height in screen px at this scale (may be < bandScreenH; we
-    // center it vertically within each band slot).
+    // The play surface is `frameH` tall at this scale. When a band SLOT is taller
+    // than that (the common case — the slot is screenW/BAND_ASPECT, taller than
+    // frameH×scale), we render the band into a FULL-SLOT-height texture and pin the
+    // play surface to the slot's vertical center, letting the world's scenery above
+    // and below the surface fill the rest. Bands then tile edge-to-edge with NO gap
+    // between them (the old centered-with-padding approach left a `yPad` dark seam).
     const contentH = frameH * scale;
-    const yPad = Math.max(0, (bandScreenH - contentH) / 2);
+    // Extra world height (in screen px) to show above the play surface so the band
+    // fills its slot: half the slack, clamped to ≥0 for the rare tighter-than-frame slot.
+    const slotPadTop = Math.max(0, (bandScreenH - contentH) / 2);
 
     // Parallax: full-bleed shared backdrop behind the band stack.
     parallax.resize(screenW, screenH);
@@ -351,9 +359,10 @@ export async function createPaintingRenderer(
     const firstBand = Math.floor(topBand);
     const slots = visibleBands + 1;
 
-    // (Re)allocate one RT + sprite per slot, sized to a full-width band.
+    // (Re)allocate one RT + sprite per slot, sized to a FULL band slot (width ×
+    // bandScreenH) so each band fills its slot and the stack tiles seamlessly.
     const rtW = Math.max(1, Math.ceil(screenW));
-    const rtH = Math.max(1, Math.ceil(contentH));
+    const rtH = Math.max(1, Math.ceil(bandScreenH));
     ensureBandSlots(slots, rtW, rtH);
 
     for (let i = 0; i < slots; i++) {
@@ -365,18 +374,21 @@ export async function createPaintingRenderer(
         sprite.visible = false;
         continue;
       }
-      // Render world band `b` into ITS OWN RT: shift world left by b*bandWidthWorld so
-      // that band's slice lands in [0, screenW]; pin frameTop to the RT top.
+      // Render world band `b` into ITS OWN full-slot RT: shift world left by
+      // b*bandWidthWorld so that band's slice lands in [0, screenW]; offset Y by
+      // slotPadTop so the play surface sits centered in the taller slot and the
+      // world's scenery fills the margins (no dark seam between stacked bands).
       worldLayer.visible = true;
       worldLayer.scale.set(scale);
-      worldLayer.position.set(-b * bandWidthWorld * scale, -spec.frameTop * scale);
+      worldLayer.position.set(-b * bandWidthWorld * scale, slotPadTop - spec.frameTop * scale);
       app.renderer.render({ container: worldLayer, target: rt, clear: true });
 
       // Blit: the band's on-screen Y = its band index minus the fractional scroll.
+      // Bands are exactly bandScreenH tall, so consecutive slots abut with no gap.
       const screenSlot = b - topBand; // 0 = top of screen, in band units
       sprite.texture = rt;
       sprite.visible = true;
-      sprite.position.set(0, Math.round(screenSlot * bandScreenH + yPad));
+      sprite.position.set(0, Math.round(screenSlot * bandScreenH));
     }
     // The live worldLayer was only a render SOURCE for the RTs — hide it on the stage.
     worldLayer.visible = false;
@@ -410,6 +422,8 @@ export async function createPaintingRenderer(
     canvas,
     render,
     flushViews,
+    /** The portrait slice-wrap band stack (test hook — inspect band tiling). */
+    bandStack,
     destroy() {
       flushViews();
       // Pot frames are standalone Texture slices sharing an Assets-owned source;
