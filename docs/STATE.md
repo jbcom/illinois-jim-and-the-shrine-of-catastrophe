@@ -52,9 +52,18 @@ The live work queue is `.agent-state/directive.md`.
 - `src/sim/world/camera.ts` — `createCamera` + `followCamera` deadzone scroll,
   level-bounds clamp.
 - `src/sim/world/level.ts` — `parseLevel` ASCII utility + `levelBounds`.
-- `src/sim/world/gameLevel.ts` — `GameLevel` type: invisible collision tilemap +
-  spawns (collectibles, enemies, pots, npcs, goal). The story's FIVE levels:
-  `VILLAGE` (overworld opener) → `DESCENT` (the cave) → `SHRINE` (the sanctum
+- `src/sim/world/levelSpec.ts` — the SINGLE SOURCE OF TRUTH for a level: a
+  `LevelSpec` is an ordered list of surface SEGMENTS (`ground` | `raised` | `gap`)
+  laid left-to-right from x=0, plus overlay `platforms` (rooftops/ledges) stacked
+  above the floor. Props + spawns + goal anchor RELATIVELY (`{seg, t, dy}`) — no
+  absolute world coords. `buildLevel` derives the collision tilemap + world-space
+  spawns + goal; `render/levels/fromSpec.ts` `paintingFromSpec` derives the
+  painting from the SAME segments — so collision and painting cannot drift.
+  NARRATIVE ANCHORING: every raised surface names its `anchorProp` (the beam /
+  staircase / rooftop you stand on) — there is no floating platform.
+- `src/sim/world/specs/*` — the five level specs. `src/sim/world/gameLevel.ts`
+  builds each via `buildLevel`. The story's FIVE levels: `VILLAGE` (overworld
+  opener, with rooftop platforms) → `DESCENT` (the cave) → `SHRINE` (the sanctum
   approach) → `SHRINE_HEART` (the idol-grab climax) → `ESCAPE_RUN` (the collapsing
   flight out). Paired with their paintings by id in `src/render/levels/registry.ts`
   (`LEVEL_ORDER` drives the data-driven cutscene→level chain; the full arc is

@@ -1,42 +1,21 @@
 /**
- * "Halward's Reach" — the OPENING level, hand-PAINTED (composed, not scattered)
- * from the verified overworld + Decor catalog. The story starts here, on the
- * surface, BEFORE any cave.
+ * "Halward's Reach" — the OPENING level, authored from VILLAGE_APPROACH_SPEC
+ * (surfaces from the ground up); collision AND this painting both derive from it.
+ * Composed from the verified overworld + Decor catalog, layered for DEPTH.
  *
- * Composition is layered for DEPTH (back → front), every prop baseline-anchored
- * so it sits ON the ground, with deliberate story beats read left → right:
- *
- *   BACKDROP (z 0–1): a receding treeline — tall oaks + pines, smaller and set
- *     back, framing the scene and giving the forest density behind the village.
- *   MIDGROUND (z 2): the village proper — a stone house, two tents, a weeping
- *     willow as the focal tree, the angel statue. Where the NPCs stand.
- *   GROUND (z −1): a continuous earth band (separate solid fill behind it).
- *   FOREGROUND (z 4–6): boulders, bushes, grass tufts, a clothesline, market
- *     crates — the layer Jim passes IN FRONT of, the thing that sells the depth.
- *
- * Story beats: home + village life (left) → the forest road (middle, first
- * enemies) → the statue & lone torch at the dark trailhead (right) = the goal.
- *
- * ~2240px ≈ 4 screens (standard intro length — docs/LEVEL_DESIGN.md). World px;
- * collision + spawns mirror these placements in src/sim/world/gameLevel.ts.
+ * The road is one continuous ground segment; the ROOFTOP platforms are stacked
+ * over it, each anchored to a real building (the stone house, the large tent) —
+ * the overworld lets Jim jump onto the roofs, and a reward sits on each. NPCs +
+ * enemies stand on the road. Story beats L→R: home + village life → the forest
+ * road (first enemies) → the statue & lone torch at the dark trailhead (the goal).
  */
-import type { Placement } from "@render/composition.ts";
+import { paintingFromSpec, type PropPlacement } from "@render/levels/fromSpec.ts";
 import { DECOR_SHAPES as D, OVERWORLD as O } from "@render/overworldShapes.ts";
+import type { Placement } from "@render/composition.ts";
+import { VILLAGE_APPROACH_SPEC } from "@sim/world/specs/villageApproach.ts";
 
-const GROUND_Y = 300;
+const GROUND_Y = VILLAGE_APPROACH_SPEC.baselineY;
 const LEVEL_W = 2240;
-
-/** Place a stamp so its BASE sits on `baseY` (anchors props to the ground). */
-function onGround(
-  stamp: Placement["stamp"],
-  x: number,
-  baseY: number,
-  scale: number,
-  z: number,
-  flipX = false,
-): Placement {
-  return { stamp, x, y: baseY - stamp.h * scale, scale, z, flipX };
-}
 
 /** Continuous earth band — the grass-topped dirt block tiled across the level. */
 const GBLK = 96 * 0.8;
@@ -45,72 +24,63 @@ for (let x = -GBLK; x < LEVEL_W + GBLK; x += GBLK - 2) {
   GROUND_STRIP.push({ stamp: O.ground, x, y: GROUND_Y, scale: 0.8, z: -1 });
 }
 
-export const VILLAGE_APPROACH: readonly Placement[] = [
-  ...GROUND_STRIP,
+/** Props anchored to the single road segment (seg 0) by fraction along it. */
+const PROPS: readonly PropPlacement[] = [
+  // BACKDROP (z 0): a receding treeline behind everything.
+  { stamp: O.oakA, at: { seg: 0, t: -0.027 }, scale: 0.8, z: 0 },
+  { stamp: O.pine, at: { seg: 0, t: 0.054 }, scale: 0.85, z: 0 },
+  { stamp: O.oakC, at: { seg: 0, t: 0.161 }, scale: 0.7, z: 0, flipX: true },
+  { stamp: O.pine, at: { seg: 0, t: 0.25 }, scale: 0.7, z: 0 },
+  { stamp: O.oakB, at: { seg: 0, t: 0.339 }, scale: 0.85, z: 0 },
+  { stamp: O.pine, at: { seg: 0, t: 0.446 }, scale: 0.75, z: 0, flipX: true },
+  { stamp: O.oakA, at: { seg: 0, t: 0.545 }, scale: 0.8, z: 0, flipX: true },
+  { stamp: O.pine, at: { seg: 0, t: 0.661 }, scale: 0.8, z: 0 },
+  { stamp: O.oakC, at: { seg: 0, t: 0.759 }, scale: 0.7, z: 0 },
+  { stamp: O.pine, at: { seg: 0, t: 0.875 }, scale: 0.85, z: 0, flipX: true },
 
-  // ============ BACKDROP (z 0): a receding treeline behind everything ============
-  onGround(O.oakA, -60, GROUND_Y, 0.8, 0),
-  onGround(O.pine, 120, GROUND_Y, 0.85, 0),
-  onGround(O.oakC, 360, GROUND_Y, 0.7, 0, true),
-  onGround(O.pine, 560, GROUND_Y, 0.7, 0),
-  onGround(O.oakB, 760, GROUND_Y, 0.85, 0),
-  onGround(O.pine, 1000, GROUND_Y, 0.75, 0, true),
-  onGround(O.oakA, 1220, GROUND_Y, 0.8, 0, true),
-  onGround(O.pine, 1480, GROUND_Y, 0.8, 0),
-  onGround(O.oakC, 1700, GROUND_Y, 0.7, 0),
-  onGround(O.pine, 1960, GROUND_Y, 0.85, 0, true),
+  // VILLAGE (left): home + the warning. The HOUSE and TENT are the rooftops the
+  // spec platforms ride on (drawn here; their tops = the standable surfaces).
+  { stamp: O.house, at: { seg: 0, t: 0.018 }, scale: 0.78, z: 2 },
+  { stamp: O.tentLarge, at: { seg: 0, t: 0.134 }, scale: 0.95, z: 2 },
+  { stamp: O.tentSmall, at: { seg: 0, t: 0.192 }, scale: 1.0, z: 2 },
+  { stamp: O.willow, at: { seg: 0, t: 0.241 }, scale: 0.9, z: 1 },
+  { stamp: D.clothesline, at: { seg: 0, t: 0.067 }, scale: 0.8, z: 3 },
+  { stamp: D.crate, at: { seg: 0, t: 0.112 }, scale: 0.9, z: 4 },
+  { stamp: D.crate, at: { seg: 0, t: 0.124 }, scale: 0.8, z: 4, flipX: true },
+  { stamp: D.butcherBlock, at: { seg: 0, t: 0.179 }, scale: 0.9, z: 4 },
+  { stamp: O.torch, at: { seg: 0, t: 0.009 }, scale: 0.6, z: 5 },
+  { stamp: D.bushGreen, at: { seg: 0, t: 0.049 }, scale: 1.1, z: 6 },
+  { stamp: O.grass, at: { seg: 0, t: 0.156 }, scale: 1.0, z: 6 },
+  { stamp: D.bushGreen, at: { seg: 0, t: 0.277 }, scale: 1.0, z: 6, flipX: true },
 
-  // ===================== VILLAGE (left): home + the warning =====================
-  // The house — the focal building, set on the ground at mid-depth.
-  onGround(O.house, 40, GROUND_Y, 0.78, 2),
-  // Two tents clustered as the rest of the hamlet.
-  onGround(O.tentLarge, 300, GROUND_Y, 0.95, 2),
-  onGround(O.tentSmall, 430, GROUND_Y, 1, 2),
-  // A weeping willow shading the village square (focal tree).
-  onGround(O.willow, 540, GROUND_Y, 0.9, 1),
-  // Village life — clothesline strung by the house, market crates, a torch.
-  onGround(D.clothesline, 150, GROUND_Y, 0.8, 3),
-  onGround(D.crate, 250, GROUND_Y, 0.9, 4),
-  onGround(D.crate, 278, GROUND_Y, 0.8, 4, true),
-  onGround(D.butcherBlock, 400, GROUND_Y, 0.9, 4),
-  onGround(O.torch, 20, GROUND_Y, 0.6, 5),
-  // Foreground bushes + grass framing the village edge.
-  onGround(D.bushGreen, 110, GROUND_Y, 1.1, 6),
-  onGround(O.grass, 350, GROUND_Y, 1, 6),
-  onGround(D.bushGreen, 620, GROUND_Y, 1, 6, true),
+  // FOREST ROAD (middle): the journey — roadside trees + foreground scatter.
+  { stamp: O.birchA, at: { seg: 0, t: 0.366 }, scale: 1.0, z: 1 },
+  { stamp: O.blossom, at: { seg: 0, t: 0.42 }, scale: 1.0, z: 1 },
+  { stamp: O.oakB, at: { seg: 0, t: 0.482 }, scale: 0.9, z: 1, flipX: true },
+  { stamp: O.birchB, at: { seg: 0, t: 0.563 }, scale: 1.0, z: 1 },
+  { stamp: O.willow, at: { seg: 0, t: 0.634 }, scale: 0.8, z: 1, flipX: true },
+  { stamp: D.boulderBig, at: { seg: 0, t: 0.402 }, scale: 0.8, z: 6 },
+  { stamp: D.bushAutumn, at: { seg: 0, t: 0.464 }, scale: 1.0, z: 6 },
+  { stamp: O.grass, at: { seg: 0, t: 0.527 }, scale: 1.0, z: 6, flipX: true },
+  { stamp: D.bushGreen, at: { seg: 0, t: 0.598 }, scale: 1.1, z: 6 },
+  { stamp: D.boulderBig2, at: { seg: 0, t: 0.661 }, scale: 0.7, z: 6, flipX: true },
 
-  // ===================== FOREST ROAD (middle): the journey =====================
-  // Roadside trees at mid-depth, varied species + heights for a natural line.
-  onGround(O.birchA, 820, GROUND_Y, 1, 1),
-  onGround(O.blossom, 940, GROUND_Y, 1, 1),
-  onGround(O.oakB, 1080, GROUND_Y, 0.9, 1, true),
-  onGround(O.birchB, 1260, GROUND_Y, 1, 1),
-  onGround(O.willow, 1420, GROUND_Y, 0.8, 1, true),
-  // Foreground scatter — boulders + bushes Jim weaves past (depth + cover).
-  onGround(D.boulderBig, 900, GROUND_Y, 0.8, 6),
-  onGround(D.bushAutumn, 1040, GROUND_Y, 1, 6),
-  onGround(O.grass, 1180, GROUND_Y, 1, 6, true),
-  onGround(D.bushGreen, 1340, GROUND_Y, 1.1, 6),
-  onGround(D.boulderBig2, 1480, GROUND_Y, 0.7, 6, true),
-
-  // ============== MOUNTAIN APPROACH (right): the forest thins, dread ==============
-  // The angel statue — an old waymarker on the road to the shrine (foreboding).
-  onGround(O.statue, 1640, GROUND_Y, 1.1, 2),
-  // A broken brick ruin half-swallowed by the treeline — the past expedition.
-  onGround(O.birchA, 1800, GROUND_Y, 0.85, 1),
-  onGround(D.boulderBig, 1880, GROUND_Y, 0.8, 6),
-  onGround(O.grass, 1720, GROUND_Y, 1, 6),
-  onGround(D.bushAutumn, 2000, GROUND_Y, 1, 6, true),
-  // The lone torch at the trailhead — the last light before the dark cave mouth.
-  onGround(O.torch, 2120, GROUND_Y, 0.75, 5),
+  // MOUNTAIN APPROACH (right): the forest thins, dread — statue, ruin, lone torch.
+  { stamp: O.statue, at: { seg: 0, t: 0.732 }, scale: 1.1, z: 2 },
+  { stamp: O.birchA, at: { seg: 0, t: 0.804 }, scale: 0.85, z: 1 },
+  { stamp: D.boulderBig, at: { seg: 0, t: 0.839 }, scale: 0.8, z: 6 },
+  { stamp: O.grass, at: { seg: 0, t: 0.768 }, scale: 1.0, z: 6 },
+  { stamp: D.bushAutumn, at: { seg: 0, t: 0.893 }, scale: 1.0, z: 6, flipX: true },
+  { stamp: O.torch, at: { seg: 0, t: 0.946 }, scale: 0.75, z: 5 },
 ];
 
-/** The painting's pixel extents (camera bounds / collision authoring). */
-export const VILLAGE_APPROACH_BOUNDS = { width: LEVEL_W, floorY: GROUND_Y } as const;
+export const VILLAGE_APPROACH: readonly Placement[] = [
+  ...GROUND_STRIP,
+  ...paintingFromSpec(VILLAGE_APPROACH_SPEC, PROPS),
+];
 
 /**
- * The authored vertical frame, in world px. Cover-scaled to fill the canvas
- * height (no letterbox). Top sits above the tallest tree canopy; bottom below
- * the road so the ground reaches the screen edge.
+ * The authored vertical frame, in world px. Top sits above the tallest tree canopy
+ * AND the rooftops Jim can climb to; bottom below the road so ground reaches the edge.
  */
 export const VILLAGE_APPROACH_FRAME = { top: 70, bottom: GROUND_Y + 50 } as const;

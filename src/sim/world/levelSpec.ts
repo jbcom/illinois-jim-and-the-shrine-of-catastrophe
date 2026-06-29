@@ -70,6 +70,25 @@ export interface SpecNpc extends Anchor {
   readonly dialogueId: string;
 }
 
+/**
+ * An OVERLAY platform that sits ABOVE the continuous floor (not interrupting it) —
+ * a rooftop, a ledge, a balcony you can jump up onto while the street runs beneath.
+ * Unlike a `raised` SEGMENT (which replaces the floor for its span), an overlay is
+ * a standable surface stacked over the ground. It MUST be narratively anchored to a
+ * real object (`anchorProp`) — a rooftop is the roof of a house, never thin air.
+ * Positioned by a segment-relative anchor (its left edge) + a width.
+ */
+export interface Platform {
+  /** Left edge of the platform, anchored relative to a floor segment. */
+  readonly at: Anchor;
+  /** Width of the standable top in world px. */
+  readonly width: number;
+  /** Surface TOP height in px above the ground baseline (how high to jump). */
+  readonly top: number;
+  /** The real object this platform IS (e.g. "rooftop", "ledge", "wagon"). Required. */
+  readonly anchorProp: string;
+}
+
 export interface LevelSpec {
   readonly id: string;
   /** The ground baseline in world Y (the floor surface top of a `top:0` segment). */
@@ -78,8 +97,10 @@ export interface LevelSpec {
   readonly tileSize: number;
   /** Map height in tiles (rows). */
   readonly rows: number;
-  /** The surfaces, left-to-right from x=0. */
+  /** The floor profile, left-to-right from x=0. */
   readonly segments: readonly Segment[];
+  /** Overlay platforms stacked ABOVE the floor (rooftops/ledges), anchored to props. */
+  readonly platforms?: readonly Platform[];
   /** Where the player starts (defaults to standing on the first segment). */
   readonly spawn?: Anchor;
   /** The goal: reaching this world-x (resolved from the anchor) wins the level. */
@@ -160,12 +181,27 @@ export function buildCollision(spec: LevelSpec): TileMap {
       }
     }
   }
+  // Overlay platforms (rooftops/ledges) — a one-way standable row ABOVE the floor.
+  for (const plat of spec.platforms ?? []) {
+    const { x } = resolveAnchor(spec, resolved, plat.at);
+    const c0 = Math.round(x / ts);
+    const c1 = Math.round((x + plat.width) / ts);
+    const row = Math.round((spec.baselineY - plat.top) / ts);
+    for (let c = c0; c < c1; c++) setTile(map, c, row, TileKind.Platform);
+  }
   // Close the level edges so the player can't walk off the world.
   for (let rr = 0; rr < spec.rows; rr++) {
     setTile(map, 0, rr, TileKind.Solid);
     setTile(map, cols - 1, rr, TileKind.Solid);
   }
   return map;
+}
+
+/** Resolve a platform's standable-top-left world position (for the painting). */
+export function resolvePlatform(spec: LevelSpec, p: Platform): { x: number; y: number; width: number } {
+  const resolved = resolveSegments(spec);
+  const { x } = resolveAnchor(spec, resolved, p.at);
+  return { x, y: spec.baselineY - p.top, width: p.width };
 }
 
 /**
