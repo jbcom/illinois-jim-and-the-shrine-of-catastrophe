@@ -13,8 +13,8 @@ import { scaleFor } from "@render/actorScale.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
-import { createNpcSprite } from "@render/npc.ts";
-import { npcSpecFor } from "@render/npcRoster.ts";
+import { createBakedNpcSprite, createNpcSprite } from "@render/npc.ts";
+import { bakedNpcBase, npcSpecFor } from "@render/npcRoster.ts";
 import { createParallax, type Parallax } from "@render/parallax.ts";
 import { createPlayerSprite } from "@render/playerSprite.ts";
 import { loadPotFrames } from "@render/pots.ts";
@@ -326,7 +326,11 @@ function ensureNpc(
   const ph = placeholder(0x6f9a4a);
   layer.addChild(ph);
   views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
-  void createNpcSprite(renderer, npcSpecFor(dialogueId))
+  const bakedBase = bakedNpcBase(dialogueId);
+  const built = bakedBase
+    ? createBakedNpcSprite(bakedBase)
+    : createNpcSprite(renderer, npcSpecFor(dialogueId));
+  void built
     .then((npc) => {
       if (!views.has(e)) {
         npc.destroy();

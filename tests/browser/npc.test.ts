@@ -1,5 +1,6 @@
 import {
   composeNpcSheet,
+  createBakedNpcSprite,
   NPC_ANIM_FRAMES,
   NPC_FRAME_H,
   NPC_FRAME_W,
@@ -128,5 +129,40 @@ describe("NPC factory (paper-doll composite)", () => {
 
     await page.screenshot({ path: "npc-townsfolk.png" });
     expect(app.stage.children.length).toBe(3);
+  });
+});
+
+describe("baked NPC (3D→WebP)", () => {
+  let app: Application | undefined;
+  let canvas: HTMLCanvasElement | undefined;
+  beforeEach(() => {
+    canvas = document.createElement("canvas");
+    canvas.width = 240;
+    canvas.height = 200;
+    document.body.appendChild(canvas);
+  });
+  afterEach(() => {
+    app?.destroy({ removeView: false }, { children: true });
+    app = undefined;
+    canvas?.remove();
+  });
+
+  it("renders the baked Elder Mara idle (visual proof)", async () => {
+    app = new Application();
+    await app.init({ canvas: canvas!, width: 240, height: 200, background: "#17110b", resolution: 1 });
+
+    const npc = await createBakedNpcSprite("assets/sprites/elder-mara");
+    npc.sprite.scale.set(0.62);
+    npc.sprite.x = 120;
+    npc.sprite.y = 194;
+    app.stage.addChild(npc.sprite);
+    app.render();
+
+    await page.screenshot({ path: "npc-elder-mara.png" });
+    const { pixels } = app.renderer.extract.pixels(app.stage);
+    let opaque = 0;
+    for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
+    expect(opaque).toBeGreaterThan(1500);
+    npc.destroy();
   });
 });

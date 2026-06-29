@@ -50,11 +50,19 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       the SAME pipeline (zero script changes) → 5 WebP clips, wired into enemySprites
       via a BAKED backend, screenshot-verified in-engine. Pipeline proven reusable.
 
+- [x] SKELETON enemy: Meshy → bake → wired into the enemySprites BAKED backend
+      (move→walk shamble). Both humanoid enemies now baked-3D. Reusable pipeline
+      captured in [[character-bake-pipeline]] memory.
+
+- [x] ELDER MARA (story NPC) via Meshy → baked idle+walk → createBakedNpcSprite +
+      BAKED_NPCS registry; ensureNpc picks baked vs paper-doll by dialogueId.
+      Screenshot-verified in-engine. Baked actors now cover player + 2 enemies + 1 NPC.
+
 ### Queue
-- [ ] SKELETON enemy via Meshy (t-pose→rig→bake) → wire into the enemySprites BAKED
-      backend like the goblin. [TOP]
-- [ ] At least one story NPC via Meshy (t-pose→rig→bake idle/walk) → wire into the NPC
-      factory (src/render/npc.ts / npcRoster.ts) as a baked actor.
+- [ ] Remaining story NPCs (watchman-pell w/ sword, ferryman-cole, shrine-warden) via
+      Meshy → bake idle+walk → add to BAKED_NPCS. [TOP]
+- [ ] Bake goblin/skeleton hurt + death clips (author non-loop poses) so enemies don't
+      fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
