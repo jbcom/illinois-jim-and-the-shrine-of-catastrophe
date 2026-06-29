@@ -116,12 +116,17 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       across each schema hazard's width; systems.ts already kills on Hazard contact, so
       the baked spikes are now actually deadly. buildFromLevel.test locks it.
 
+- [x] GATES + SWITCHES (review P0 #2): Switch/Gate traits + gateSwitchSystem (overlap
+      latches a lever on, gate opens, closed gate blocks the player) wired through
+      buildFromLevel→GameLevel→createSimWorld→gameEcs + genaiBundle. The lever-opens-gate
+      hook works live. gateSwitch.test (4 pass).
+
 ### Queue
-- [ ] Implement the rest of the problem-solving layer (still unimplemented in the live
-      sim, so their baked art is inert): gates+switches (lever toggles a gate's blocking
-      collision — the level's stated hook), then moving platforms (rideable one-way
-      collision that moves on a path), then secrets (hidden pickup reward). Each needs an
-      ECS trait + system + a GameLevel field + createSimWorld spawn. Live-verify each. [TOP]
+- [ ] MOVING PLATFORMS: a MovingPlatform trait + system (rideable solid that moves on
+      its authored path; the player stands on it and is carried) → through buildFromLevel
+      → GameLevel → createSimWorld → gameEcs + genaiBundle. Unit-test the carry. [TOP]
+- [ ] SECRETS: a hidden pickup (Secret trait) the player finds → reward (relic/score).
+      Then the problem-solving layer is complete and no baked puzzle art is inert.
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
       Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
 - [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
