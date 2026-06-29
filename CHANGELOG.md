@@ -14,6 +14,13 @@ do not edit version numbers manually.
 
 ---
 
+## [1.1.1](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/compare/illinois-jim-and-the-shrine-of-catastrophe-v1.1.0...illinois-jim-and-the-shrine-of-catastrophe-v1.1.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **art:** strip Gemini halftone dither from gorge waterfall foam ([#28](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/28)) ([634f3e0](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/634f3e090e7ee46b8d088bf0d9ea3b1c662e6a02))
+
 ## [1.1.0](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/compare/illinois-jim-and-the-shrine-of-catastrophe-v1.0.0...illinois-jim-and-the-shrine-of-catastrophe-v1.1.0) (2026-06-29)
 
 
