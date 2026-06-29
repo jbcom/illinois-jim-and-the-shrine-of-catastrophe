@@ -211,6 +211,32 @@ The game is playable end-to-end:
 
 ---
 
+## Milestone history (shipped — condensed from the old directive)
+
+The directive is kept LEAN (operating mode + the live queue only); shipped history
+lives here so it doesn't reload every session.
+
+- **Scaffold (2026-06-27, PR #1/#3):** the arcade-game stack — Vite + TS + Capacitor
+  + Biome + Playwright + release-please; engine/sim/render/ui foundations; CI →
+  release → cd; Android APK; live on GitHub Pages.
+- **Milestone 2 — the complete cave game (2026-06-28, PR #9):** React 19 + PixiJS 8
+  + koota ECS + xstate FSM; the painting renderer (organic shape stamps, not tiles);
+  all-4 animated enemies, NPC paper-doll factory + dialogue, breakable pots, scoring
+  + combo, mine-cart rails, procedural audio, cutscene flow, persistence, landing.
+- **Milestone 3 — the real narrative (2026-06-28, PR #11-#13):** overworld→cave with
+  cutscenes, NPCs, dialogue; sprite-scale (content-height), flicker, death-plane,
+  cutscene timing, typography fixes; death-loop fix (lost-pointerup phantom joystick).
+- **Milestone 4 — mobile viewport (PR #15-#22):** torch-wall + safe-area + portrait
+  fixes; DEVICE-PROFILE orientation (phones lock, unfolded foldables free; web
+  classifies by physical px + Android UA); multi-aspect GenAI; framed HUD + dialogue
+  bar; visible touch controls; the surface-SPEC level architecture (relative
+  positioning, narrative-anchored platforms) + the 5 hand-built levels (village →
+  cave → shrine → heart → escape); the ground-void/camera-pin/thin-strip framing fix.
+
+**Then the FULL GENAI PIVOT (2026-06-29)** — the active milestone (see the directive):
+scrap hand-composed vendor-pack levels; Gemini crafts each level start-to-finish
+(art + layout) via a Zod `Level` schema; the engine renders the structured contract.
+
 ## What comes next
 
 See `.agent-state/directive.md` for the live task queue. Pending areas include:
