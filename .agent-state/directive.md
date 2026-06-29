@@ -228,6 +228,6 @@ Started: 2026-06-29T11:55:58Z
 ### task-007 Generate + curate 6 fresh cutscene scenes (Gemini)
 - [x] task-007 intro/jungle/gorge/mine/crystal/cliffhanger art curated to public/assets/cutscenes (3 aspects); no 404
 ### task-008 Live-verify the full 5-level campaign in Chrome
-- [ ] task-008 intro→jungle→gorge→mine→crystal→cliffhanger, zero console errors; pnpm build 0
+- [x] task-008 intro→jungle→gorge→mine→crystal→cliffhanger, zero console errors; pnpm build 0
 ### task-009 Compress directive — completed items → pillar docs
 - [ ] task-009 37 [x] items → docs pillar; directive trimmed to live CAMPAIGN plan + WAIT items + levels 6-10
