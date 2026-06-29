@@ -14,6 +14,31 @@ do not edit version numbers manually.
 
 ---
 
+## [1.1.0](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/compare/illinois-jim-and-the-shrine-of-catastrophe-v1.0.0...illinois-jim-and-the-shrine-of-catastrophe-v1.1.0) (2026-06-29)
+
+
+### Features
+
+* combat system (whip + stomp kills) ([#8](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/8)) ([55f1487](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/55f14872637901fdef33783e86b7b418fbb3c6b8))
+* final two levels + single-source surface-spec level architecture ([#23](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/23)) ([7ad6041](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/7ad60419cff50554728eb6df7d6e5347dc02be13))
+* NPC dialogue in a dedicated bottom text bar ([#18](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/18)) ([a7f183c](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/a7f183c8262f15565e9d61ad2af63f8cad2db4e6))
+* overworld + crafted levels + cutscenes + landing — the real narrative ([#12](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/12)) ([8841781](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/8841781243b180cf0f3a5554226249e98f8a42a3))
+* pot-smash debris burst (smash juice) ([#20](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/20)) ([9f2b5d5](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/9f2b5d574186cff59119f1ca7af42d9801c78237))
+* React/Pixi/koota stack + dual-PRNG + ECS gameplay foundation ([#7](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/7)) ([e183354](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/e183354014c67ce16fdf039144d3b89efd6a2bcb))
+* the complete game — Illinois Jim and the Shrine of Catastrophe ([#9](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/9)) ([bdbc35e](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/bdbc35e8bc5cd3b65e1850fc0cb1ef0a05d13188))
+* the Shrine — third-act climax level (overworld → cave → shrine) ([#22](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/22)) ([0dd4e80](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/0dd4e80380b8270a249739d6f1f3f755f2653974))
+
+
+### Bug Fixes
+
+* add missing PWA icons ([#3](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/3)) ([f644280](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/f644280e42d0e6389851dd99adc2f911e5779c01))
+* friendly hero face (not an evil grimace) + endless directive ([#17](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/17)) ([0903ce1](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/0903ce1833b54347855fc88c6b692b21bde52f98))
+* mobile viewport — torch sheet, safe areas, landscape lock, multi-aspect art ([#15](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/15)) ([3ba24b7](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/3ba24b7dbb112ef2286b91069581d07e5ec808a8))
+* **render:** band RTs at device resolution — kill gorge foam checkerboard ([#25](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/25)) ([52bbf87](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/52bbf87f2416ae6e4a7393a9c0ea7c244ceb01fd))
+* route all asset URLs through Vite base so the game loads on Pages ([#11](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/11)) ([de78d84](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/de78d8422de38b562cdf69363537152c60951f3a))
+* stop the village death-loop — touch-pointer leak + i-frames + patrol-only intro ([#13](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/13)) ([623c955](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/623c95547a88a537c406d72c8affdc1356d1c6e8))
+* wordmark clear of hero face on portrait ([#21](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/issues/21)) ([3604e98](https://github.com/jbcom/illinois-jim-and-the-shrine-of-catastrophe/commit/3604e98a1d0b3363258ba55c2fff1b9c941accf0))
+
 ## 1.0.0 (2026-06-29)
 
 
