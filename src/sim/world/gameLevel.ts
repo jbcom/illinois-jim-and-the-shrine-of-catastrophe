@@ -46,6 +46,18 @@ export interface GameLevel {
   readonly pots: readonly PotSpawn[];
   /** Story NPCs the player can talk to (empty on levels with none). */
   readonly npcs: readonly NpcSpawn[];
+  /** Puzzle switches (lever/plate) the player activates; a Gate references their id. */
+  readonly switches?: readonly { x: number; y: number; id: string }[];
+  /** Gates that block a world rect until their switch(es) fire. */
+  readonly gates?: readonly {
+    x: number;
+    y: number;
+    opensWith: readonly string[];
+    x0: number;
+    x1: number;
+    top: number;
+    bottom: number;
+  }[];
   /** World-x past which the level is "won" (reaching the relic block). */
   readonly goalX: number;
 }

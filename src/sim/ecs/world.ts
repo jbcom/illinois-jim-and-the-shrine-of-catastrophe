@@ -11,6 +11,7 @@ import {
   Collectible,
   Enemy,
   Facing,
+  Gate,
   Gravity,
   MineCart,
   Npc,
@@ -19,6 +20,7 @@ import {
   Pot,
   Score,
   Size,
+  Switch,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import { DEFAULT_TUNING, type PlayerTuning } from "@sim/player/tuning.ts";
@@ -101,6 +103,18 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
       Size({ w: 18, h: 24 }),
       Facing({ dir: 1 }),
       Npc({ dialogueId: n.dialogueId, range: 36, talked: false }),
+    );
+  }
+
+  // Puzzle switches the player activates by overlapping (the gate-puzzle layer).
+  for (const s of level.switches ?? []) {
+    world.spawn(Position({ x: s.x, y: s.y }), Size({ w: 20, h: 24 }), Switch({ id: s.id, on: false }));
+  }
+  // Gates that block their rect until the matching switch latches on.
+  for (const g of level.gates ?? []) {
+    world.spawn(
+      Position({ x: g.x, y: g.y }),
+      Gate({ opensWith: g.opensWith[0] ?? "", open: false, x0: g.x0, x1: g.x1, top: g.top, bottom: g.bottom }),
     );
   }
 

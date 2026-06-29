@@ -86,6 +86,8 @@ function genaiBundle(json: unknown): LevelBundle {
       visual: ENEMY_VISUAL[e.art] ?? "flyingEye",
     })),
     pots: built.pots.map((p) => ({ x: p.x, y: p.y, color: "gray" as const, drop: p.drop })),
+    switches: built.switches.map((s) => ({ x: s.x, y: s.y, id: s.id })),
+    gates: built.gates.map((g) => ({ x: g.x, y: g.y, opensWith: g.opensWith, x0: g.x0, x1: g.x1, top: g.top, bottom: g.bottom })),
     npcs: built.npcs.map((n) => {
       const aliased = NPC_ALIAS[n.dialogueId];
       if (!aliased) {

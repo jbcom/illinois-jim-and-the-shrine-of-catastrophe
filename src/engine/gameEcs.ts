@@ -20,6 +20,7 @@ import {
   collectibleSystem,
   combatSystem,
   enemySystem,
+  gateSwitchSystem,
   lifetimeSystem,
   mineCartSystem,
   npcInteractionSystem,
@@ -202,6 +203,8 @@ export async function createGame(
     playerSystem(sim.world, intent, level.map, sim.tuning, dt);
     enemySystem(sim.world, dt);
     physicsSystem(sim.world, level.map, sim.tuning, dt);
+    // Gate/switch puzzle: latch switches on overlap, open gates, block closed ones.
+    gateSwitchSystem(sim.world);
     const wasGrounded = sim.world.query(Player)[0]?.get(Player)?.grounded ?? true;
     const combat = combatSystem(sim.world, sim.tuning);
     const pots = potSystem(sim.world, sim.tuning, dt);

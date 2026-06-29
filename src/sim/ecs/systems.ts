@@ -12,6 +12,7 @@ import {
   Collectible,
   Enemy,
   Facing,
+  Gate,
   Gravity,
   Lifetime,
   MineCart,
@@ -22,6 +23,7 @@ import {
   Pot,
   Score,
   Size,
+  Switch,
   Velocity,
 } from "@sim/ecs/traits.ts";
 import type { PlayerIntent } from "@sim/input/intent.ts";
@@ -206,6 +208,49 @@ export function npcInteractionSystem(world: World): TalkTarget | null {
     }
   });
   return best;
+}
+
+/**
+ * Gate/switch puzzle system: the player overlapping a Switch latches it `on` (stays
+ * on); a Gate opens once its `opensWith` switch is on. While a gate is CLOSED its
+ * world rect blocks the player — overlap pushes the player back out horizontally, so
+ * the way forward is sealed until the lever is pulled. Returns true if any switch
+ * just flipped on (so the caller can play a sfx / log).
+ */
+export function gateSwitchSystem(world: World): boolean {
+  const player = world.query(Player, Position, Size)[0];
+  if (!player) return false;
+  const pp = player.get(Position);
+  const ps = player.get(Size);
+  if (!pp || !ps) return false;
+  const playerBox = aabb(pp.x, pp.y, ps.w, ps.h);
+
+  // 1) Latch switches the player overlaps.
+  let flipped = false;
+  const on = new Set<string>();
+  world.query(Switch, Position, Size).updateEach(([sw, pos, size]) => {
+    if (!sw.on && intersects(playerBox, aabb(pos.x, pos.y, size.w, size.h))) {
+      sw.on = true;
+      flipped = true;
+    }
+    if (sw.on) on.add(sw.id);
+  });
+
+  // 2) Open gates whose switch is on; block the player against still-closed gates.
+  let pushX: number | null = null;
+  world.query(Gate, Position).updateEach(([gate]) => {
+    if (!gate.open && on.has(gate.opensWith)) gate.open = true;
+    if (gate.open) return;
+    const gateBox = aabb(gate.x0, gate.top, gate.x1 - gate.x0, gate.bottom - gate.top);
+    if (!intersects(playerBox, gateBox)) return;
+    // Push the player back to the side of the gate they came from.
+    const playerCx = pp.x + ps.w / 2;
+    const gateCx = (gate.x0 + gate.x1) / 2;
+    pushX = playerCx < gateCx ? gate.x0 - ps.w - 1 : gate.x1 + 1;
+  });
+  if (pushX !== null) player.set(Position, { ...pp, x: pushX });
+
+  return flipped;
 }
 
 /**

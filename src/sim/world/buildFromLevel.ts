@@ -113,6 +113,18 @@ export interface BuiltSchemaLevel {
   readonly pots: readonly { x: number; y: number; drop: "relic" | "health" | "secret"; art: string }[];
   readonly npcs: readonly { x: number; y: number; dialogueId: string; art: string }[];
   readonly hazards: readonly { x: number; y: number; width: number; art: string }[];
+  readonly switches: readonly { x: number; y: number; id: string; art: string }[];
+  /** Gates: position + the world rect they block (the blocked surface span) until open. */
+  readonly gates: readonly {
+    x: number;
+    y: number;
+    art: string;
+    opensWith: readonly string[];
+    x0: number;
+    x1: number;
+    top: number;
+    bottom: number;
+  }[];
   readonly goalX: number;
 }
 
@@ -131,6 +143,18 @@ export function buildFromLevel(level: Level): BuiltSchemaLevel {
     pots: level.pots.map((p: LevelPot) => ({ ...at(p.at), drop: p.drop, art: p.art })),
     npcs: level.npcs.map((n: LevelNpc) => ({ ...at(n.at), dialogueId: n.dialogueId, art: n.art })),
     hazards: level.hazards.map((h: LevelHazard) => ({ ...at(h.at), width: h.width, art: h.art })),
+    switches: level.switches.map((s) => ({ ...at(s.at), id: s.id, art: s.art })),
+    gates: level.gates.map((g) => {
+      const pos = at(g.at);
+      // The gate blocks its `blocksSurface` span: a vertical wall over that surface's
+      // x-range, from above the standable line down to the floor.
+      const blocked = resolved[g.blocksSurface];
+      const x0 = blocked?.x0 ?? pos.x - 16;
+      const x1 = blocked?.x1 ?? pos.x + 16;
+      const top = (blocked?.surfaceY ?? pos.y) - 96;
+      const bottom = (blocked?.surfaceY ?? pos.y) + 8;
+      return { x: pos.x, y: pos.y, art: g.art, opensWith: g.opensWith, x0, x1, top, bottom };
+    }),
     goalX: at(level.goal).x,
   };
 }
