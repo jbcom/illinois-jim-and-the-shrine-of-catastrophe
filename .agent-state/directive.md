@@ -45,17 +45,15 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 ## Queue — LIVE
 
 ### Render polish (agent-doable, NOT Meshy-gated)
-- [ ] [WAIT-DEBUGGER] Gorge bottom-right transparency CHECKERBOARD: in the-rushing-gorge
-      portrait, a transparent-pixel checkerboard shows at the extreme bottom-right corner
-      (beside a dark rock), at the level/screen boundary. RULED OUT (verified this session):
-      ALL gorge assets clean — baked props (wet-rock-ledge, static-log-raft, log-raft, etc.),
-      level-dir layers (water-surface, ground-riverbed, parallax-far/mid) all checkerboard-free;
-      no texture-load errors; canvas has solid #17110b background (so it's NOT the canvas
-      showing through), out-of-range band slots are hidden. It's a slice-wrap compositing
-      edge-case — likely a Pixi Texture.EMPTY/missing-texture debug checkerboard on a sprite
-      whose texture is mid-load, or an empty band RT. stuck-loop-debugger dispatched with the
-      ruled-out list; awaiting its file:line root cause before editing (debug-loop stop rule:
-      3+ hypotheses reached, stop probing, let the specialist land the fix).
+- [x] Gorge bottom-right transparency CHECKERBOARD — FIXED (0eea22d). Root cause (via
+      stuck-loop-debugger): portrait band RenderTextures were created at resolution:1 while
+      the app runs at resolution:2, so each band buffer was half-density and 2×-upscaled on
+      blit (antialias:false), dithering the waterfall foam's semi-transparent texels into a
+      checkerboard. Fix: create band RTs at app.renderer.resolution (+ reallocate on dpr
+      change). Gross checkerboard gone, render crisp; browser test asserts RT res == app res.
+- [ ] [WAIT-CI] Open a PR for the gorge checkerboard + slice-wrap-seam + foldable-touch +
+      HUD fixes on fix/gorge-corner-checkerboard, wait CI green, merge. (Branch carries the
+      band-resolution fix 0eea22d on top of main; the other fixes already merged via #23.)
 - [ ] [WAIT-DEPLOY] Confirm the live GitHub Pages site (jonbogaty.com/illinois-jim-…)
       propagates the v1.0.0 build (b2ee2d8). Deploy succeeded from the correct SHA; the edge
       was still serving an older index hash (index-BTEG_bK-) at merge time. Monitor polling
