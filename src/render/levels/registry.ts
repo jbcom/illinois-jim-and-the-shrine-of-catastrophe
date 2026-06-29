@@ -77,7 +77,11 @@ function genaiBundle(json: unknown): LevelBundle {
     map: built.map,
     spawnX: built.spawnX,
     spawnY: built.spawnY,
-    collectibles: built.collectibles.map((c) => ({ x: c.x, y: c.y, value: c.value })),
+    // Secrets are rich hidden pickups — spawned via the same collectible path.
+    collectibles: [
+      ...built.collectibles.map((c) => ({ x: c.x, y: c.y, value: c.value })),
+      ...built.secrets.map((s) => ({ x: s.x, y: s.y, value: s.value })),
+    ],
     // Route each enemy to its visual by art key (crow→flyingEye, etc.).
     enemies: built.enemies.map((e) => ({
       x: e.x,

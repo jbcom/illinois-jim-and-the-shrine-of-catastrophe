@@ -47,4 +47,20 @@ describe("GenAI level bundle (halward-s-reach as the live first level)", () => {
     expect(b.parallax.length).toBeGreaterThan(0);
     expect(b.frame.bottom).toBeGreaterThan(b.frame.top);
   });
+
+  it("threads the problem-solving layer into the sim (switches/gates/platforms/secrets)", () => {
+    const b = levelBundle(FIRST_LEVEL_ID);
+    // Halward's Reach authors a lever + gate + a moving platform + a secret relic.
+    expect((b.sim.switches ?? []).length).toBeGreaterThan(0);
+    expect((b.sim.gates ?? []).length).toBeGreaterThan(0);
+    expect((b.sim.movingPlatforms ?? []).length).toBeGreaterThan(0);
+    // The secret is folded into collectibles as a rich pickup (value > a normal coin).
+    const richest = Math.max(...b.sim.collectibles.map((c) => c.value));
+    expect(richest).toBeGreaterThanOrEqual(500);
+    // A gate references a real switch id (the lever-opens-gate hook is wired).
+    const switchIds = new Set((b.sim.switches ?? []).map((s) => s.id));
+    for (const g of b.sim.gates ?? []) {
+      expect(g.opensWith.some((id) => switchIds.has(id))).toBe(true);
+    }
+  });
 });

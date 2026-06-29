@@ -113,6 +113,8 @@ export interface BuiltSchemaLevel {
   readonly pots: readonly { x: number; y: number; drop: "relic" | "health" | "secret"; art: string }[];
   readonly npcs: readonly { x: number; y: number; dialogueId: string; art: string }[];
   readonly hazards: readonly { x: number; y: number; width: number; art: string }[];
+  /** Hidden secret rewards (richer than a normal pickup). Spawned as high-value pickups. */
+  readonly secrets: readonly { x: number; y: number; value: number; art: string }[];
   readonly switches: readonly { x: number; y: number; id: string; art: string }[];
   readonly movingPlatforms: readonly {
     x: number;
@@ -152,6 +154,7 @@ export function buildFromLevel(level: Level): BuiltSchemaLevel {
     pots: level.pots.map((p: LevelPot) => ({ ...at(p.at), drop: p.drop, art: p.art })),
     npcs: level.npcs.map((n: LevelNpc) => ({ ...at(n.at), dialogueId: n.dialogueId, art: n.art })),
     hazards: level.hazards.map((h: LevelHazard) => ({ ...at(h.at), width: h.width, art: h.art })),
+    secrets: level.secrets.map((s) => ({ ...at(s.at), value: s.value, art: s.art })),
     switches: level.switches.map((s) => ({ ...at(s.at), id: s.id, art: s.art })),
     movingPlatforms: level.movingPlatforms.map((m) => ({
       ...at(m.at),
