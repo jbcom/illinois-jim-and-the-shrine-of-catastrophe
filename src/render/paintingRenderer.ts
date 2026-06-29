@@ -327,8 +327,13 @@ function ensureNpc(
   layer.addChild(ph);
   views.set(e, { display: ph, acc: 0, fps: 0, dispose: () => ph.destroy() });
   const bakedBase = bakedNpcBase(dialogueId);
+  // Baked NPC first; if its sheet fails to load, fall back to the paper-doll so a
+  // missing bake leaves a real NPC, not a permanent placeholder.
   const built = bakedBase
-    ? createBakedNpcSprite(bakedBase)
+    ? createBakedNpcSprite(bakedBase).catch((err) => {
+        console.error(`[render] baked npc ${dialogueId} failed; using paper-doll:`, err);
+        return createNpcSprite(renderer, npcSpecFor(dialogueId));
+      })
     : createNpcSprite(renderer, npcSpecFor(dialogueId));
   void built
     .then((npc) => {

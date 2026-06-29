@@ -151,25 +151,29 @@ describe("baked NPC (3D→WebP)", () => {
   // Every registered baked NPC must load + render real pixels (the registry is the
   // source of truth, so a newly-added NPC is covered without editing the test).
   it.each(Object.keys(BAKED_NPCS))(
-    "renders the baked NPC %s (visual proof)",
+    "renders the baked NPC %s idle + walk (visual proof)",
     async (id) => {
       const base = BAKED_NPCS[id]?.base as string;
       app = new Application();
       await app.init({ canvas: canvas!, width: 240, height: 200, background: "#17110b", resolution: 1 });
 
-      const npc = await createBakedNpcSprite(base);
-      npc.sprite.scale.set(0.62);
-      npc.sprite.x = 120;
-      npc.sprite.y = 194;
-      app.stage.addChild(npc.sprite);
-      app.render();
-
-      await page.screenshot({ path: `npc-${id}.png` });
-      const { pixels } = app.renderer.extract.pixels(app.stage);
-      let opaque = 0;
-      for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
-      expect(opaque, `${id} blank`).toBeGreaterThan(1500);
-      npc.destroy();
+      // Both shipped clips must load + render non-blank (idle for the screenshot).
+      for (const clip of ["idle", "walk"] as const) {
+        app.stage.removeChildren();
+        const npc = await createBakedNpcSprite(base, clip);
+        npc.sprite.currentFrame = Math.floor(npc.sprite.textures.length / 2);
+        npc.sprite.scale.set(0.62);
+        npc.sprite.x = 120;
+        npc.sprite.y = 194;
+        app.stage.addChild(npc.sprite);
+        app.render();
+        if (clip === "idle") await page.screenshot({ path: `npc-${id}.png` });
+        const { pixels } = app.renderer.extract.pixels(app.stage);
+        let opaque = 0;
+        for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
+        expect(opaque, `${id} ${clip} blank`).toBeGreaterThan(1500);
+        npc.destroy();
+      }
     },
   );
 });

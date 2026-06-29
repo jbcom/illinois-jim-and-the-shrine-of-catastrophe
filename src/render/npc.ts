@@ -147,11 +147,11 @@ export async function createNpcSprite(renderer: Renderer, spec: NpcSpec): Promis
 /**
  * Build an NPC sprite from the 3D→WebP bake pipeline (assets/sprites/<base>/),
  * returning the same NpcSprite shape as the paper-doll path so callers don't branch.
- * NPCs ship an idle clip (and optionally walk); we default to idle.
+ * NPCs ship idle + walk clips; defaults to idle.
  */
-export async function createBakedNpcSprite(base: string): Promise<NpcSprite> {
+export async function createBakedNpcSprite(base: string, clip: "idle" | "walk" = "idle"): Promise<NpcSprite> {
   const { AnimatedSprite } = await import("pixi.js");
-  const { textures, manifest } = await loadBakedClip(assetUrl(base), "idle");
+  const { textures, manifest } = await loadBakedClip(assetUrl(base), clip);
   const sprite = new AnimatedSprite(textures);
   sprite.autoUpdate = false;
   sprite.anchor.set(manifest.anchorX, manifest.anchorY);

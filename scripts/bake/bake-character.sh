@@ -22,31 +22,39 @@ trap 'rm -rf "$TMP"' EXIT
 # Clip set: default is the full actor set; pass a 6th arg (space- or comma-separated)
 # to bake a subset/superset, e.g. "idle walk run attack hurt death" for an enemy.
 if [ "${6:-}" != "" ]; then
-  IFS=', ' read -r -a CLIPS <<< "$6"
+  # Split on commas and/or whitespace, dropping any empty tokens (so "a, b" is clean).
+  read -r -a CLIPS <<< "$(printf '%s' "$6" | tr ',' ' ')"
 else
   CLIPS=(idle walk run jump attack)
 fi
 
 LOG="$TMP/blender.log"  # Blender stderr goes here (not /dev/null) so failures are diagnosable.
 
-# Pass 1: derive the shared scale/centre from the clip with the LARGEST deformed
-# envelope. Prefer jump (overhead reach + tuck) when present, else fall back to the
-# first clip. Every clip then bakes at this scale so the tallest pose never clips and
-# no clip jitters in size. Author each clip's GLB once.
-SCALE_CLIP="${CLIPS[0]}"
-for CLIP in "${CLIPS[@]}"; do [ "$CLIP" = "jump" ] && SCALE_CLIP="jump"; done
-echo "→ authoring clips + deriving shared scale (from $SCALE_CLIP)…"
+# Pass 1: author every clip, then derive ONE shared scale/centre from the UNION of all
+# clips' deformed envelopes — so whatever pose is biggest (a death collapse, a jump
+# reach) sets the scale and NOTHING clips, regardless of which clip it lives in.
+echo "→ authoring clips + measuring envelopes…"
+BOUNDS_JSON="["
 for CLIP in "${CLIPS[@]}"; do
   "$BL" --background --python "$ROOT/scripts/bake/author_anim.py" -- \
     --glb "$GLB" --clip "$CLIP" --out "$TMP/$CLIP.glb" >>"$LOG" 2>&1
+  B=$("$BL" --background --python "$ROOT/scripts/bake/bake.py" -- \
+    --glb "$TMP/$CLIP.glb" --out "$TMP/measure" --name "$CLIP" --frames "$FRAMES" --size "$SIZE" --measure \
+    2>>"$LOG" | grep '^BAKE_BOUNDS ' | sed 's/^BAKE_BOUNDS //')
+  if [ -z "$B" ]; then echo "✗ measure failed for $CLIP — see $LOG" >&2; tail -20 "$LOG" >&2; exit 1; fi
+  BOUNDS_JSON="$BOUNDS_JSON$B,"
 done
-META=$("$BL" --background --python "$ROOT/scripts/bake/bake.py" -- \
-  --glb "$TMP/$SCALE_CLIP.glb" --out "$TMP/scale-probe" --name "$SCALE_CLIP" --frames "$FRAMES" --size "$SIZE" \
-  2>>"$LOG" | grep '^BAKE_META ' | sed 's/^BAKE_META //')
-if [ -z "$META" ]; then echo "✗ scale derivation failed — see $LOG" >&2; tail -20 "$LOG" >&2; exit 1; fi
-SCALE=$(node -e "process.stdout.write(String(JSON.parse(process.argv[1]).orthoScale))" "$META")
-CZ=$(node -e "process.stdout.write(String(JSON.parse(process.argv[1]).centerZ))" "$META")
-echo "  shared orthoScale=$SCALE centerZ=$CZ"
+BOUNDS_JSON="${BOUNDS_JSON%,}]"
+# Union the envelopes → scale = max(height,width)*margin, centre = mid of the union Z.
+SC_CZ=$(node -e '
+  const bs = JSON.parse(process.argv[1]);
+  const minZ = Math.min(...bs.map(b=>b.minZ)), maxZ = Math.max(...bs.map(b=>b.maxZ));
+  const minX = Math.min(...bs.map(b=>b.minX)), maxX = Math.max(...bs.map(b=>b.maxX));
+  const scale = Math.max(maxZ-minZ, maxX-minX) * 1.22;
+  console.log(scale.toFixed(5) + " " + ((minZ+maxZ)/2).toFixed(5));
+' "$BOUNDS_JSON")
+SCALE="${SC_CZ%% *}"; CZ="${SC_CZ##* }"
+echo "  shared orthoScale=$SCALE centerZ=$CZ (union of ${#CLIPS[@]} clips)"
 
 # Pass 2: bake + pack every clip ONCE at the shared scale.
 for CLIP in "${CLIPS[@]}"; do

@@ -142,6 +142,13 @@ center = mathutils.Vector(((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, (mn.z + mx.z) /
 height = mx.z - mn.z
 width = mx.x - mn.x
 
+# --measure: print this clip's deformed envelope and exit (the orchestrator unions
+# every clip's envelope to pick ONE scale + centre that fits the worst pose — so a big
+# pose like a death collapse never clips, regardless of which clip it lives in).
+if "--measure" in argv:
+    print(f"BAKE_BOUNDS {json.dumps({'minZ': mn.z, 'maxZ': mx.z, 'minX': mn.x, 'maxX': mx.x})}")
+    raise SystemExit(0)
+
 # Shared scale: caller-provided (cross-clip consistency) or derived from this clip.
 ortho_scale = ORTHO_SCALE if ORTHO_SCALE else max(height, width) * MARGIN
 center_z = CENTER_Z if CENTER_Z is not None else center.z
