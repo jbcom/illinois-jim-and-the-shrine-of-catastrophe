@@ -36,6 +36,9 @@ const BAKED_PROP: Record<string, string> = {
   "gate-trailhead": "gate-trailhead",
   "collectible-relic-coin": "relic-coin",
   "breakables-pot": "pot",
+  "hazard-spikes": "hazard-spikes",
+  "moving-platform-wood": "moving-platform",
+  "secret-relic": "secret-relic",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */

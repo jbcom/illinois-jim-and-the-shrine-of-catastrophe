@@ -35,6 +35,9 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "switch-lever",
     "gate-trailhead",
     "relic-coin",
+    "hazard-spikes",
+    "moving-platform",
+    "secret-relic",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {
