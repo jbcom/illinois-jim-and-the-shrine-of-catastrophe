@@ -20,6 +20,7 @@ import { buildFromLevel } from "@sim/world/buildFromLevel.ts";
 import { parseLevel } from "@sim/world/levelSchema.ts";
 import halwardJson from "@/levels/halward-s-reach.level.json";
 import {
+  type EnemySpawn,
   type GameLevel,
   DESCENT,
   ESCAPE_RUN as ESCAPE_RUN_SIM,
@@ -53,30 +54,45 @@ export interface LevelBundle {
  * the parallax + frame. Enemy `behavior`→`kind`; the schema's free-form enemy/npc art
  * is mapped to the baked visual kinds + dialogue roster ids the renderer expects.
  */
+/** Schema enemy `art` key → the runtime visual sprite kind. Default flyingEye. */
+const ENEMY_VISUAL: Record<string, EnemySpawn["visual"]> = {
+  "enemy-crow": "flyingEye",
+  "enemy-goblin": "goblin",
+  "enemy-skeleton": "skeleton",
+  "enemy-mushroom": "mushroom",
+};
+
+/** Schema NPC dialogueId → baked roster id. Unmapped ids pass through (warned). */
+const NPC_ALIAS: Record<string, string> = {
+  mara_farewell: "elder-mara",
+  watchman_warning: "watchman-pell",
+  ferryman_tip: "ferryman-cole",
+};
+
 function genaiBundle(json: unknown): LevelBundle {
   const level = parseLevel(json);
   const built = buildFromLevel(level);
-  // The level's enemies are crows/birds → the non-humanoid flyingEye sprite; humanoid
-  // foes would map to goblin/skeleton. NPC dialogueIds are aliased to baked roster ids.
-  const NPC_ALIAS: Record<string, string> = {
-    mara_farewell: "elder-mara",
-    watchman_warning: "watchman-pell",
-    ferryman_tip: "ferryman-cole",
-  };
   const sim: GameLevel = {
     id: built.id,
     map: built.map,
     spawnX: built.spawnX,
     spawnY: built.spawnY,
     collectibles: built.collectibles.map((c) => ({ x: c.x, y: c.y, value: c.value })),
+    // Route each enemy to its visual by art key (crow→flyingEye, etc.).
     enemies: built.enemies.map((e) => ({
       x: e.x,
       y: e.y,
       kind: e.behavior,
-      visual: "flyingEye" as const,
+      visual: ENEMY_VISUAL[e.art] ?? "flyingEye",
     })),
     pots: built.pots.map((p) => ({ x: p.x, y: p.y, color: "gray" as const, drop: p.drop })),
-    npcs: built.npcs.map((n) => ({ x: n.x, y: n.y, dialogueId: NPC_ALIAS[n.dialogueId] ?? n.dialogueId })),
+    npcs: built.npcs.map((n) => {
+      const aliased = NPC_ALIAS[n.dialogueId];
+      if (!aliased) {
+        console.warn(`[level ${built.id}] NPC dialogueId "${n.dialogueId}" has no baked roster alias — falling back to a generic villager.`);
+      }
+      return { x: n.x, y: n.y, dialogueId: aliased ?? n.dialogueId };
+    }),
     goalX: built.goalX,
   };
   return {
