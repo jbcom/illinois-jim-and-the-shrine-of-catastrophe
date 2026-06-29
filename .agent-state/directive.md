@@ -45,6 +45,13 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
 ## Queue — LIVE
 
 ### Render polish (agent-doable, NOT Meshy-gated)
+- [x] Halftone-dither sweep across ALL level parallax/scene layers — DONE (PR #28).
+      Gemini fakes translucency/gradients with a dot-screen that reads as speckle. Regenerated
+      4 dithered layers with the hardened no-dither prompt: gorge parallax-mid (foam),
+      halward distant-sea-mountain (water), crystal-parallax-sky (gradient), jungle-trunks (mist).
+      Visual audit FALSE-NEGATIVED a 5th (crystal-parallax-cavern, faint top-sky band) — caught
+      it in-game, regenerated. Built `scripts/check-dither.py`, a DETERMINISTIC checkerboard
+      detector (no visual false-negatives) — confirms all 19 scene images now clean (<1.5%).
 - [x] Gorge bottom-right transparency CHECKERBOARD — FIXED (0eea22d). Root cause (via
       stuck-loop-debugger): portrait band RenderTextures were created at resolution:1 while
       the app runs at resolution:2, so each band buffer was half-density and 2×-upscaled on
@@ -58,6 +65,14 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
       jungle-leaves-parallax (the regenerated clean art), the-rushing-gorge/the-whispering-jungle;
       the level WEBP returns HTTP 200. The "old blocky render" seen earlier was local BROWSER
       CACHE, not a stale deploy (live hash == CI build hash for b2ee2d8; x-cache MISS, age 0).
+- [x] RESIDUAL waterfall-spray dither at the gorge pool — FIXED. The true source was a
+      HALFTONE DITHER pattern Gemini baked into parallax-mid.webp's waterfall foam (its way of
+      faking translucency — NOT a render artifact; nearest-sampling on the band RT did nothing,
+      confirming it was in the source pixels). Fix: hardened the parallax gen STYLE to forbid
+      halftone/stipple/dot-screen shading ("foam, mist, spray are SOLID light shapes, not
+      dithered"), regenerated parallax-mid (clean solid-foam waterfalls), re-prepped its WebP.
+      Verified in-browser: gorge renders crisp, zero dither. Also dropped the dead
+      waterfall-overlay un-ignore (declared-but-never-placed decor). 66 browser tests pass.
 
 ### Next chapter — levels 6–10 (gated on Meshy credit)
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of

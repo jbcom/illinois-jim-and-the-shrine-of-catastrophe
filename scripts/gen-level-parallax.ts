@@ -17,7 +17,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const STYLE =
   "16-bit SNES/Genesis-era pixel art, painterly parallax, rich saturated retro palette, " +
-  "clean readable shapes.";
+  "clean readable shapes, SOLID flat color fills with smooth hand-shaded gradients — " +
+  "NO halftone dithering, NO stipple, NO checkerboard/dot-screen shading anywhere (paint " +
+  "highlights and translucency as solid blended color, the way a hand-pixeled SNES backdrop " +
+  "does, never as a dot pattern); foam, mist and water spray are SOLID light shapes, not dithered.";
 
 /**
  * Hard negative constraint appended to EVERY layer prompt. Gemini has a strong
