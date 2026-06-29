@@ -53,9 +53,10 @@ The live work queue is `.agent-state/directive.md`.
   level-bounds clamp.
 - `src/sim/world/level.ts` — `parseLevel` ASCII utility + `levelBounds`.
 - `src/sim/world/gameLevel.ts` — `GameLevel` type: invisible collision tilemap +
-  spawns (collectibles, enemies, pots, goal). `DESCENT` is the first cave level.
-- `src/sim/world/levels/` — `shrine01.ts`, `shrine02.ts`, `shrine03.ts`
-  (authored collision + spawn data for each level).
+  spawns (collectibles, enemies, pots, npcs, goal). The story's three levels:
+  `VILLAGE` (overworld opener) → `DESCENT` (the cave) → `SHRINE` (the climax,
+  the cracked staircase to the golden idol). Paired with their paintings by id in
+  `src/render/levels/registry.ts` (`LEVEL_ORDER` drives the cutscene→level chain).
 
 ### Sim — player controller
 
@@ -114,8 +115,11 @@ The live work queue is `.agent-state/directive.md`.
   fill the canvas height.
 - `src/render/composition.ts` — `paintComposition`: assembles `Placement[]` shape
   stamps (pixel rects cut from biome sheets) into a PixiJS `Container`.
-- `src/render/levels/caveDescent.ts` — `CAVE_DESCENT` (placement array) +
-  `CAVE_DESCENT_FRAME` (authored vertical band bounds) for the first level.
+- `src/render/levels/{villageApproach,caveDescent,shrineApproach}.ts` — each a
+  `*_APPROACH`/`*_DESCENT` placement array + a `*_FRAME` (authored vertical band).
+  The shrine reuses the cave masonry catalog plus `src/render/shrineShapes.ts`
+  (`SHRINE_PROPS`: idol-altar, cracked steps, braziers, broken pillars — GenAI
+  props isolated by `scripts/prep-props.mjs`).
 - `src/render/parallax.ts` — `createParallax`: depth-scrolled `TilingSprite`
   stack. `CAVE_PARALLAX` spec.
 - `src/render/playerSprite.ts` — Illinois Jim strip controller (idle/run/jump/

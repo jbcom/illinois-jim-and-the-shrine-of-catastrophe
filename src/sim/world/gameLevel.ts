@@ -111,6 +111,79 @@ export const DESCENT: GameLevel = {
 };
 
 /**
+ * "The Shrine" collision — a solid sanctum floor with one broken-floor chasm the
+ * painted beams bridge (painted x≈1080–1320, cols 67–82), side walls closing the
+ * chamber. Matches shrineApproach.ts (FLOOR_Y 300, ~2400px ≈ 4.5 screens).
+ */
+function shrineMap(): TileMap {
+  const cols = 150; // ~2400px
+  const rows = 22; // ~352px
+  const map = createTileMap(cols, rows, TS);
+  const floorRow = 19; // 19*16 = 304 ≈ painted FLOOR_Y 300
+  const gapStart = 68; // ~1088px
+  const gapEnd = 82; // ~1312px
+
+  for (let c = 0; c < cols; c++) {
+    if (c < gapStart || c > gapEnd) {
+      setTile(map, c, floorRow, TileKind.Solid);
+      setTile(map, c, floorRow + 1, TileKind.Solid);
+      setTile(map, c, floorRow + 2, TileKind.Solid);
+    }
+  }
+  // Beam platforms over the gap (one-way), matching the painted beams at
+  // FLOOR_Y-70 (row ~14) and FLOOR_Y-134 (row ~10).
+  for (let c = 67; c <= 78; c++) setTile(map, c, 14, TileKind.Platform); // lower beam (x≈1080)
+  for (let c = 74; c <= 86; c++) setTile(map, c, 10, TileKind.Platform); // upper beam (x≈1200)
+  // Side walls close the sanctum.
+  for (let r = 0; r < rows; r++) {
+    setTile(map, 0, r, TileKind.Solid);
+    setTile(map, cols - 1, r, TileKind.Solid);
+  }
+  return map;
+}
+
+/**
+ * "The Shrine" — the THIRD-act climax level. Jim has crossed the ruins (the
+ * `ruins` cutscene); now he climbs through the ruined inner sanctum — a colonnade
+ * of broken pillars and braziers, the beam-bridged broken nave — to the cracked
+ * grand staircase and the golden idol on its altar (the goal). A skeleton Warden
+ * guards it. Reaching the idol is the run's end (→ the "escape" ending cutscene).
+ * Its painting is render/levels/shrineApproach.ts.
+ */
+export const SHRINE: GameLevel = {
+  id: "shrine-approach",
+  map: shrineMap(),
+  spawnX: 96,
+  spawnY: 260,
+  collectibles: [
+    { x: 420, y: 250, value: 100 }, // in the gatehall colonnade
+    { x: 1140, y: 180, value: 100 }, // on the lower beam over the broken nave
+    { x: 1240, y: 120, value: 100 }, // on the upper beam
+    { x: 1880, y: 250, value: 100 }, // partway up the staircase
+  ],
+  enemies: [
+    // The shrine is the hardest level — guardians thicken toward the idol.
+    { x: 500, y: 280, kind: "patrol", visual: "skeleton" }, // gatehall
+    { x: 900, y: 280, kind: "patrol", visual: "mushroom" }, // ruined nave
+    { x: 1200, y: 150, kind: "patrol", visual: "flyingEye" }, // floats over the gap
+    { x: 1500, y: 280, kind: "chase", visual: "skeleton" }, // foot of the steps
+    { x: 1820, y: 280, kind: "chase", visual: "goblin" }, // on the staircase
+    { x: 2020, y: 280, kind: "chase", visual: "skeleton" }, // the Warden at the idol
+  ],
+  pots: [
+    { x: 300, y: 288, color: "red", drop: "relic" },
+    { x: 640, y: 288, color: "white", drop: "secret" },
+    { x: 1480, y: 288, color: "yellow", drop: "health" }, // before the final climb
+    { x: 2120, y: 288, color: "red", drop: "relic" },
+  ],
+  npcs: [],
+  // Past the idol tableau AND the Warden (x2020) + final relic pot (x2120), so the
+  // climactic guardian is a real obstacle and the payoff pot is smashable before
+  // the level ends (a goalX at the idol's front edge would end the run too early).
+  goalX: 2160,
+};
+
+/**
  * "Halward's Reach" collision — a continuous solid road across the bottom (the
  * overworld is a walkable surface, no chasm), side walls at the ends. Matches the
  * painting in render/levels/villageApproach.ts (GROUND_Y 300, ~2240px wide).
