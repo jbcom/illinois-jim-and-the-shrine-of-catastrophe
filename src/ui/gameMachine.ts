@@ -5,6 +5,7 @@
  * engine loop; this machine governs which SCREEN is shown and when the engine
  * is allowed to run. Context tracks the final score for the result screens.
  */
+import { CLIFFHANGER_ID } from "@sim/story/campaign.ts";
 import { CUTSCENES, cutsceneById } from "@sim/story/cutscenes.ts";
 import { FIRST_LEVEL_ID, nextLevelId } from "@render/levels/registry.ts";
 import { assign, createMachine } from "xstate";
@@ -51,14 +52,14 @@ export function devBootLevel(): string | undefined {
 /**
  * The cutscene to play AFTER clearing a level — the next story beat. It's the
  * cutscene whose `nextLevel` is the level that FOLLOWS the one just cleared, so
- * the sequence cutscene → level → cutscene → level chains automatically. Falls
- * back to the "escape" ending when the cleared level is the last one.
+ * cutscene → level → cutscene → level chains automatically. Falls back to the
+ * CLIFFHANGER ending when the cleared level is the last campaign chapter.
  */
 function cutsceneAfterLevel(levelId: string): string {
   const next = nextLevelId(levelId);
-  if (!next) return "escape";
+  if (!next) return CLIFFHANGER_ID;
   const beat = CUTSCENES.find((c) => c.nextLevel === next);
-  return beat?.id ?? "escape";
+  return beat?.id ?? CLIFFHANGER_ID;
 }
 
 const BOOT_LEVEL = devBootLevel();
@@ -83,14 +84,14 @@ export const gameMachine = createMachine({
       on: { START: { target: "cutscene", actions: assign({ cutsceneId: () => "intro" }) } },
     },
     // Full-screen story cutscene; CUTSCENE_DONE advances to the level (intro) or
-    // to the win screen (the ending "escape" cutscene).
+    // to the win screen (the CLIFFHANGER ending cutscene after the last chapter).
     cutscene: {
       on: {
         CUTSCENE_DONE: [
-          { guard: ({ context }) => context.cutsceneId === "escape", target: "won" },
+          { guard: ({ context }) => context.cutsceneId === CLIFFHANGER_ID, target: "won" },
           {
             target: "playing",
-            // Load the level this cutscene leads into (intro→village, descent→cave…).
+            // Load the level this cutscene leads into (intro→halward, jungle→…).
             actions: assign({ levelId: ({ context }) => levelAfterCutscene(context.cutsceneId) }),
           },
         ],

@@ -220,7 +220,7 @@ Started: 2026-06-29T11:55:58Z
 ### task-003 Derive registry order from CAMPAIGN
 - [x] task-003 LEVEL_ORDER/FIRST_LEVEL_ID/nextLevelId derive from CAMPAIGN; genaiBundle.test asserts the 5 ids
 ### task-004 Simplify gameMachine chaining to CAMPAIGN lookups
-- [ ] task-004 levelAfterCutscene/cutsceneAfterLevel via CAMPAIGN; gameMachine.test covers intro→…→crystal→cliffhanger→won
+- [x] task-004 levelAfterCutscene/cutsceneAfterLevel via CAMPAIGN; gameMachine.test covers intro→…→crystal→cliffhanger→won
 ### task-005 Delete legacy shape-stamp levels + callers
 - [ ] task-005 remove render+sim legacy level modules/exports; no legacy id refs in src/; tsc 0
 ### task-006 Remove/rewrite the 7 legacy-level test files

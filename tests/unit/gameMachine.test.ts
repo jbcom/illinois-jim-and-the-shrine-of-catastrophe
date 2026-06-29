@@ -46,55 +46,54 @@ describe("gameMachine", () => {
 
   it("WIN on the first level plays the NEXT story beat, not the ending", () => {
     const a = boot();
-    toPlaying(a); // in the village (first level)
+    toPlaying(a); // in Halward's Reach (first level)
     a.send({ type: "WIN", score: 1200 });
     expect(a.getSnapshot().value).toBe("cutscene");
-    // The village leads into the descent cutscene → the cave, NOT the ending.
-    expect(a.getSnapshot().context.cutsceneId).toBe("descent");
+    // Halward leads into the jungle cutscene → the Whispering Jungle, NOT the ending.
+    expect(a.getSnapshot().context.cutsceneId).toBe("jungle");
     a.send({ type: "CUTSCENE_DONE" });
     expect(a.getSnapshot().value).toBe("playing");
-    expect(a.getSnapshot().context.levelId).toBe("cave-descent");
+    expect(a.getSnapshot().context.levelId).toBe("the-whispering-jungle");
   });
 
-  it("clearing the cave plays the ruins beat and leads into the shrine", () => {
+  it("clearing the jungle plays the gorge beat and leads into the Rushing Gorge", () => {
     const a = boot();
-    toPlaying(a); // village
-    clearLevel(a, 800); // → cave
-    a.send({ type: "WIN", score: 1000 }); // clear the cave
+    toPlaying(a); // halward
+    clearLevel(a, 800); // → jungle
+    a.send({ type: "WIN", score: 1000 }); // clear the jungle
     expect(a.getSnapshot().value).toBe("cutscene");
-    // The cave leads into the ruins cutscene → the shrine (the climax), NOT the end.
-    expect(a.getSnapshot().context.cutsceneId).toBe("ruins");
+    expect(a.getSnapshot().context.cutsceneId).toBe("gorge");
     a.send({ type: "CUTSCENE_DONE" });
     expect(a.getSnapshot().value).toBe("playing");
-    expect(a.getSnapshot().context.levelId).toBe("shrine-approach");
+    expect(a.getSnapshot().context.levelId).toBe("the-rushing-gorge");
   });
 
-  it("the full story chains village → cave → shrine → heart → escape → ending", () => {
+  it("the full arc chains halward → jungle → gorge → mine → crystal → cliffhanger", () => {
     const a = boot();
-    toPlaying(a); // village
-    clearLevel(a, 100); // village → ruins-cutscene? no: descent → cave
-    expect(a.getSnapshot().context.levelId).toBe("cave-descent");
-    clearLevel(a, 200); // cave → ruins → shrine-approach
-    expect(a.getSnapshot().context.levelId).toBe("shrine-approach");
-    clearLevel(a, 300); // shrine-approach → shrine → shrine-heart
-    expect(a.getSnapshot().context.levelId).toBe("shrine-heart");
-    clearLevel(a, 400); // shrine-heart → catastrophe → escape-run
-    expect(a.getSnapshot().context.levelId).toBe("escape-run");
-    // escape-run is the LAST level → the escape ending.
+    toPlaying(a); // halward
+    clearLevel(a, 100); // → jungle
+    expect(a.getSnapshot().context.levelId).toBe("the-whispering-jungle");
+    clearLevel(a, 200); // → gorge
+    expect(a.getSnapshot().context.levelId).toBe("the-rushing-gorge");
+    clearLevel(a, 300); // → mine
+    expect(a.getSnapshot().context.levelId).toBe("the-abandoned-mine");
+    clearLevel(a, 400); // → crystal
+    expect(a.getSnapshot().context.levelId).toBe("the-crystal-cavern");
+    // Crystal Cavern is the LAST chapter → the cliffhanger ending.
     a.send({ type: "WIN", score: 500 });
-    expect(a.getSnapshot().context.cutsceneId).toBe("escape");
+    expect(a.getSnapshot().context.cutsceneId).toBe("cliffhanger");
   });
 
-  it("WIN on the LAST level (escape-run) → ending cutscene → won, records score", () => {
+  it("WIN on the LAST level (crystal cavern) → cliffhanger → won, records score", () => {
     const a = boot();
-    toPlaying(a); // village
-    clearLevel(a, 800); // → cave
-    clearLevel(a, 1000); // → shrine-approach
-    clearLevel(a, 1100); // → shrine-heart
-    clearLevel(a, 1150); // → escape-run
-    a.send({ type: "WIN", score: 1200 }); // clear escape-run (last level)
+    toPlaying(a); // halward
+    clearLevel(a, 800); // → jungle
+    clearLevel(a, 1000); // → gorge
+    clearLevel(a, 1100); // → mine
+    clearLevel(a, 1150); // → crystal
+    a.send({ type: "WIN", score: 1200 }); // clear the crystal cavern (last level)
     expect(a.getSnapshot().value).toBe("cutscene");
-    expect(a.getSnapshot().context.cutsceneId).toBe("escape");
+    expect(a.getSnapshot().context.cutsceneId).toBe("cliffhanger");
     a.send({ type: "CUTSCENE_DONE" });
     const s = a.getSnapshot();
     expect(s.value).toBe("won");
@@ -104,12 +103,12 @@ describe("gameMachine", () => {
 
   it("LOSE → lost; bestScore keeps the max across runs", () => {
     const a = boot();
-    toPlaying(a); // village
-    clearLevel(a, 900); // → cave
-    clearLevel(a, 0); // → shrine-approach
-    clearLevel(a, 0); // → shrine-heart
-    clearLevel(a, 0); // → escape-run
-    a.send({ type: "WIN", score: 900 }); // clear escape-run (last) → ending cutscene
+    toPlaying(a); // halward
+    clearLevel(a, 900); // → jungle
+    clearLevel(a, 0); // → gorge
+    clearLevel(a, 0); // → mine
+    clearLevel(a, 0); // → crystal
+    a.send({ type: "WIN", score: 900 }); // clear crystal (last) → cliffhanger
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "RESTART" });
     a.send({ type: "LOSE", score: 300 });
@@ -129,12 +128,12 @@ describe("gameMachine", () => {
 
   it("TO_TITLE returns to the title screen", () => {
     const a = boot();
-    toPlaying(a); // village
-    clearLevel(a, 500); // → cave
-    clearLevel(a, 500); // → shrine-approach
-    clearLevel(a, 500); // → shrine-heart
-    clearLevel(a, 500); // → escape-run
-    a.send({ type: "WIN", score: 500 }); // clear escape-run (last) → ending cutscene
+    toPlaying(a); // halward
+    clearLevel(a, 500); // → jungle
+    clearLevel(a, 500); // → gorge
+    clearLevel(a, 500); // → mine
+    clearLevel(a, 500); // → crystal
+    a.send({ type: "WIN", score: 500 }); // clear crystal (last) → cliffhanger
     a.send({ type: "CUTSCENE_DONE" }); // → won
     a.send({ type: "TO_TITLE" });
     expect(a.getSnapshot().value).toBe("title");
