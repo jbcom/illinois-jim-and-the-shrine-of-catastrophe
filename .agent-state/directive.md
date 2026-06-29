@@ -72,11 +72,14 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       parallax — fixes the Gemini-checkerboard buildings [[props-buildings-also-3d]].
       Level 1 parallax backgrounds already exist (Gemini, opaque — fine).
 
+- [x] Baked 5 transparent Level 1 props (pitched-house, pitched-house-2, market-stall,
+      cliff-ledge, pot) → public/assets/props/. propBake.test composites all on the
+      parallax. Buildings read like an old SNES village at dusk.
+
 ### Queue
-- [ ] Bake the rest of Level 1's transparent props as static Meshy 3D: 2nd house,
-      market-stall, cliff-ledge structure, pot, switch-lever, gate-trailhead,
-      relic-coin → public/assets/props/. Then point the level art at the baked WebPs
-      (replace the broken Gemini checkerboard art). [TOP]
+- [ ] Bake the last few Level 1 props (switch-lever, gate-trailhead, relic-coin) the
+      same way; then POINT the level art at the baked WebPs — replace the broken Gemini
+      checkerboard structure/prop art in halward-s-reach.level.json + its art dir. [TOP]
 - [ ] LEVEL 1 ASSEMBLY: compose baked actors (Jim + elder-mara + watchman-pell + a
       goblin) + the baked props on the parallax; live-verify the FULL scene screenshot —
       craft + zero asset loss + reads like an old SNES adventure.
