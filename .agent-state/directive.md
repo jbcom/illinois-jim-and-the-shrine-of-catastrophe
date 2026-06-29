@@ -51,13 +51,12 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
       blit (antialias:false), dithering the waterfall foam's semi-transparent texels into a
       checkerboard. Fix: create band RTs at app.renderer.resolution (+ reallocate on dpr
       change). Gross checkerboard gone, render crisp; browser test asserts RT res == app res.
-- [ ] [WAIT-CI] Open a PR for the gorge checkerboard + slice-wrap-seam + foldable-touch +
-      HUD fixes on fix/gorge-corner-checkerboard, wait CI green, merge. (Branch carries the
-      band-resolution fix 0eea22d on top of main; the other fixes already merged via #23.)
-- [ ] [WAIT-DEPLOY] Confirm the live GitHub Pages site (jonbogaty.com/illinois-jim-…)
-      propagates the v1.0.0 build (b2ee2d8). Deploy succeeded from the correct SHA; the edge
-      was still serving an older index hash (index-BTEG_bK-) at merge time. Monitor polling
-      for the hash flip; no code action needed unless it never propagates.
+- [ ] [WAIT-CI] PR #25 (band-resolution checkerboard fix) — CI green, ready to squash-merge.
+- [x] Live deploy VERIFIED. The production site (jonbogaty.com/illinois-jim-…) serves the
+      current GenAI build: live index-BTEG_bK-.js references bandStack (slice-wrap),
+      jungle-leaves-parallax (the regenerated clean art), the-rushing-gorge/the-whispering-jungle;
+      the level WEBP returns HTTP 200. The "old blocky render" seen earlier was local BROWSER
+      CACHE, not a stale deploy (live hash == CI build hash for b2ee2d8; x-cache MISS, age 0).
 
 ### Next chapter — levels 6–10 (gated on Meshy credit)
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Each of
