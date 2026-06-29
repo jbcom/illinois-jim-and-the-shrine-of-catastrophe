@@ -167,9 +167,9 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       paintingRenderer lights the lever white-hot when latched (mirrors the gate-fade pass).
       The problem-solving-layer feedback loop is now complete (gate fade + switch light).
 
-- [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
-      Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
-      Pure-sim, no Meshy — improves all 5 live levels' patrol read. [TOP]
+- [x] Enemy authored `range` threaded end-to-end (schema → buildFromLevel → genaiBundle →
+      EnemySpawn → createSimWorld): spawnX ± range patrol bounds when authored, ±3-4 tile
+      default otherwise. Improves all 5 live levels' patrol read. Unit-tested.
 - [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Levels
       6-10 each need ~10 baked 3D props — generating them needs credits I can't purchase
       without the user's payment authorization. When topped up: author Levels 6-10 (sunken-
@@ -190,7 +190,9 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       (meshy GLB → baked sprite); both generated.
 - [x] Assembled + live-verified Level 1 (baked actors + props on the gemini parallax) —
       zero asset loss, reads crafted.
-- [ ] Levels 2-10 once the path is solid; per-level mechanic types as built. (Level 2 done.)
+- [x] Levels 2-5 live on the baked pipeline (jungle/gorge/mine/crystal), each per-level
+      mechanic type built + Chrome-verified. Levels 6-10 tracked under the [WAIT-USER]
+      Meshy-credit item above (the only thing gating them).
 
 ## What CONTINUOUS means
 1 never stop for status reports · 2 never stop for scope caution · 3 never stop to
