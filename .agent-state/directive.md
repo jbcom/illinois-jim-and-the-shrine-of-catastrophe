@@ -137,10 +137,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       fades to alpha 0.15 via a sim Gate→`gate:<i>` sprite bridge. Verified live in Chrome
       (gate barrier visible, baked goblin walking, zero errors). paintingFromLevel.test.
 
+- [x] LEVEL 2 DESIGN generated — The Whispering Jungle (deep-jungle), validated (0
+      dangling/broken, entitiesBeforeGoal). pnpm level:gen wrapper added (sets the app
+      tsconfig path for @sim aliases). Parallax + reference art generating via Gemini.
+
 ### Queue
-- [ ] Bake Level 2 (collapsing-mine / cave) props + author its GenAI level JSON (or wire
-      the existing cave-descent into the GenAI bundle path) + register the bundle, so
-      Level 2 also runs baked-3D. Live-verify. [TOP]
+- [ ] Bake Level 2's ~12 transparent jungle props as static Meshy 3D (giant-root/
+      strangler-fig platforms, vine-bridge, canopy-walkway, mushroom-shelf, carnivorous-
+      plant, glow-fruit, jungle-thorns, vine-tangle-gate, jungle-weight-lever, etc.) →
+      public/assets/props + BAKED_PROP map. Then register the-whispering-jungle bundle in
+      registry + LEVEL_ORDER; live-verify Level 2 runs baked-3D in Chrome. [TOP]
+- [ ] Author Levels 3-10 GenAI JSONs per the outline; bake each biome's props; register
+      all bundles so the full adventure runs on the baked pipeline.
 - [ ] Author Levels 3-10 GenAI JSONs per the 10-level outline; bake each biome's props +
       parallax; register all bundles so the full adventure runs on the baked pipeline.
 - [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
