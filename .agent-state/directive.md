@@ -121,12 +121,19 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       buildFromLevel→GameLevel→createSimWorld→gameEcs + genaiBundle. The lever-opens-gate
       hook works live. gateSwitch.test (4 pass).
 
+- [x] MOVING PLATFORMS implemented (oscillate + carry the rider) — movingPlatformSystem
+      through the full chain. movingPlatform.test (3 pass).
+- [x] SECRETS implemented (folded into the collectible pickup path as 500+ rewards).
+      The WHOLE problem-solving layer (hazards/gates/switches/platforms/secrets) is now
+      live — no baked puzzle art is inert. genaiBundle.test asserts the full layer.
+
 ### Queue
-- [ ] MOVING PLATFORMS: a MovingPlatform trait + system (rideable solid that moves on
-      its authored path; the player stands on it and is carried) → through buildFromLevel
-      → GameLevel → createSimWorld → gameEcs + genaiBundle. Unit-test the carry. [TOP]
-- [ ] SECRETS: a hidden pickup (Secret trait) the player finds → reward (relic/score).
-      Then the problem-solving layer is complete and no baked puzzle art is inert.
+- [ ] Live-verify the complete Level 1 puzzle in Chrome: pull the lever (gate opens),
+      ride the moving platform, touch the spikes (die), grab the secret — screenshot each
+      working. Then render the gate's OPEN vs CLOSED state (it currently always paints the
+      closed art) + a switch on/off visual. [TOP]
+- [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
+      so the whole 10-level adventure runs on the baked pipeline.
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
       Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
 - [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
