@@ -97,7 +97,8 @@ export async function createEnemySprite(
   const baked = BAKED[kind];
   if (baked) {
     // 3D→WebP baked enemy: load the mapped clip, feet-anchored from the manifest.
-    const { textures, manifest } = await loadBakedClip(baked.base, baked.clip[state]);
+    // assetUrl() applies BASE_URL so the path resolves under the Pages subpath.
+    const { textures, manifest } = await loadBakedClip(assetUrl(baked.base), baked.clip[state]);
     const sprite = new AnimatedSprite(textures);
     sprite.autoUpdate = false;
     sprite.anchor.set(manifest.anchorX, manifest.anchorY);

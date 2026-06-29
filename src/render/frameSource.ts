@@ -97,7 +97,12 @@ export async function loadBakedClip(base: string, clip: string): Promise<BakedCl
   if (!Number.isFinite(manifest.anchorX) || !Number.isFinite(manifest.anchorY)) {
     throw new Error(`baked clip ${clip}: non-finite anchor in manifest`);
   }
-  const sheet = await Assets.load<Texture>(`${base}/${clip}.webp`);
+  let sheet: Texture;
+  try {
+    sheet = await Assets.load<Texture>(`${base}/${clip}.webp`);
+  } catch (e) {
+    throw new Error(`baked clip ${clip}.webp failed to load: ${(e as Error).message}`);
+  }
   // The sheet must be exactly frameWidth × frameCount or sliceStrip clips columns.
   if (sheet.width !== manifest.frameWidth * manifest.frameCount) {
     throw new Error(
