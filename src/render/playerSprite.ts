@@ -30,13 +30,11 @@ const STATE_TO_CLIP: Record<PlayerState, BakedClipName> = {
   attack: "idle",
 };
 
-/** Non-looping clips play once and hold the last frame. */
-const NON_LOOPING: ReadonlySet<PlayerState> = new Set<PlayerState>(["jump", "fall", "attack"]);
-
 /**
  * Per-state PLAYBACK timing (fps + loop) the scene's `Anim` trait advances against —
  * this is gameplay pacing, distinct from the bake's source fps. Consumers (scene.ts)
  * read `TIMING[state].fps` when building the render trait before the sprite loads.
+ * `loop` is the single source of truth for looping (see `isLooping`).
  */
 export const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
   idle: { fps: 8, loop: true },
@@ -45,6 +43,9 @@ export const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
   fall: { fps: 16, loop: false },
   attack: { fps: 16, loop: false },
 };
+
+/** Whether a state's clip loops — derived from TIMING (one source of truth). */
+const isLooping = (state: PlayerState): boolean => TIMING[state].loop;
 
 export interface PlayerSprite {
   readonly sprite: AnimatedSprite;
@@ -64,7 +65,6 @@ export interface PlayerSprite {
 
 interface Clip {
   readonly textures: Texture[];
-  readonly fps: number;
   readonly manifest: BakedClipManifest;
 }
 
@@ -75,7 +75,7 @@ async function loadAllClips(): Promise<Record<BakedClipName, Clip>> {
   const out = {} as Record<BakedClipName, Clip>;
   names.forEach((n, i) => {
     const c = loaded[i];
-    if (c) out[n] = { textures: c.textures, fps: c.manifest.fps, manifest: c.manifest };
+    if (c) out[n] = { textures: c.textures, manifest: c.manifest };
   });
   return out;
 }
@@ -99,13 +99,19 @@ export async function createPlayerSprite(initial: PlayerState = "idle"): Promise
   let acc = 0;
 
   const apply = (state: PlayerState) => {
+    // Preserve animation progress when the new state resolves to the SAME physical
+    // clip (e.g. jump→fall both play the jump arc) — resetting would snap a
+    // non-looping arc back to frame 0 at its apex.
+    const sameClip = STATE_TO_CLIP[state] === STATE_TO_CLIP[current];
     const clip = clipFor(state);
     sprite.textures = clip.textures;
     sprite.animationSpeed = TIMING[state].fps / 60;
-    sprite.loop = !NON_LOOPING.has(state);
+    sprite.loop = isLooping(state);
     sprite.anchor.set(clip.manifest.anchorX, clip.manifest.anchorY);
-    acc = 0;
-    sprite.currentFrame = 0;
+    if (!sameClip) {
+      acc = 0;
+      sprite.currentFrame = 0;
+    }
     current = state;
   };
   apply(initial);
@@ -127,9 +133,9 @@ export async function createPlayerSprite(initial: PlayerState = "idle"): Promise
       const count = sprite.textures.length;
       if (count <= 1) return;
       acc += sprite.animationSpeed * ticks;
-      sprite.currentFrame = NON_LOOPING.has(current)
-        ? Math.min(count - 1, Math.floor(Math.max(0, acc)))
-        : Math.floor(((acc % count) + count) % count);
+      sprite.currentFrame = isLooping(current)
+        ? Math.floor(((acc % count) + count) % count)
+        : Math.min(count - 1, Math.floor(Math.max(0, acc)));
     },
     destroy() {
       sprite.destroy();

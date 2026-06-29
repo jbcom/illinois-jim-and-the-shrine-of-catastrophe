@@ -36,6 +36,14 @@ describe("frame source (strip + single images unified)", () => {
   });
 });
 
+/** Count stage pixels with alpha > 16 — proves a real (non-blank) sprite render. */
+function opaquePixelCount(app: Application): number {
+  const { pixels } = app.renderer.extract.pixels(app.stage);
+  let n = 0;
+  for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) n++;
+  return n;
+}
+
 describe("player sprite (Illinois Jim — baked 3D→WebP sheets)", () => {
   let app: Application | undefined;
   let canvas: HTMLCanvasElement | undefined;
@@ -70,6 +78,8 @@ describe("player sprite (Illinois Jim — baked 3D→WebP sheets)", () => {
 
     await page.screenshot({ path: "player-states.png" });
     expect(app.stage.children.length).toBe(5);
+    // Prove the sprites actually rendered pixels (not a 404 placeholder / blank).
+    expect(opaquePixelCount(app)).toBeGreaterThan(2000);
   });
 
   it("renders the run cycle in sequence (visual proof)", async () => {
@@ -95,5 +105,9 @@ describe("player sprite (Illinois Jim — baked 3D→WebP sheets)", () => {
 
     await page.screenshot({ path: "player-run-cycle.png" });
     expect(app.stage.children.length).toBe(5);
+    expect(opaquePixelCount(app)).toBeGreaterThan(2000);
+    // The 16-frame run sheet must hold distinct frames: adjacent picks differ.
+    expect(picks[0]).not.toBe(picks[1]);
+    expect(count).toBeGreaterThanOrEqual(8);
   });
 });

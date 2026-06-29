@@ -86,7 +86,21 @@ export async function loadBakedClip(base: string, clip: string): Promise<BakedCl
   const res = await fetch(`${base}/${clip}.json`);
   if (!res.ok) throw new Error(`baked clip manifest ${clip}.json: ${res.status}`);
   const manifest = (await res.json()) as BakedClipManifest;
+  // Validate at runtime — a bad bake (fps:0, no frames, NaN anchor) would otherwise
+  // silently freeze the sprite at frame 0 or mis-anchor it with no error.
+  if (!(manifest.frameCount > 0) || !(manifest.fps > 0)) {
+    throw new Error(`baked clip ${clip}: invalid frameCount/fps in manifest`);
+  }
+  if (!Number.isFinite(manifest.anchorX) || !Number.isFinite(manifest.anchorY)) {
+    throw new Error(`baked clip ${clip}: non-finite anchor in manifest`);
+  }
   const sheet = await Assets.load<Texture>(`${base}/${clip}.webp`);
+  // The sheet must be exactly frameWidth × frameCount or sliceStrip clips columns.
+  if (sheet.width !== manifest.frameWidth * manifest.frameCount) {
+    throw new Error(
+      `baked clip ${clip}: sheet width ${sheet.width} ≠ frameWidth ${manifest.frameWidth} × ${manifest.frameCount}`,
+    );
+  }
   return { textures: sliceStrip(sheet, manifest.frameCount), manifest };
 }
 
