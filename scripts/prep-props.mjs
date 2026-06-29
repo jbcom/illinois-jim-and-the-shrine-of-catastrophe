@@ -246,7 +246,14 @@ async function prep(file, outDir, threshold) {
 }
 
 async function main() {
+  // `--in` is REQUIRED — an empty filter would match every raw PNG (including
+  // unrelated cutscene crops), silently processing files you didn't mean to.
   const match = arg("in", "");
+  if (!match) {
+    console.error("Missing required --in <substr>. Refusing to process ALL raw PNGs.");
+    console.error("Usage: node scripts/prep-props.mjs --in shrine- --out public/assets/biomes/shrine");
+    process.exit(1);
+  }
   const outRel = arg("out", "public/assets/biomes/shrine");
   const threshold = Number(arg("threshold", "120"));
   const outDir = join(ROOT, outRel);

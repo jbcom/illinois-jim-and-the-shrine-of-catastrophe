@@ -73,14 +73,16 @@ export const SHRINE_APPROACH: readonly Placement[] = [
   on(CAVE.brickWallB, 1440, FLOOR_Y, 1.1, 2),
 
   // ============ ALTAR (1500–2400): the grand staircase rises to the golden idol =
-  on(S.brazier, 1560, FLOOR_Y, 0.28, 5),
+  on(S.brazier, 1540, FLOOR_Y, 0.28, 5),
   // The cracked grand staircase — the visual centerpiece of the final climb
-  // (~190px tall, rising from the floor toward the idol's dais).
+  // (~195px tall, rising from the floor toward the idol's dais). At x1660 ×0.44
+  // it spans x≈1660–1855, its upper landing ~at FLOOR_Y-130.
   on(S.steps, 1660, FLOOR_Y, 0.44, 3),
   on(S.brazier, 2120, FLOOR_Y, 0.28, 5, true),
-  // GOAL: the golden idol on its altar, set on the staircase landing (base resting
-  // ~at the top of the steps) so it crowns the climb. z above the steps.
-  on(S.idol, 1850, FLOOR_Y - 110, 0.3, 6),
+  // GOAL: the golden idol on its altar, CENTERED on the staircase (idol w≈81 over
+  // the ~195-wide steps) with its base resting on the steps' upper landing
+  // (FLOOR_Y-120), so it visibly CROWNS the climb as one tableau. z above the steps.
+  on(S.idol, 1717, FLOOR_Y - 120, 0.26, 6),
 ];
 
 /** The painting's pixel extents (camera bounds / collision authoring). */
@@ -88,7 +90,8 @@ export const SHRINE_APPROACH_BOUNDS = { width: 2400, floorY: FLOOR_Y } as const;
 
 /**
  * The authored vertical frame, in world px. Cover-scaled to fill the canvas
- * height. Top above the highest ceiling rock; bottom below the floor so solid
- * ground reaches the screen edge.
+ * height. Top sits ABOVE the highest ceiling rock (the ceil() rocks place their
+ * top edge as low as topY -64, so -70 keeps them fully inside the frame); bottom
+ * below the floor so solid ground reaches the screen edge.
  */
-export const SHRINE_APPROACH_FRAME = { top: -30, bottom: FLOOR_Y + 60 } as const;
+export const SHRINE_APPROACH_FRAME = { top: -70, bottom: FLOOR_Y + 60 } as const;

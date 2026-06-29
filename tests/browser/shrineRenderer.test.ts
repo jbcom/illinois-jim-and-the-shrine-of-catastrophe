@@ -70,18 +70,22 @@ describe("shrine painting renderer (third-act climax, visual proof)", () => {
         frameBottom: SHRINE_APPROACH_FRAME.bottom,
       });
       const world = buildShrineWorld();
-      const frameH = SHRINE_APPROACH_FRAME.bottom - SHRINE_APPROACH_FRAME.top;
-      const camera = { ...createCamera(675, frameH), x: stop.camX, y: 0 };
-      const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 480, viewH: 270 };
+      try {
+        const frameH = SHRINE_APPROACH_FRAME.bottom - SHRINE_APPROACH_FRAME.top;
+        const camera = { ...createCamera(675, frameH), x: stop.camX, y: 0 };
+        const viewport = { scale: 1, offsetX: 0, offsetY: 0, viewW: 480, viewH: 270 };
 
-      // Two renders: first creates the async actor + prop sprites, second shows them.
-      renderer.render({ world, camera, viewport, alpha: 0, prev: new Map() });
-      await new Promise((r) => setTimeout(r, 350));
-      renderer.render({ world, camera, viewport, alpha: 0, prev: new Map() });
+        // Two renders: first creates the async actor + prop sprites, second shows them.
+        renderer.render({ world, camera, viewport, alpha: 0, prev: new Map() });
+        await new Promise((r) => setTimeout(r, 350));
+        renderer.render({ world, camera, viewport, alpha: 0, prev: new Map() });
 
-      await page.screenshot({ path: `shrine-${stop.name}.png` });
-      expect(renderer.app.stage.children.length).toBeGreaterThan(0);
-      world.destroy();
+        await page.screenshot({ path: `shrine-${stop.name}.png` });
+        expect(renderer.app.stage.children.length).toBeGreaterThan(0);
+      } finally {
+        // koota caps live worlds — always release this one even if a render throws.
+        world.destroy();
+      }
     });
   }
 });
