@@ -29,7 +29,8 @@
     "assets:kenney": "node scripts/copy-kenney-assets.mjs",
     "assets:itch": "node scripts/fetch-itch-assets.mjs",
     "assets:gen": "node scripts/genai-assets.mjs",
-    "bake:jim": "scripts/bake/bake-character.sh raw-assets/models/jim/jim-rigged.glb public/assets/sprites/jim jim 16 256"
+    "bake:jim": "scripts/bake/bake-character.sh raw-assets/models/jim/jim-rigged.glb public/assets/sprites/jim jim 16 256",
+    "level:gen": "TSX_TSCONFIG_PATH=tsconfig.app.json tsx scripts/genai-level.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.1",
