@@ -88,6 +88,17 @@ export function buildCollision(level: Level): TileMap {
     setTile(map, 0, rr, TileKind.Solid);
     setTile(map, cols - 1, rr, TileKind.Solid);
   }
+
+  // Hazards (spikes/lava) → Hazard tiles: contact kills the player (systems.ts reads
+  // res.touchedHazard). Lay them across the hazard's width at its placed row, so the
+  // painted spike art has matching deadly collision (no "danger that does nothing").
+  for (const h of level.hazards) {
+    const { x, y } = resolveAnchor(level, resolved, h.at);
+    const c0 = Math.round((x - h.width / 2) / ts);
+    const c1 = Math.round((x + h.width / 2) / ts);
+    const row = Math.round(y / ts);
+    for (let c = c0; c < c1; c++) setTile(map, c, row, TileKind.Hazard);
+  }
   return map;
 }
 

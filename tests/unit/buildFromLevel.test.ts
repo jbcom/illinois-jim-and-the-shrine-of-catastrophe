@@ -69,6 +69,24 @@ describe("buildFromLevel — schema Level → playable build", () => {
     expect(entitiesBeforeGoal(parseLevel(RAW))).toBe(true);
   });
 
+  it("hazards become deadly Hazard tiles in the collision map", () => {
+    // A hazard placed mid-ground must write Hazard tiles (contact kills — systems.ts
+    // reads touchedHazard), so painted spike art has matching deadly collision.
+    const withHazard = {
+      ...(RAW as Record<string, unknown>),
+      art: [
+        ...(RAW as { art: unknown[] }).art,
+        { key: "spikes", role: "obstacle", isolation: "transparent", prompt: "a row of iron spikes on a flat solid magenta background", worldHeight: 20 },
+      ],
+      hazards: [{ art: "spikes", at: { surface: 0, t: 0.5 }, width: 48 }],
+    };
+    const built = buildFromLevel(parseLevel(withHazard));
+    const ts = built.map.tileSize;
+    const hx = built.hazards[0]!.x;
+    const row = Math.round(built.hazards[0]!.y / ts);
+    expect(tileAt(built.map, Math.round(hx / ts), row)).toBe(TileKind.Hazard);
+  });
+
   it("the GENERATED Halward's Reach level (if present) builds + is consistent", () => {
     let raw: unknown;
     try {
