@@ -74,9 +74,9 @@ until then i expect you to be always finding something new to do."**
 - [ ] (discovered) IDOL-ON-STEPS composition: in shrine-approach the golden idol
       sits beside/above the staircase rather than centered atop its landing — nudge
       the idol/steps x+scale so the idol visibly crowns the steps as one tableau.
-- [ ] (discovered) prep-props.mjs is now a reusable GenAI-prop isolation pipeline
+- [x] (discovered) prep-props.mjs is now a reusable GenAI-prop isolation pipeline
       (two-key flood + despill + edge-defringe + drop-shadow clear + tight trim) —
-      use it for future biome props; document it in docs/ASSETS.md.
+      documented in docs/ASSETS.md (same PR #22). Use it for future biome props.
 
 ## 🎯 Milestone 4 — Mobile viewport correctness (ACTIVE)
 **User feedback (live mobile bugs):** the deployed game was broken on phones —

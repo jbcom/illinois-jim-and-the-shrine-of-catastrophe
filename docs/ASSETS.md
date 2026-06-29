@@ -60,12 +60,35 @@ amber relic-lantern, coiled grappling hook) — generated, not a stock pack:
    `setState`, `setFacing` (scale flip), deterministic `update(ticks)`,
    feet-anchored. Screenshot-proven (`player-states.png`, `player-run-cycle.png`).
 
-The itch packs (enemies, biomes, breakables, ux, npcs) ship already-transparent
-and load straight through Pixi — no isolation needed; only the GenAI hero +
-cutscene art use the magenta-key prep.
+(GenAI biome props use the same magenta-key idea — see the next section.)
 
 Regenerate: `node scripts/genai-assets.mjs --only illinois-jim` then
 `node scripts/prep-sprites.mjs --in illinois-jim --out public/assets/player`.
+
+## GenAI biome PROPS: generate → isolate (the shrine set)
+
+The shrine biome (third act) has no stock pack, so its signature set pieces are
+GenAI props isolated the same magenta-key way as the hero — but as SCENERY, not
+animation frames (native proportions, no square frame, no bottom-anchor):
+
+1. **Generate** — `scripts/genai-assets.mjs` `SHRINE_PROP` prompts: one object per
+   prompt, **edge-to-edge flat magenta** field (no parchment border), in the
+   green-stone / tarnished-gold / blood-red shrine key. `--only shrine-`.
+2. **Isolate** — `scripts/prep-props.mjs` (offline, `sharp`): a reusable prop
+   pipeline — a **two-key corner flood** (clears the magenta field AND a thin
+   border colour, so a parchment-framed gen still floods through to the magenta),
+   magenta despill, an **edge-defringe** (peels the AA halo ring left where the
+   backdrop met the outline), drop-shadow clear, then a **tight content trim**
+   (keeps the prop's native size; the level scales/anchors it). `--in shrine-
+   --out public/assets/biomes/shrine`.
+3. **Consume** — `src/render/shrineShapes.ts` (`SHRINE_PROPS`: idol-altar, steps,
+   brazier, broken pillar) as whole-image stamps; `shrineApproach.ts` composes
+   them over the cave masonry. Every prop was READ + verified halo-free; the
+   `shrineRenderer` browser test screenshots the level (gatehall/sanctum/altar).
+
+The itch packs (enemies, biomes, breakables, ux, npcs) ship already-transparent
+and load straight through Pixi — no isolation needed; only the GenAI hero,
+cutscene art, and shrine props use the magenta-key prep.
 
 ## Render component catalog (`src/render/`)
 
