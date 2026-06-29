@@ -35,7 +35,12 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
 A complete 5-level campaign ships LIVE (Halward → jungle → gorge → mine → crystal →
 cliffhanger), all baked-3D-on-parallax, Chrome-verified. `CAMPAIGN` (src/sim/story/
 campaign.ts) is the single source of truth — appending a chapter extends the game.
-Full detail: `docs/STATE.md` (milestone history) + `docs/STORY.md` (campaign).
+Mobile UX is solid: portrait serpentine slice-wrap (both orientations playable, no
+landscape lock, seamless band tiling), pulp-relic 16-bit HUD, and touch zones sized
+from the container CSS box (unfolded-foldable bottom controls reachable). The fake
+"SCORE: ILLINOIS JIM" HUD bar Gemini baked into jungle parallax is stripped, and the
+parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
+`docs/STORY.md`.
 
 ## Queue — LIVE
 
