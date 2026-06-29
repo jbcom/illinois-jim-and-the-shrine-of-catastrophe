@@ -26,7 +26,9 @@ describe("baked prop over parallax (transparent building proof)", () => {
     host.remove();
   });
 
-  it("composites the baked pitched-house onto the clifftop parallax", async () => {
+  const PROPS = ["pitched-house", "pitched-house-2", "market-stall"] as const;
+
+  it("composites all baked props onto the clifftop parallax, each transparent", async () => {
     const level = parseLevel(levelJson);
     app = new Application();
     await app.init({ width: 640, height: 360, background: 0x1a120b, antialias: false, resolution: 1 });
@@ -37,31 +39,29 @@ describe("baked prop over parallax (transparent building proof)", () => {
     parallax.update(200, 0);
     app.stage.addChild(parallax.container);
 
-    // The baked house — a real transparent WebP (no checkerboard), base-anchored.
-    const tex = await Assets.load<Texture>("/assets/props/pitched-house.webp");
-    expect(tex.width).toBeGreaterThan(0);
     const world = new Container();
-    const house = new Sprite(tex);
-    const targetH = 200;
-    const s = targetH / tex.height;
-    house.scale.set(s);
-    house.anchor.set(0.5, 1); // ground-anchored
-    house.position.set(320, 300);
-    world.addChild(house);
+    let x = 120;
+    for (const name of PROPS) {
+      // Each baked prop is a real transparent WebP (no checkerboard), base-anchored.
+      const tex = await Assets.load<Texture>(`/assets/props/${name}.webp`);
+      expect(tex.width, `${name} texture`).toBeGreaterThan(0);
+      const sprite = new Sprite(tex);
+      const s = 170 / tex.height;
+      sprite.scale.set(s);
+      sprite.anchor.set(0.5, 1);
+      sprite.position.set(x, 300);
+      world.addChild(sprite);
+      // Real alpha: a corner pixel of the sprite's own render must be transparent.
+      const { pixels } = app.renderer.extract.pixels(sprite);
+      expect((pixels[3] ?? 255) < 16, `${name} corner should be transparent`).toBe(true);
+      x += 200;
+    }
     app.stage.addChild(world);
 
     app.render();
     await new Promise((r) => setTimeout(r, 150));
     app.render();
-
     await page.screenshot({ path: "prop-house-on-parallax.png" });
-
-    // The house texture must carry real alpha (transparent corners), not a baked
-    // checkerboard — sample a corner of the source texture's pixels.
-    const px = app.renderer.extract.pixels(house);
-    let transparentCorner = false;
-    // top-left pixel alpha of the sprite's own render
-    if ((px.pixels[3] ?? 255) < 16) transparentCorner = true;
-    expect(transparentCorner, "house corner should be transparent").toBe(true);
+    expect(world.children.length).toBe(PROPS.length);
   });
 });
