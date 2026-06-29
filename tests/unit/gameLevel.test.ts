@@ -58,11 +58,11 @@ describe("game levels", () => {
 
   it("the shrine is the climax level: a bridged sanctum chasm and the idol goal", () => {
     const m = SHRINE.map;
-    // ~2400px wide at 16px tiles ≈ 150 cols (a meaty climax level).
-    expect(m.width).toBeGreaterThanOrEqual(145);
+    // ~2000px wide at 16px tiles ≈ 125 cols (a meaty climax level).
+    expect(m.width).toBeGreaterThanOrEqual(120);
     expect(m.tileSize).toBe(16);
 
-    // A broken-floor chasm the beams bridge.
+    // A broken-floor chasm the beams bridge (one-way Platform tiles exist).
     let gap = 0;
     for (let c = 1; c < m.width - 1; c++) {
       if (tileAt(m, c, FLOOR_ROW) !== TileKind.Solid) gap++;
@@ -76,11 +76,11 @@ describe("game levels", () => {
     }
     expect(platforms).toBeGreaterThan(0);
 
-    // The idol goal sits deep in the level.
-    expect(SHRINE.goalX).toBeGreaterThan(1800);
-    // EVERY enemy and pot must sit BEFORE the goal line — else the climactic
-    // Warden + payoff pot would be unreachable (the run ends the instant the
-    // player crosses goalX). Regression guard for the "win fires too early" bug.
+    // The idol goal sits deep in the level (the staircase is the last segment).
+    expect(SHRINE.goalX).toBeGreaterThan(m.width * m.tileSize * 0.85);
+    // EVERY enemy and pot must sit BEFORE the goal line — the spec anchors them on
+    // earlier segments, so this holds by construction. Regression guard for the
+    // "win fires too early / unreachable Warden" bug.
     for (const e of SHRINE.enemies) expect(e.x).toBeLessThan(SHRINE.goalX);
     for (const p of SHRINE.pots) expect(p.x).toBeLessThan(SHRINE.goalX);
   });

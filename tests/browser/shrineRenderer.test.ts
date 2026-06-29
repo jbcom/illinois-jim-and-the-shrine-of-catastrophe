@@ -57,8 +57,8 @@ describe("shrine painting renderer (third-act climax, visual proof)", () => {
   // gatehall colonnade, the beam-bridged sanctum, and the idol on the staircase.
   const STOPS: readonly { name: string; camX: number }[] = [
     { name: "gatehall", camX: 60 },
-    { name: "sanctum", camX: 900 },
-    { name: "altar", camX: 1620 },
+    { name: "sanctum", camX: 760 },
+    { name: "altar", camX: 1700 }, // the staircase is seg 5, starting at x≈1720
   ];
 
   for (const stop of STOPS) {
