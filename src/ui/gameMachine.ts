@@ -5,9 +5,10 @@
  * engine loop; this machine governs which SCREEN is shown and when the engine
  * is allowed to run. Context tracks the final score for the result screens.
  */
+
+import { FIRST_LEVEL_ID, nextLevelId } from "@render/levels/registry.ts";
 import { CLIFFHANGER_ID } from "@sim/story/campaign.ts";
 import { CUTSCENES, cutsceneById } from "@sim/story/cutscenes.ts";
-import { FIRST_LEVEL_ID, nextLevelId } from "@render/levels/registry.ts";
 import { assign, createMachine } from "xstate";
 
 export interface GameContext {
@@ -46,7 +47,7 @@ export function devBootLevel(): string | undefined {
   if (!import.meta.env.DEV) return undefined;
   if (typeof window === "undefined") return undefined;
   const id = new URLSearchParams(window.location.search).get("level");
-  return id && id.trim() ? id.trim() : undefined;
+  return id?.trim() ? id.trim() : undefined;
 }
 
 /**

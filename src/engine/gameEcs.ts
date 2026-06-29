@@ -304,10 +304,22 @@ export async function createGame(
     handleDeath();
   }
 
+  /** Issue one render, choosing the portrait slice-wrap when the canvas is tall. */
+  function renderFrame(alpha: number): void {
+    const wrap = portraitWrap(canvas.width || 1, canvas.height || 1);
+    renderer.render({
+      world: sim.world,
+      camera,
+      viewport: viewport.current().viewport,
+      alpha,
+      prev,
+      ...(wrap ? { portrait: wrap } : {}),
+    });
+  }
+
   const frame = (t: number) => {
     if (!running) return;
     const stepInfo = clock.tick(t);
-    const vp = viewport.current().viewport;
 
     if (!paused) {
       // Snapshot ONCE before the batch: `prev` must be "positions as of the end
@@ -322,16 +334,7 @@ export async function createGame(
       if (stepInfo.steps > 0) updateCameraAndHud();
     }
 
-    const wrap = portraitWrap(canvas.width || 1, canvas.height || 1);
-    renderer.render({
-      world: sim.world,
-      camera,
-      viewport: vp,
-      alpha: paused ? 0 : stepInfo.alpha,
-      prev,
-      ...(wrap ? { portrait: wrap } : {}),
-    });
-
+    renderFrame(paused ? 0 : stepInfo.alpha);
     handle = raf(frame);
   };
 

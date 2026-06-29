@@ -18,7 +18,6 @@ import { Hud } from "@ui/Hud.tsx";
 import { hudStore, useHud } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
-import { RotatePrompt } from "@ui/RotatePrompt.tsx";
 import { TouchControls } from "@ui/TouchControls.tsx";
 import { useOrientation } from "@ui/orientationStore.ts";
 import { useMachine } from "@xstate/react";
@@ -42,10 +41,10 @@ export function App() {
   // Backgrounded/hidden is recorded in the HUD store; the pause effect composes it.
   const hudPaused = useHud().paused;
 
-  // Device-profile-driven orientation via the UI orientation store (phones lock
-  // landscape; tablets / unfolded foldables / desktop stay free). The store owns
-  // the engine bridge + native lock; App just reads the signal.
-  const orientation = useOrientation();
+  // Mount the orientation store for its side-effect: it keeps the NATIVE screen
+  // unlocked (free rotation) now that the portrait slice-wrap makes both orientations
+  // playable — no landscape lock, no rotate prompt. We don't read its value anymore.
+  useOrientation();
 
   // Init the game once. Pixi creates its own canvas inside this host div — a
   // fresh canvas per Application means a virgin WebGL context across StrictMode
@@ -167,8 +166,8 @@ export function App() {
           onTitle={() => send({ type: "TO_TITLE" })}
         />
       )}
-      {/* Topmost: web phones held in portrait get a rotate-to-landscape prompt. */}
-      {orientation.needsRotatePrompt && <RotatePrompt />}
+      {/* No rotate prompt: the portrait serpentine slice-wrap makes upright play
+          first-class, so the game runs in either orientation with no landscape lock. */}
     </main>
   );
 }
