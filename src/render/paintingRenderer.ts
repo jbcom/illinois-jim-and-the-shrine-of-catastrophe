@@ -208,6 +208,7 @@ export async function createPaintingRenderer(
   const bandSprites: Sprite[] = [];
   let bandRTW = 0;
   let bandRTH = 0;
+  let bandRTRes = 0;
 
   const views = new Map<Entity, ActorView>();
   const relicTex = makeRelicTexture(app);
@@ -396,14 +397,19 @@ export async function createPaintingRenderer(
 
   /** Ensure `n` band slots (RT + sprite), each a full-width × `h`-tall band. */
   function ensureBandSlots(n: number, w: number, h: number): void {
-    if (w !== bandRTW || h !== bandRTH) {
+    // Band RTs MUST render at the app's device resolution. A resolution-1 RT blitted
+    // onto the resolution-2 canvas (antialias:false) was 2×-nearest-upscaled, dithering
+    // semi-transparent content (e.g. waterfall foam) into a transparency checkerboard.
+    const res = app.renderer.resolution;
+    if (w !== bandRTW || h !== bandRTH || res !== bandRTRes) {
       for (const rt of bandRTs) rt.destroy(true);
       bandRTs.length = 0;
       for (const s of bandSprites) s.texture = Texture.EMPTY;
       bandRTW = w;
       bandRTH = h;
+      bandRTRes = res;
     }
-    while (bandRTs.length < n) bandRTs.push(RenderTexture.create({ width: w, height: h, resolution: 1 }));
+    while (bandRTs.length < n) bandRTs.push(RenderTexture.create({ width: w, height: h, resolution: res }));
     while (bandSprites.length < n) {
       const s = new Sprite(Texture.EMPTY);
       s.visible = false;
