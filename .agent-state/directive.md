@@ -44,9 +44,14 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       Screenshot-verified: clean side profile facing right, real stride, arms at sides.
 
 ### Queue
-- [ ] Wire the baked Jim sprite sheets into the existing PixiJS playerSprite/renderer
-      (slice by manifest frameWidth, anchor by anchorX/Y, swap clip by player state) →
-      live-verify in-game (READ the screenshot). [TOP]
+- [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
+      Also bake Jim's WHIP-ATTACK clip (attack currently falls back to idle) and delete
+      the orphaned public/assets/player/*.png (superseded by baked sheets). [TOP]
+- [ ] Reviewer fixes for the bake pipeline (commit 489c667): (#1) pack-sheet.ts guard
+      all-transparent bbox → throw not anchorY=0; (#2) bake.py use evaluated/deformed
+      bounds across anim frames so jump doesn't clip; (#3) view_layer.update() right
+      after NLA promote; (#4/#5) bake-character.sh: don't double-bake walk, log Blender
+      stderr instead of 2>/dev/null; (#7) spriteSheets.test anchor-consistency assert.
 - [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
 - [ ] PROPS / BUILDINGS / CAVE / obstacle / collectible GLBs via Meshy → bake to webp
       (static or simple anims) for Level 1.

@@ -1,42 +1,49 @@
 /**
- * Illinois Jim — the player sprite. The ORIGINAL hero (teal explorer vest, brass-
- * goggle cap, amber relic-lantern, coiled grappling hook), generated via Imagen
- * and isolated to clean transparent frames (one PNG per pose — see scripts/
- * genai-assets.mjs + prep-sprites.mjs). Each animation is a list of single-image
- * frames assembled through the frame-source layer; art faces right, flipped via
- * scale for left.
+ * Illinois Jim — the player sprite. Baked from a rigged 3D master (Meshy) to
+ * transparent WebP sprite sheets via the Blender pipeline (scripts/bake/**): each clip
+ * is one horizontal sheet + a JSON manifest (frameWidth, frameCount, fps, feet anchor).
+ * The sheets ship under public/assets/sprites/jim/. Art faces RIGHT; left is a flip.
  *
- * Browser-only.
+ * Browser-only (loads textures via Pixi Assets).
  */
 import type { AnimatedSprite, Texture } from "pixi.js";
 import { assetUrl } from "@/assetUrl.ts";
-import { type FrameSource, frames, loadFrames } from "@render/frameSource.ts";
+import { type BakedClipManifest, loadBakedClip } from "@render/frameSource.ts";
 
 export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
 
-const BASE = assetUrl("assets/player");
+/** Baked clips that physically exist under assets/sprites/jim/. */
+type BakedClipName = "idle" | "walk" | "run" | "jump";
 
-/** Ordered single-image frames per state (Imagen-generated, isolated). */
-export const PLAYER_ANIMS: Record<PlayerState, FrameSource> = {
-  idle: frames([`${BASE}/illinois-jim-idle-1.png`, `${BASE}/illinois-jim-idle-2.png`]),
-  run: frames([
-    `${BASE}/illinois-jim-run-1.png`,
-    `${BASE}/illinois-jim-run-2.png`,
-    `${BASE}/illinois-jim-run-3.png`,
-    `${BASE}/illinois-jim-run-4.png`,
-  ]),
-  jump: frames([`${BASE}/illinois-jim-jump-1.png`, `${BASE}/illinois-jim-jump-2.png`]),
-  fall: frames([`${BASE}/illinois-jim-fall.png`]),
-  attack: frames([`${BASE}/illinois-jim-attack-1.png`, `${BASE}/illinois-jim-attack-2.png`]),
+const BASE = assetUrl("assets/sprites/jim");
+
+/**
+ * Map each gameplay state to a baked clip. `walk` exists as a clip but the sim's
+ * PlayerState collapses ground motion into `run`; `fall` reuses the jump arc and
+ * `attack` falls back to idle until a whip-attack clip is baked (queued).
+ */
+const STATE_TO_CLIP: Record<PlayerState, BakedClipName> = {
+  idle: "idle",
+  run: "run",
+  jump: "jump",
+  fall: "jump",
+  attack: "idle",
 };
 
-/** Per-state playback speed (fps) and looping. */
+/** Non-looping clips play once and hold the last frame. */
+const NON_LOOPING: ReadonlySet<PlayerState> = new Set<PlayerState>(["jump", "fall", "attack"]);
+
+/**
+ * Per-state PLAYBACK timing (fps + loop) the scene's `Anim` trait advances against —
+ * this is gameplay pacing, distinct from the bake's source fps. Consumers (scene.ts)
+ * read `TIMING[state].fps` when building the render trait before the sprite loads.
+ */
 export const TIMING: Record<PlayerState, { fps: number; loop: boolean }> = {
-  idle: { fps: 3, loop: true },
-  run: { fps: 12, loop: true },
-  jump: { fps: 8, loop: false },
-  fall: { fps: 1, loop: false },
-  attack: { fps: 14, loop: false },
+  idle: { fps: 8, loop: true },
+  run: { fps: 18, loop: true },
+  jump: { fps: 16, loop: false },
+  fall: { fps: 16, loop: false },
+  attack: { fps: 16, loop: false },
 };
 
 export interface PlayerSprite {
@@ -48,44 +55,55 @@ export interface PlayerSprite {
   /**
    * Advance animation by `ticks` 60fps ticks (deterministic). For STANDALONE use
    * only (no render-world). When this sprite is managed by a scene's `Anim` trait,
-   * `syncSprites` is the sole frame-advance authority — do NOT also call this, or
-   * the animation double-advances.
+   * `syncSprites` is the sole frame-advance authority — do NOT also call this.
    */
   update(ticks: number): void;
   readonly state: PlayerState;
   destroy(): void;
 }
 
-/** Pre-load every player animation's textures so state switches are instant. */
-async function loadAllAnims(): Promise<Record<PlayerState, Texture[]>> {
-  const states = Object.keys(PLAYER_ANIMS) as PlayerState[];
-  const loaded = await Promise.all(states.map((s) => loadFrames(PLAYER_ANIMS[s])));
-  const out = {} as Record<PlayerState, Texture[]>;
-  states.forEach((s, i) => {
-    out[s] = loaded[i] as Texture[];
+interface Clip {
+  readonly textures: Texture[];
+  readonly fps: number;
+  readonly manifest: BakedClipManifest;
+}
+
+/** Load every distinct baked clip once; gameplay states share clip instances. */
+async function loadAllClips(): Promise<Record<BakedClipName, Clip>> {
+  const names: BakedClipName[] = ["idle", "walk", "run", "jump"];
+  const loaded = await Promise.all(names.map((n) => loadBakedClip(BASE, n)));
+  const out = {} as Record<BakedClipName, Clip>;
+  names.forEach((n, i) => {
+    const c = loaded[i];
+    if (c) out[n] = { textures: c.textures, fps: c.manifest.fps, manifest: c.manifest };
   });
   return out;
 }
 
-/** Build the player sprite with all states pre-loaded. */
+/** Build the player sprite with all baked clips pre-loaded. */
 export async function createPlayerSprite(initial: PlayerState = "idle"): Promise<PlayerSprite> {
   const { AnimatedSprite } = await import("pixi.js");
-  const textures = await loadAllAnims();
+  const clips = await loadAllClips();
 
-  const sprite = new AnimatedSprite(textures[initial]);
+  const clipFor = (state: PlayerState): Clip => clips[STATE_TO_CLIP[state]];
+
+  const initialClip = clipFor(initial);
+  const sprite = new AnimatedSprite(initialClip.textures);
   sprite.autoUpdate = false;
-  sprite.anchor.set(0.5, 1); // feet-anchored
+  // Anchor from the manifest: horizontal centre of mass, vertical feet contact.
+  sprite.anchor.set(initialClip.manifest.anchorX, initialClip.manifest.anchorY);
   let current: PlayerState = initial;
   let faceLeft = false;
   // Sub-frame accumulator. Pixi 8's `currentFrame` getter floors internally, so
-  // reading it back would discard fractional progress and freeze any sub-60fps
-  // animation at frame 0 — track elapsed frames ourselves.
+  // reading it back would discard fractional progress — track elapsed frames here.
   let acc = 0;
 
   const apply = (state: PlayerState) => {
-    sprite.textures = textures[state];
+    const clip = clipFor(state);
+    sprite.textures = clip.textures;
     sprite.animationSpeed = TIMING[state].fps / 60;
-    sprite.loop = TIMING[state].loop;
+    sprite.loop = !NON_LOOPING.has(state);
+    sprite.anchor.set(clip.manifest.anchorX, clip.manifest.anchorY);
     acc = 0;
     sprite.currentFrame = 0;
     current = state;
@@ -109,9 +127,9 @@ export async function createPlayerSprite(initial: PlayerState = "idle"): Promise
       const count = sprite.textures.length;
       if (count <= 1) return;
       acc += sprite.animationSpeed * ticks;
-      sprite.currentFrame = TIMING[current].loop
-        ? Math.floor(((acc % count) + count) % count)
-        : Math.min(count - 1, Math.floor(Math.max(0, acc)));
+      sprite.currentFrame = NON_LOOPING.has(current)
+        ? Math.min(count - 1, Math.floor(Math.max(0, acc)))
+        : Math.floor(((acc % count) + count) % count);
     },
     destroy() {
       sprite.destroy();

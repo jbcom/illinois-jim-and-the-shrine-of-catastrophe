@@ -281,7 +281,8 @@ function ensurePlayer(e: Entity, views: Map<Entity, ActorView>, layer: Container
       p.destroy();
       return;
     }
-    p.sprite.anchor.set(0.5, 1);
+    // Anchor is set from the baked clip manifest inside createPlayerSprite (feet
+    // contact, horizontal centre of mass) — don't override it here.
     p.sprite.scale.set(scaleFor("player"));
     layer.addChild(p.sprite);
     ph.parent?.removeChild(ph);
