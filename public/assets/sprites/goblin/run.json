@@ -1,0 +1,15 @@
+{
+  "name": "run",
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "frameCount": 16,
+  "fps": 24,
+  "anchorX": 0.498,
+  "anchorY": 0.8984,
+  "contentBox": {
+    "minX": 35,
+    "minY": 19,
+    "maxX": 220,
+    "maxY": 230
+  }
+}

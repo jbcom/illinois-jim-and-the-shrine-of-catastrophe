@@ -53,6 +53,9 @@ export async function loadFrames(source: FrameSource): Promise<Texture[]> {
   return Promise.all(source.urls.map((u) => Assets.load<Texture>(u)));
 }
 
+/** The locomotion/action clips the bake pipeline produces per character. */
+export type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack";
+
 /**
  * Manifest emitted by the Blender bake pipeline (scripts/bake/pack-sheet.ts) next to
  * each `<clip>.webp` sheet. Drives frame slicing, playback speed, and the feet anchor.

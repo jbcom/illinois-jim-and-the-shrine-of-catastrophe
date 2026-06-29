@@ -8,12 +8,9 @@
  */
 import type { AnimatedSprite, Texture } from "pixi.js";
 import { assetUrl } from "@/assetUrl.ts";
-import { type BakedClipManifest, loadBakedClip } from "@render/frameSource.ts";
+import { type BakedClipManifest, type BakedClipName, loadBakedClip } from "@render/frameSource.ts";
 
 export type PlayerState = "idle" | "run" | "jump" | "fall" | "attack";
-
-/** Baked clips that physically exist under assets/sprites/jim/. */
-type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack";
 
 const BASE = assetUrl("assets/sprites/jim");
 
