@@ -48,8 +48,11 @@ PARAMS = {
     "walk": dict(frames=24, swing=24.0, bob=0.045, lean=6.0, knee=42.0, elbow=12.0, arm_scale=0.55),
     "run": dict(frames=18, swing=42.0, bob=0.09, lean=20.0, knee=82.0, elbow=58.0, arm_scale=0.8),
     "jump": dict(frames=18, swing=34.0, bob=0.0, lean=10.0, knee=62.0, elbow=44.0, arm_scale=0.7),
-    # attack params are read by author_attack(); gait fields kept for the shared rest setup.
+    # attack/hurt/death params are read by their own authors; gait fields are kept only
+    # for the shared rest-pose setup that runs before the clip branch.
     "attack": dict(frames=16, swing=0.0, bob=0.0, lean=0.0, knee=8.0, elbow=20.0, arm_scale=1.0),
+    "hurt": dict(frames=10, swing=0.0, bob=0.0, lean=0.0, knee=10.0, elbow=20.0, arm_scale=1.0),
+    "death": dict(frames=20, swing=0.0, bob=0.0, lean=0.0, knee=10.0, elbow=20.0, arm_scale=1.0),
 }
 P = PARAMS[CLIP]
 N = P["frames"]
@@ -214,12 +217,58 @@ def author_attack():
         key_x("Spine01", f, lean * 0.3)
 
 
-if CLIP == "jump":
-    author_jump()
-elif CLIP == "attack":
-    author_attack()
-else:
-    author_gait()
+def author_hurt():
+    """Non-looping flinch: a sharp recoil backward (torso + head snap back, arms fly
+    up defensively, knees buckle) then a quick settle. Reads as 'took a hit'."""
+    # (phase, spine-back deg, arm-up deg, knee deg, hip dz)
+    poses = [
+        (0.00, 0.0, 0.0, 8.0, 0.0),
+        (0.30, 34.0, 60.0, 26.0, -0.06),   # snap back, arms up, buckle
+        (0.55, 22.0, 40.0, 18.0, -0.03),
+        (1.00, 0.0, 0.0, 8.0, 0.0),        # settle back to stance
+    ]
+    for ph, back, armup, knee_d, dz in poses:
+        f = 1 + round(ph * (N - 1))
+        key_hip_z(f, dz)
+        key_x("Spine", f, back * 0.6)
+        key_x("Spine01", f, back * 0.4)
+        key_x("LeftArm", f, armup, rest=ARM_REST["LeftArm"])
+        key_x("RightArm", f, armup, rest=ARM_REST["RightArm"])
+        key_x("LeftLeg", f, knee_d)
+        key_x("RightLeg", f, knee_d)
+
+
+def author_death():
+    """Non-looping death: stagger, knees give out, the body folds and collapses
+    forward to the ground, arms going limp. Holds collapsed on the last frame."""
+    # (phase, spine-fold deg, thigh deg, knee deg, hip dz, arm deg)
+    poses = [
+        (0.00, 0.0, 0.0, 8.0, 0.0, 0.0),
+        (0.20, -18.0, 10.0, 30.0, -0.05, 30.0),   # stagger, slight back arch
+        (0.45, 40.0, 50.0, 80.0, -0.35, -20.0),   # knees give, fold forward + down
+        (0.70, 70.0, 75.0, 110.0, -0.62, -40.0),  # collapse to the ground
+        (1.00, 78.0, 80.0, 118.0, -0.70, -46.0),  # crumpled, limbs limp (held)
+    ]
+    for ph, fold, thigh, knee_d, dz, armd in poses:
+        f = 1 + round(ph * (N - 1))
+        key_hip_z(f, dz)
+        key_x("Spine", f, -fold * 0.5)
+        key_x("Spine01", f, -fold * 0.3)
+        key_x("LeftUpLeg", f, thigh)
+        key_x("RightUpLeg", f, thigh)
+        key_x("LeftLeg", f, knee_d)
+        key_x("RightLeg", f, knee_d)
+        key_x("LeftArm", f, armd, rest=ARM_REST["LeftArm"])
+        key_x("RightArm", f, armd, rest=ARM_REST["RightArm"])
+
+
+CLIP_AUTHORS = {
+    "jump": author_jump,
+    "attack": author_attack,
+    "hurt": author_hurt,
+    "death": author_death,
+}
+CLIP_AUTHORS.get(CLIP, author_gait)()
 
 if arm.animation_data and arm.animation_data.action:
     arm.animation_data.action.name = CLIP

@@ -55,45 +55,43 @@ describe("enemy sprites", () => {
     expect(opaque(app)).toBeGreaterThan(2000);
   });
 
+  const ENEMY_STATES = ["idle", "move", "attack", "hurt", "death"] as const;
+
   it.each(["goblin", "skeleton"] as const)(
-    "renders the baked %s's idle/move/attack clips, each non-blank (visual proof)",
+    "renders all baked %s clips, each non-blank, then a composite row (visual proof)",
     async (kind) => {
       app = new Application();
-      await app.init({ canvas: canvas!, width: 400, height: 120, background: "#17110b", resolution: 1 });
+      await app.init({ canvas: canvas!, width: 560, height: 120, background: "#17110b", resolution: 1 });
 
       // Render each clip ALONE and assert it has its own pixels — so a single blank
       // clip can't hide behind the others' pixels in an aggregate count.
-      const states = ["idle", "move", "attack"] as const;
-      let x = 50;
-      for (const state of states) {
+      for (const state of ENEMY_STATES) {
         app.stage.removeChildren();
         const sprite = await createEnemySprite(kind, state);
         sprite.currentFrame = Math.floor(sprite.textures.length / 2);
         sprite.scale.set(0.42);
-        sprite.x = 200;
+        sprite.x = 280;
         sprite.y = 116;
         app.stage.addChild(sprite);
         app.render();
         expect(opaque(app), `${kind} ${state} blank`).toBeGreaterThan(500);
-        // Re-add to a row for the screenshot.
-        sprite.x = x;
-        x += 130;
       }
-      // Final composite frame for the screenshot artifact.
+
+      // Composite row of all clips for the screenshot artifact.
       app.stage.removeChildren();
-      x = 50;
-      for (const state of states) {
+      let x = 56;
+      for (const state of ENEMY_STATES) {
         const sprite = await createEnemySprite(kind, state);
         sprite.currentFrame = Math.floor(sprite.textures.length / 2);
         sprite.scale.set(0.42);
         sprite.x = x;
         sprite.y = 116;
         app.stage.addChild(sprite);
-        x += 130;
+        x += 110;
       }
       app.render();
       await page.screenshot({ path: `${kind}-baked.png` });
-      expect(app.stage.children.length).toBe(3);
+      expect(app.stage.children.length).toBe(ENEMY_STATES.length);
     },
   );
 });

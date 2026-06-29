@@ -1,5 +1,5 @@
 {
-  "name": "walk",
+  "name": "death",
   "frameWidth": 256,
   "frameHeight": 256,
   "frameCount": 16,
@@ -7,9 +7,9 @@
   "anchorX": 0.498,
   "anchorY": 0.9531,
   "contentBox": {
-    "minX": 46,
-    "minY": 20,
-    "maxX": 209,
+    "minX": 14,
+    "minY": 0,
+    "maxX": 241,
     "maxY": 244
   }
 }

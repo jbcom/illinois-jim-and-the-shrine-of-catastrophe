@@ -54,7 +54,7 @@ export async function loadFrames(source: FrameSource): Promise<Texture[]> {
 }
 
 /** The locomotion/action clips the bake pipeline produces per character. */
-export type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack";
+export type BakedClipName = "idle" | "walk" | "run" | "jump" | "attack" | "hurt" | "death";
 
 /**
  * Manifest emitted by the Blender bake pipeline (scripts/bake/pack-sheet.ts) next to

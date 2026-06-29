@@ -5,11 +5,11 @@
   "frameCount": 16,
   "fps": 24,
   "anchorX": 0.498,
-  "anchorY": 0.8867,
+  "anchorY": 0.9141,
   "contentBox": {
-    "minX": 60,
-    "minY": 28,
-    "maxX": 195,
-    "maxY": 227
+    "minX": 56,
+    "minY": 23,
+    "maxX": 199,
+    "maxY": 234
   }
 }

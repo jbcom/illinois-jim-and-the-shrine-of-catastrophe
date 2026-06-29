@@ -1,15 +1,15 @@
 {
-  "name": "run",
+  "name": "hurt",
   "frameWidth": 256,
   "frameHeight": 256,
   "frameCount": 16,
   "fps": 24,
   "anchorX": 0.5,
-  "anchorY": 0.9141,
+  "anchorY": 0.8633,
   "contentBox": {
-    "minX": 35,
-    "minY": 26,
-    "maxX": 221,
-    "maxY": 234
+    "minX": 26,
+    "minY": 21,
+    "maxX": 230,
+    "maxY": 221
   }
 }

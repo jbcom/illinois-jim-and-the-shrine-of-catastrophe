@@ -1,15 +1,15 @@
 {
-  "name": "walk",
+  "name": "hurt",
   "frameWidth": 256,
   "frameHeight": 256,
   "frameCount": 16,
   "fps": 24,
   "anchorX": 0.498,
-  "anchorY": 0.9531,
+  "anchorY": 0.9453,
   "contentBox": {
-    "minX": 46,
-    "minY": 20,
-    "maxX": 209,
-    "maxY": 244
+    "minX": 45,
+    "minY": 24,
+    "maxX": 210,
+    "maxY": 242
   }
 }
