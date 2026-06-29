@@ -51,7 +51,8 @@ parallax gen prompt now hard-forbids chrome/text. Full detail: `docs/STATE.md` +
       blit (antialias:false), dithering the waterfall foam's semi-transparent texels into a
       checkerboard. Fix: create band RTs at app.renderer.resolution (+ reallocate on dpr
       change). Gross checkerboard gone, render crisp; browser test asserts RT res == app res.
-- [ ] [WAIT-CI] PR #25 (band-resolution checkerboard fix) — CI green, ready to squash-merge.
+- [x] PR #25 (band-resolution checkerboard fix) — MERGED (52bbf87). Triggered the 1.1.0
+      release PR #26 (auto) + a fresh deploy of the fix.
 - [x] Live deploy VERIFIED. The production site (jonbogaty.com/illinois-jim-…) serves the
       current GenAI build: live index-BTEG_bK-.js references bandStack (slice-wrap),
       jungle-leaves-parallax (the regenerated clean art), the-rushing-gorge/the-whispering-jungle;
