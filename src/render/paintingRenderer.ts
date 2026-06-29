@@ -10,6 +10,7 @@
  * vanishes; positions sync (interpolated) from the sim each frame.
  */
 import { scaleFor } from "@render/actorScale.ts";
+import { bandScrollOffset } from "@render/bandLayout.ts";
 import type { ViewportGeometry } from "@engine/viewport/scaler.ts";
 import { type ArtPlacement, paintArt, paintComposition, type Painting, type Placement } from "@render/composition.ts";
 import { createEnemySprite, type EnemyKind } from "@render/enemySprites.ts";
@@ -28,9 +29,10 @@ import {
   Application,
   Container,
   Graphics,
+  RenderTexture,
   type Renderer,
   Sprite,
-  type Texture,
+  Texture,
 } from "pixi.js";
 
 export interface PaintingRenderOpts {
@@ -39,6 +41,26 @@ export interface PaintingRenderOpts {
   readonly viewport: ViewportGeometry;
   readonly alpha: number;
   readonly prev: Map<number, { x: number; y: number }>;
+  /**
+   * Portrait serpentine slice-wrap: when the screen is TALLER than the authored band
+   * reads well in (a phone/folded foldable upright), the renderer wraps the horizontal
+   * level into stacked screen-width bands instead of one thin sliver. `portrait` carries
+   * the wrap parameters; omit (or `bands <= 1`) for normal landscape one-band rendering.
+   * See [[portrait-serpentine-slice-wrap]] / src/render/bandLayout.ts.
+   */
+  readonly portrait?: PortraitWrap;
+}
+
+/** Per-frame portrait slice-wrap parameters (computed by the engine from the viewport). */
+export interface PortraitWrap {
+  /** Total bands the level wraps into (>= 2 to engage wrap mode). */
+  readonly bandCount: number;
+  /** Width of one band in WORLD px (how much horizontal level a band shows). */
+  readonly bandWidthWorld: number;
+  /** How many bands are visible on screen at once. */
+  readonly visibleBands: number;
+  /** The player's current (fractional) band index, for the vertical scroll + centering. */
+  readonly playerBand: number;
 }
 
 export interface PaintingRenderer {
@@ -170,6 +192,21 @@ export async function createPaintingRenderer(
   const actorsLayer = new Container();
   worldLayer.addChild(actorsLayer);
 
+  // --- Portrait slice-wrap compositor ---------------------------------------
+  // In portrait, the world is rendered to an offscreen band-height RenderTexture
+  // (one screen-wide slice at a time), then drawn as stacked band Sprites so a long
+  // horizontal level wraps into vertical bands. These start empty/unused; landscape
+  // never touches them (worldLayer renders straight to the stage as before).
+  // One RenderTexture PER visible band slot (each band sprite samples its own RT, so
+  // they show different slices of the level simultaneously).
+  const bandRTs: RenderTexture[] = [];
+  const bandStack = new Container();
+  bandStack.visible = false;
+  app.stage.addChild(bandStack);
+  const bandSprites: Sprite[] = [];
+  let bandRTW = 0;
+  let bandRTH = 0;
+
   const views = new Map<Entity, ActorView>();
   const relicTex = makeRelicTexture(app);
   const potCache = new Map<string, Texture[]>();
@@ -246,33 +283,120 @@ export async function createPaintingRenderer(
   const frameH = Math.max(1, spec.frameBottom - spec.frameTop);
 
   function render(o: PaintingRenderOpts): void {
-    const { camera: cam } = o;
-    // app.screen is the logical (CSS-px) drawing surface; autoDensity maps it to
-    // the dpr-scaled backing store. We work entirely in these logical units.
-    const screenW = app.screen.width;
-    const screenH = app.screen.height;
-
-    // Cover by HEIGHT: the authored band fills the canvas top-to-bottom with no
-    // letterbox. Gameplay is landscape-locked on phones (see App orientation
-    // guard), so the canvas is always wide enough that this reads correctly.
-    const worldScale = screenH / frameH;
-    const camX = Math.round(cam.x);
-    const camY = Math.round(cam.y);
-
-    // Parallax fills the entire canvas (its own un-cover-scaled space).
-    parallax.resize(screenW, screenH);
-    parallax.update(camX, camY);
-
-    // World: scale by cover factor, then translate so the camera's top-left world
-    // point lands at the canvas origin. frameTop is pinned to the screen top.
-    worldLayer.scale.set(worldScale);
-    worldLayer.position.set(-camX * worldScale, (-camY - spec.frameTop) * worldScale);
-
+    // Always advance the sim→sprite sync + animations first (shared by both modes).
     syncActors(o);
     for (const v of views.values()) {
       if (!v.anim) continue;
       v.acc += v.fps / 60;
       advanceAnim(v.anim, v.acc);
+    }
+
+    if (o.portrait && o.portrait.bandCount >= 2) {
+      renderPortrait(o.portrait);
+    } else {
+      renderLandscape(o);
+    }
+  }
+
+  /** Normal one-band side-scroller: cover the canvas height, scroll horizontally. */
+  function renderLandscape(o: PaintingRenderOpts): void {
+    const { camera: cam } = o;
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+
+    bandStack.visible = false;
+    worldLayer.visible = true;
+
+    // Cover by HEIGHT: the authored band fills the canvas top-to-bottom, no letterbox.
+    const worldScale = screenH / frameH;
+    const camX = Math.round(cam.x);
+    const camY = Math.round(cam.y);
+
+    parallax.resize(screenW, screenH);
+    parallax.update(camX, camY);
+
+    worldLayer.scale.set(worldScale);
+    worldLayer.position.set(-camX * worldScale, (-camY - spec.frameTop) * worldScale);
+  }
+
+  /**
+   * Portrait serpentine slice-wrap: render the world band to an offscreen texture
+   * sized to ONE on-screen band (full level width × band height), then draw stacked
+   * Sprite slices of it — band 0 on top, band 1 below, … — scrolling vertically as the
+   * player advances so they always stay on a centered band. The parallax stays full-
+   * bleed behind the stack (a shared backdrop the bands sit on).
+   */
+  function renderPortrait(wrap: PortraitWrap): void {
+    const screenW = app.screen.width;
+    const screenH = app.screen.height;
+    const { bandCount, bandWidthWorld, visibleBands, playerBand } = wrap;
+
+    // On-screen band geometry: each band is the full canvas width and 1/visibleBands
+    // of the height. World→screen scale is set so bandWidthWorld maps to screenW.
+    const bandScreenH = screenH / Math.max(1, visibleBands);
+    const scale = screenW / bandWidthWorld;
+    // The authored band height in screen px at this scale (may be < bandScreenH; we
+    // center it vertically within each band slot).
+    const contentH = frameH * scale;
+    const yPad = Math.max(0, (bandScreenH - contentH) / 2);
+
+    // Parallax: full-bleed shared backdrop behind the band stack.
+    parallax.resize(screenW, screenH);
+    parallax.update(Math.round(playerBand * bandWidthWorld), 0);
+
+    bandStack.visible = true;
+
+    // The vertical scroll: which band sits at the top of the screen (fractional).
+    const topBand = bandScrollOffset(playerBand, bandCount, visibleBands);
+    const firstBand = Math.floor(topBand);
+    const slots = visibleBands + 1;
+
+    // (Re)allocate one RT + sprite per slot, sized to a full-width band.
+    const rtW = Math.max(1, Math.ceil(screenW));
+    const rtH = Math.max(1, Math.ceil(contentH));
+    ensureBandSlots(slots, rtW, rtH);
+
+    for (let i = 0; i < slots; i++) {
+      const b = firstBand + i;
+      const sprite = bandSprites[i];
+      const rt = bandRTs[i];
+      if (!sprite || !rt) continue;
+      if (b < 0 || b >= bandCount) {
+        sprite.visible = false;
+        continue;
+      }
+      // Render world band `b` into ITS OWN RT: shift world left by b*bandWidthWorld so
+      // that band's slice lands in [0, screenW]; pin frameTop to the RT top.
+      worldLayer.visible = true;
+      worldLayer.scale.set(scale);
+      worldLayer.position.set(-b * bandWidthWorld * scale, -spec.frameTop * scale);
+      app.renderer.render({ container: worldLayer, target: rt, clear: true });
+
+      // Blit: the band's on-screen Y = its band index minus the fractional scroll.
+      const screenSlot = b - topBand; // 0 = top of screen, in band units
+      sprite.texture = rt;
+      sprite.visible = true;
+      sprite.position.set(0, Math.round(screenSlot * bandScreenH + yPad));
+    }
+    // The live worldLayer was only a render SOURCE for the RTs — hide it on the stage.
+    worldLayer.visible = false;
+  }
+
+  /** Ensure `n` band slots (RT + sprite), each a full-width × `h`-tall band. */
+  function ensureBandSlots(n: number, w: number, h: number): void {
+    if (w !== bandRTW || h !== bandRTH) {
+      for (const rt of bandRTs) rt.destroy(true);
+      bandRTs.length = 0;
+      for (const s of bandSprites) s.texture = Texture.EMPTY;
+      bandRTW = w;
+      bandRTH = h;
+    }
+    while (bandRTs.length < n) bandRTs.push(RenderTexture.create({ width: w, height: h, resolution: 1 }));
+    while (bandSprites.length < n) {
+      const s = new Sprite(Texture.EMPTY);
+      s.visible = false;
+      bandStack.addChild(s);
+      bandSprites.push(s);
     }
   }
 
@@ -293,6 +417,8 @@ export async function createPaintingRenderer(
       for (const frames of potCache.values()) for (const t of frames) t.destroy(false);
       potCache.clear();
       relicTex.destroy(true); // standalone RenderTexture — not in the Assets cache
+      for (const rt of bandRTs) rt.destroy(true); // portrait band RTs (if any were made)
+      bandRTs.length = 0;
       painting.destroy();
       parallax.destroy();
       // removeView:true so Pixi drops the canvas; we also detach it from the DOM.

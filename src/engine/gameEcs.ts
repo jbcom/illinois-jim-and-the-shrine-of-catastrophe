@@ -15,7 +15,8 @@ import { createInputManager, type InputManager } from "@engine/input/inputManage
 import { createRngPair, type Rng } from "@engine/rng.ts";
 import { createResponsiveViewport, type ResponsiveViewport } from "@engine/viewport/responsive.ts";
 import { FIRST_LEVEL_ID, levelBundle } from "@render/levels/registry.ts";
-import { createPaintingRenderer, type PaintingRenderer } from "@render/paintingRenderer.ts";
+import { createPaintingRenderer, type PaintingRenderer, type PortraitWrap } from "@render/paintingRenderer.ts";
+import { makeBandLayout, mapWorldX } from "@render/bandLayout.ts";
 import {
   collectibleSystem,
   combatSystem,
@@ -107,6 +108,35 @@ export async function createGame(
     const aspect = Math.max(0.1, vw / Math.max(1, vh));
     return { viewW: frameH * aspect, viewH: frameH };
   };
+
+  // Each on-screen band reads like a normal ~16:10 landscape view of the level; a band
+  // shows this much horizontal world. The level wraps into ceil(levelWidth/bandW) bands.
+  const BAND_ASPECT = 1.6;
+  const bandWidthWorld = frameH * BAND_ASPECT;
+
+  /**
+   * Decide the portrait slice-wrap for the current canvas. Engage wrap mode when the
+   * canvas is NOT comfortably wide (a phone/folded foldable upright, or a near-square
+   * unfolded foldable): show several stacked bands so the level fills the tall screen
+   * instead of a thin sliver. Returns undefined for a wide landscape canvas (one band).
+   */
+  function portraitWrap(canvasW: number, canvasH: number): PortraitWrap | undefined {
+    const aspect = canvasW / Math.max(1, canvasH);
+    // A single band needs ≈ BAND_ASPECT wide to read; if the screen is wider than that
+    // it's a normal landscape view — one band, no wrap. Below it, stack bands to fill.
+    if (aspect >= BAND_ASPECT - 0.05) return undefined;
+    const layout = makeBandLayout(bounds.width, bandWidthWorld, frameH);
+    if (layout.bandCount < 2) return undefined; // level too short to wrap
+    // How many bands fit the screen height at the scale where a band fills the width:
+    // bandScreenH = screenW / aspectOfBand; visibleBands = screenH / bandScreenH.
+    const bandScreenH = canvasW / BAND_ASPECT;
+    const visibleBands = Math.max(1, Math.min(layout.bandCount, Math.round(canvasH / bandScreenH)));
+    const center = playerCenter();
+    const pb = center ? mapWorldX(layout, center.x) : { band: 0, xInBand: 0 };
+    // Fractional band = band + progress across it, so the vertical scroll is smooth.
+    const playerBand = pb.band + pb.xInBand / layout.bandWidthWorld;
+    return { bandCount: layout.bandCount, bandWidthWorld: layout.bandWidthWorld, visibleBands, playerBand };
+  }
   const clock: Clock = createClock();
   // FX (cosmetic) PRNG stream — independent of the sim stream so particle
   // randomness never desyncs a gameplay replay.
@@ -292,12 +322,14 @@ export async function createGame(
       if (stepInfo.steps > 0) updateCameraAndHud();
     }
 
+    const wrap = portraitWrap(canvas.width || 1, canvas.height || 1);
     renderer.render({
       world: sim.world,
       camera,
       viewport: vp,
       alpha: paused ? 0 : stepInfo.alpha,
       prev,
+      ...(wrap ? { portrait: wrap } : {}),
     });
 
     handle = raf(frame);

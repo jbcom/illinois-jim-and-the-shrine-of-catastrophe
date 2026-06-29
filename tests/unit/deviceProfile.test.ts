@@ -142,11 +142,12 @@ describe("classifyDevice — deployed web build (platform 'web')", () => {
     expect(profile.lockLandscape).toBe(false);
   });
 
-  it("a real Android phone on web stays phone (small physical screen) and locks landscape", () => {
+  it("a real Android phone on web stays phone (small physical screen), still unlocked", () => {
     // CSS 360×800 at DPR 2 → physical min-dim 720 (< the foldable threshold).
     const profile = classifyDevice({ width: 360, height: 800, dpr: 2, platform: "web", androidUA: true });
     expect(profile.deviceClass).toBe("phone");
-    expect(profile.lockLandscape).toBe(true);
+    // No landscape lock anymore — portrait plays via the slice-wrap.
+    expect(profile.lockLandscape).toBe(false);
   });
 
   it("a big Android tablet (Pixel Tablet) on web classifies tablet, free orientation", () => {

@@ -44,19 +44,22 @@ export interface DeviceProfile {
   /** Recommended UI scale factor (1 = 100 %). Applied to HUD/UI elements. */
   uiScale: number;
   /**
-   * Whether gameplay should be LOCKED to landscape. A side-scroller's flat band
-   * fills a wide screen but can't fill a tall portrait one without extreme zoom
-   * or empty sky — so phones lock to landscape (Sonic/Metal Slug-style). Larger
-   * screens (tablets, UNFOLDED foldables, desktop) have room in either rotation
-   * and stay free. Folded foldables read as `phone`-ish and lock; once unfolded
-   * they reclassify to `foldable` and unlock.
+   * Whether gameplay should be LOCKED to landscape. ALWAYS false now: the portrait
+   * serpentine slice-wrap (src/render/bandLayout.ts) wraps the horizontal level into
+   * stacked screen-width bands, so a tall portrait screen is FULLY playable — no lock,
+   * no "rotate your device" nag. Both orientations are first-class. Kept on the profile
+   * for back-compat with the orientation store; it just never asks for a lock anymore.
+   * See [[portrait-serpentine-slice-wrap]].
    */
   lockLandscape: boolean;
 }
 
-/** Gameplay locks to landscape only on phone-class devices. */
-export function shouldLockLandscape(deviceClass: DeviceClass): boolean {
-  return deviceClass === "phone";
+/**
+ * Gameplay no longer locks to landscape on any device — the portrait slice-wrap makes
+ * upright play first-class. Returns false for every class (signature kept for callers).
+ */
+export function shouldLockLandscape(_deviceClass: DeviceClass): boolean {
+  return false;
 }
 
 /**
