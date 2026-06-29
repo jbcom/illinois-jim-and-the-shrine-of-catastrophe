@@ -20,6 +20,7 @@ import { buildFromLevel } from "@sim/world/buildFromLevel.ts";
 import { parseLevel } from "@sim/world/levelSchema.ts";
 import halwardJson from "@/levels/halward-s-reach.level.json";
 import whisperingJungleJson from "@/levels/the-whispering-jungle.level.json";
+import rushingGorgeJson from "@/levels/the-rushing-gorge.level.json";
 import {
   type EnemySpawn,
   type GameLevel,
@@ -67,6 +68,9 @@ const ENEMY_VISUAL: Record<string, EnemySpawn["visual"]> = {
   // jungle-enemy characters are a tracked forward item, not this bundle's scope.
   "canopy-panther": "goblin",
   "carnivorous-plant": "mushroom",
+  // Level 3 — The Rushing Gorge. The river serpent is a sinuous water threat;
+  // the flyingEye's floating/weaving visual reads closest until a baked serpent.
+  "river-serpent": "flyingEye",
 };
 
 /** Schema NPC dialogueId → baked roster id. Unmapped ids pass through (warned). */
@@ -77,6 +81,9 @@ const NPC_ALIAS: Record<string, string> = {
   // Level 2 — the jungle guardian who warns Jim at the ruin gate.
   guardian_warning: "elder-mara",
   "guardian-warning": "elder-mara",
+  // Level 3 — the stranded boatman who tips Jim off about the gorge crossing.
+  boatman_help: "ferryman-cole",
+  "boatman-help": "ferryman-cole",
 };
 
 function genaiBundle(json: unknown, groundFill?: LevelBundle["groundFill"]): LevelBundle {
@@ -128,10 +135,15 @@ const HALWARD = genaiBundle(halwardJson);
 // tile sprite — Gemini's opaque ground-tile only works as the parallax floor, so the
 // foreground floor is filled like the village. baselineY 250, map 332 tiles × 16px.
 const WHISPERING_JUNGLE = genaiBundle(whisperingJungleJson, { color: 0x2c3a22, groundY: 276, width: 5312 });
+// The gorge floor is the dark river itself — a deep blue-green band below the
+// waterline (the riverbed/water-surface art are parallax/ground textures, never
+// foreground sprites). baselineY 250, map 300 tiles × 16px.
+const RUSHING_GORGE = genaiBundle(rushingGorgeJson, { color: 0x1b3a44, groundY: 276, width: 4800 });
 
 const REGISTRY: Record<string, LevelBundle> = {
   [HALWARD.id]: HALWARD,
   [WHISPERING_JUNGLE.id]: WHISPERING_JUNGLE,
+  [RUSHING_GORGE.id]: RUSHING_GORGE,
   "village-approach": {
     id: "village-approach",
     sim: VILLAGE,
@@ -191,6 +203,7 @@ export function levelBundle(id: string): LevelBundle {
 export const LEVEL_ORDER: readonly string[] = [
   HALWARD.id,
   WHISPERING_JUNGLE.id,
+  RUSHING_GORGE.id,
   "village-approach",
   "cave-descent",
   "shrine-approach",

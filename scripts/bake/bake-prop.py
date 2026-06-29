@@ -35,6 +35,9 @@ GLB = arg("--glb")
 OUT = arg("--out")
 SIZE = arg("--size", 512, int)
 YAW = math.radians(arg("--yaw", 0.0, float))
+# Pitch (X-axis tilt) stands up a flat-lying prop (a disk/medallion/coin lying in
+# the ground plane) so its FACE points at the side camera instead of its thin edge.
+PITCH = math.radians(arg("--pitch", 0.0, float))
 MARGIN = arg("--margin", 1.08, float)
 assert GLB and OUT
 
@@ -49,12 +52,12 @@ for o in list(bpy.data.objects):
 mesh_objs = [o for o in bpy.data.objects if o.type == "MESH"]
 assert mesh_objs, "no prop mesh after dropping reference geometry"
 
-# Optional yaw so a chosen face points at the side camera.
+# Optional yaw (Z) + pitch (X) so a chosen face points at the side camera.
 root = mesh_objs[0]
-if YAW:
+if YAW or PITCH:
     for o in mesh_objs:
         o.rotation_mode = "XYZ"
-        o.rotation_euler = (o.rotation_euler.x, o.rotation_euler.y, YAW)
+        o.rotation_euler = (o.rotation_euler.x + PITCH, o.rotation_euler.y, o.rotation_euler.z + YAW)
     bpy.context.view_layer.update()
 
 # World-space bounds (props aren't skinned, so object bound_box is exact).

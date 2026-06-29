@@ -111,3 +111,40 @@ describe("GenAI Level 2 bundle (the-whispering-jungle)", () => {
     }
   });
 });
+
+/**
+ * The GenAI Level 3 (the-rushing-gorge) is registered as the live third level and
+ * follows Level 2. Its river-serpent enemy + boatman NPC art keys must adapt to a
+ * valid runtime visual + baked roster id, and its ground/water art must NOT leak
+ * into the painting as a foreground sprite (handled as groundFill + parallax).
+ */
+describe("GenAI Level 3 bundle (the-rushing-gorge)", () => {
+  const ID = "the-rushing-gorge";
+
+  it("is registered and plays right after Level 2", () => {
+    expect(LEVEL_ORDER).toContain(ID);
+    expect(nextLevelId("the-whispering-jungle")).toBe(ID);
+  });
+
+  it("adapts the river enemy + boatman npc to valid runtime kinds/ids", () => {
+    const b = levelBundle(ID);
+    expect(b.sim.enemies.length).toBeGreaterThan(0);
+    for (const e of b.sim.enemies) {
+      expect(["patrol", "chase"]).toContain(e.kind);
+      expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+    }
+    for (const n of b.sim.npcs) {
+      expect(["elder-mara", "watchman-pell", "ferryman-cole"]).toContain(n.dialogueId);
+    }
+  });
+
+  it("fills the river floor (groundFill) and never paints a ground/water sprite", () => {
+    const b = levelBundle(ID);
+    expect(b.groundFill).toBeDefined();
+    expect(b.groundFill?.width).toBeGreaterThan(0);
+    // The ground/water/decor textures stay out of the painting — no opaque sprite.
+    for (const p of b.artPainting ?? []) {
+      expect(p.url).not.toMatch(/(ground-riverbed|water-surface|waterfall-overlay)/);
+    }
+  });
+});

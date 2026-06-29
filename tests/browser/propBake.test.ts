@@ -54,6 +54,16 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "jungle-thorns",
     "jungle-totem",
     "jungle-urn",
+    // Level 3 — The Rushing Gorge.
+    "wet-rock-ledge",
+    "static-log-raft",
+    "log-raft-platform",
+    "floating-relic",
+    "sunken-lever",
+    "crystal-wall-gate",
+    "runic-disk-key",
+    "floating-crate-pot",
+    "sharp-river-rocks",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {

@@ -55,6 +55,16 @@ const BAKED_PROP: Record<string, string> = {
   "jungle-thorns": "jungle-thorns",
   "jungle-totem": "jungle-totem",
   "jungle-urn": "jungle-urn",
+  // Level 3 — The Rushing Gorge (keys match the prop names directly).
+  "wet-rock-ledge": "wet-rock-ledge",
+  "static-log-raft": "static-log-raft",
+  "log-raft-platform": "log-raft-platform",
+  "floating-relic": "floating-relic",
+  "sunken-lever": "sunken-lever",
+  "crystal-wall-gate": "crystal-wall-gate",
+  "runic-disk-key": "runic-disk-key",
+  "floating-crate-pot": "floating-crate-pot",
+  "sharp-river-rocks": "sharp-river-rocks",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */

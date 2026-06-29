@@ -218,26 +218,6 @@
   ],
   "placements": [
     {
-      "art": "waterfall-overlay",
-      "at": {
-        "surface": 2,
-        "t": 0.5,
-        "dy": 100
-      },
-      "z": 4,
-      "flipX": false
-    },
-    {
-      "art": "waterfall-overlay",
-      "at": {
-        "surface": 6,
-        "t": 0.5,
-        "dy": 120
-      },
-      "z": 4,
-      "flipX": false
-    },
-    {
       "art": "wet-rock-ledge",
       "at": {
         "surface": 4,
