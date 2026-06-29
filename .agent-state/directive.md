@@ -76,10 +76,13 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       cliff-ledge, pot) → public/assets/props/. propBake.test composites all on the
       parallax. Buildings read like an old SNES village at dusk.
 
+- [x] Baked the last Level 1 props (switch-lever, gate-trailhead, relic-coin). All 8
+      transparent baked-3D props shipped to public/assets/props/, covered by propBake.test.
+
 ### Queue
-- [ ] Bake the last few Level 1 props (switch-lever, gate-trailhead, relic-coin) the
-      same way; then POINT the level art at the baked WebPs — replace the broken Gemini
-      checkerboard structure/prop art in halward-s-reach.level.json + its art dir. [TOP]
+- [ ] POINT Level 1 art at the baked prop WebPs — in halward-s-reach.level.json (+ the
+      fromLevel renderer), map each structure/prop art key to public/assets/props/<name>
+      so the broken Gemini-checkerboard structure art is replaced; live-verify. [TOP]
 - [ ] LEVEL 1 ASSEMBLY: compose baked actors (Jim + elder-mara + watchman-pell + a
       goblin) + the baked props on the parallax; live-verify the FULL scene screenshot —
       craft + zero asset loss + reads like an old SNES adventure.
