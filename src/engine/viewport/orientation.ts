@@ -4,12 +4,14 @@
  *
  * Phones lock to landscape (a flat side-scroller band can't fill a tall portrait
  * screen without extreme zoom or empty sky). Tablets, UNFOLDED foldables, and
- * desktop have room in either rotation and stay free. A folded foldable reads as
- * phone-class and locks; unfolding reclassifies it to `foldable` and unlocks.
+ * desktop have room in either rotation and stay free. A folded foldable cover
+ * screen classifies as `foldable` (tall-aspect guard) and stays free too.
  *
  * On NATIVE (Capacitor) we hard-lock via @capacitor/screen-orientation. On WEB we
  * can't force rotation, so we surface a "rotate your device" prompt while a
- * lock-required device is held in portrait (see RotatePrompt in the UI).
+ * phone is held in portrait during active gameplay (see RotatePrompt in the UI).
+ * The rotate prompt does NOT show on the title/landing screen — it only appears
+ * once the player has entered the gameplay state.
  */
 import { classifyDevice, type DeviceClass } from "@engine/viewport/deviceProfile.ts";
 import { isAndroidUA } from "@engine/viewport/ua.ts";

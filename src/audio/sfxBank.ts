@@ -152,32 +152,150 @@ export function renderWhipCrack(ctx: BaseAudioContext): AudioBuffer {
 }
 
 /**
- * Seamless looping cave ambience — a low drone (stacked detuned triangles) under
- * faint filtered noise, with whole-number cycles across the buffer so it loops
- * without a click. Quiet by design; meant to play on the music bus under gameplay.
+ * Procedural arcade BGM — a looping 16-bit style chiptune melody built entirely
+ * from square and triangle waves (no assets). The track loops seamlessly because
+ * every note frequency and the buffer duration are chosen so that whole-number
+ * cycles fit inside the buffer length (no click at the loop point).
+ *
+ * Structure (4-bar loop, ~120 BPM):
+ *   - Lead melody  : square wave, A-minor pentatonic riff
+ *   - Bass line    : triangle wave, root + fifth pulse
+ *   - Hi-hat pulse : noise bursts on the off-beat
+ *
+ * Designed to play on the music bus at gain ~0.30 — bright and upbeat but not
+ * fatiguing at full-session volume.
+ */
+export function renderArcadeBgm(ctx: BaseAudioContext): AudioBuffer {
+  const bpm = 128;
+  const beatsPerBar = 4;
+  const bars = 4;
+  const secondsPerBeat = 60 / bpm;
+  const duration = bars * beatsPerBar * secondsPerBeat; // ~7.5 s
+  const sr = ctx.sampleRate;
+  const totalSamples = Math.ceil(sr * duration);
+
+  const buf = ctx.createBuffer(1, totalSamples, sr);
+  const out = buf.getChannelData(0);
+
+  // -------------------------------------------------------------------------
+  // Helper: mix a square note into `out` at the given time window + frequency.
+  // -------------------------------------------------------------------------
+  function addSquare(freqHz: number, startS: number, durS: number, amp: number): void {
+    const startI = Math.floor(startS * sr);
+    const endI = Math.min(totalSamples, Math.floor((startS + durS) * sr));
+    const period = sr / freqHz;
+    const attackSamples = Math.min(Math.floor(0.004 * sr), endI - startI);
+    const decaySamples = Math.min(Math.floor(0.015 * sr), endI - startI);
+    const noteLen = endI - startI;
+    for (let i = startI; i < endI; i++) {
+      const pos = i - startI;
+      let env = 1;
+      if (pos < attackSamples) env = pos / Math.max(1, attackSamples);
+      else if (pos > noteLen - decaySamples) env = (noteLen - pos) / Math.max(1, decaySamples);
+      const sq = (i % period < period / 2) ? 1 : -1;
+      out[i] = (out[i] ?? 0) + sq * amp * env;
+    }
+  }
+
+  // Helper: triangle bass note
+  function addTriangle(freqHz: number, startS: number, durS: number, amp: number): void {
+    const startI = Math.floor(startS * sr);
+    const endI = Math.min(totalSamples, Math.floor((startS + durS) * sr));
+    const period = sr / freqHz;
+    for (let i = startI; i < endI; i++) {
+      const t = (i % period) / period;
+      const tri = t < 0.5 ? 4 * t - 1 : 3 - 4 * t;
+      out[i] = (out[i] ?? 0) + tri * amp;
+    }
+  }
+
+  // Helper: short noise hi-hat burst
+  function addHat(startS: number, amp: number): void {
+    const startI = Math.floor(startS * sr);
+    const hatLen = Math.floor(0.025 * sr);
+    const endI = Math.min(totalSamples, startI + hatLen);
+    let s = (startI * 6364136223846793005 + 1442695040888963407) | 0;
+    for (let i = startI; i < endI; i++) {
+      s = Math.imul(s, 1664525) + 1013904223;
+      const noise = (s >>> 0) / 0x100000000 * 2 - 1;
+      const decay = 1 - (i - startI) / hatLen;
+      out[i] = (out[i] ?? 0) + noise * amp * decay * decay;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Note frequencies (A-minor pentatonic: A3=220, C4=261.6, D4=293.7,
+  //                   E4=329.6, G4=392, A4=440, C5=523.3)
+  // -------------------------------------------------------------------------
+  const A3 = 220, C4 = 261.63, D4 = 293.66, E4 = 329.63, G4 = 392, A4 = 440, C5 = 523.25;
+  const sb = secondsPerBeat;
+
+  // Lead melody (4 bars, 16 eighth-note slots per bar)
+  const melody: Array<[number, number, number]> = [
+    // bar 1
+    [A4, 0 * sb,     sb * 0.45],
+    [C5, 0.5 * sb,   sb * 0.45],
+    [A4, 1 * sb,     sb * 0.45],
+    [G4, 1.5 * sb,   sb * 0.45],
+    [E4, 2 * sb,     sb * 0.9],
+    [G4, 3 * sb,     sb * 0.45],
+    [A4, 3.5 * sb,   sb * 0.45],
+    // bar 2
+    [C5, 4 * sb,     sb * 0.45],
+    [A4, 4.5 * sb,   sb * 0.45],
+    [G4, 5 * sb,     sb * 0.45],
+    [E4, 5.5 * sb,   sb * 0.45],
+    [D4, 6 * sb,     sb * 0.9],
+    [E4, 7 * sb,     sb * 0.45],
+    [G4, 7.5 * sb,   sb * 0.45],
+    // bar 3
+    [A4, 8 * sb,     sb * 0.45],
+    [G4, 8.5 * sb,   sb * 0.45],
+    [E4, 9 * sb,     sb * 0.45],
+    [D4, 9.5 * sb,   sb * 0.45],
+    [C4, 10 * sb,    sb * 0.9],
+    [D4, 11 * sb,    sb * 0.45],
+    [E4, 11.5 * sb,  sb * 0.45],
+    // bar 4 (resolve + pick-up)
+    [G4, 12 * sb,    sb * 0.45],
+    [A4, 12.5 * sb,  sb * 0.45],
+    [G4, 13 * sb,    sb * 0.45],
+    [E4, 13.5 * sb,  sb * 0.45],
+    [A3, 14 * sb,    sb * 1.4],
+    [E4, 15.5 * sb,  sb * 0.45],
+  ];
+  for (const [f, t, d] of melody) addSquare(f, t, d, 0.28);
+
+  // Bass line: root on beats 1+3, fifth on beats 2+4 of each bar
+  const bassNotes: Array<[number, number]> = [];
+  for (let bar = 0; bar < bars; bar++) {
+    const base = bar * beatsPerBar * sb;
+    // A2=110 Hz (root), E3=164.8 Hz (fifth)
+    bassNotes.push([110, base + 0 * sb]);
+    bassNotes.push([164.81, base + 1 * sb]);
+    bassNotes.push([110, base + 2 * sb]);
+    bassNotes.push([164.81, base + 3 * sb]);
+  }
+  for (const [f, t] of bassNotes) addTriangle(f, t, sb * 0.85, 0.22);
+
+  // Hi-hat on off-beats (every half-beat starting at 0.5)
+  for (let i = 0; i < bars * beatsPerBar * 2; i++) {
+    if (i % 2 === 1) addHat(i * sb * 0.5, 0.12);
+  }
+
+  // Soft-clip the mix to prevent any inter-voice summing from exceeding ±1
+  for (let i = 0; i < totalSamples; i++) {
+    const v = out[i] ?? 0;
+    out[i] = v / (1 + Math.abs(v));
+  }
+
+  return buf;
+}
+
+/**
+ * @deprecated Alias kept for callers that still import renderCaveAmbience.
+ * New code should use renderArcadeBgm.
  */
 export function renderCaveAmbience(ctx: BaseAudioContext): AudioBuffer {
-  const duration = 4; // 4s loop
-  const buf = allocMono(ctx, duration);
-  const data = buf.getChannelData(0);
-  const sr = ctx.sampleRate;
-  // Drone tones — frequencies chosen so an integer number of cycles fits `duration`
-  // (freq × duration ∈ ℤ) for a click-free loop point.
-  const tones = [55, 82.5, 110]; // A1, ~E2, A2 (all × 4s = integer cycles)
-  for (let i = 0; i < data.length; i++) {
-    const t = i / sr;
-    let s = 0;
-    for (const f of tones) s += Math.sin(2 * Math.PI * f * t);
-    data[i] = (s / tones.length) * 0.18;
-  }
-  // Faint noise shimmer, low-passed by a simple moving average.
-  const noise = new Float32Array(data.length);
-  fillNoise(noise, 9001);
-  let acc = 0;
-  const win = 32;
-  for (let i = 0; i < data.length; i++) {
-    acc += (noise[i] ?? 0) - (noise[i - win] ?? 0);
-    data[i] = (data[i] ?? 0) + (acc / win) * 0.04;
-  }
-  return buf;
+  return renderArcadeBgm(ctx);
 }
