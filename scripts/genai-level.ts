@@ -15,7 +15,7 @@
  *
  * Opt-in + cost-bearing (Imagen + Gemini). Needs GEMINI_API_KEY (.env).
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -31,6 +31,14 @@ import { LEVEL_BRIEFS } from "./levelBriefs.ts";
 import { geminiGenerateImage, geminiGenerateText, readGeminiKey } from "./genai-client.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Stable kebab id for a level, derived from its title (so file names are predictable). */
+function briefIdFor(brief: { title: string }): string {
+  return brief.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 const STYLE =
   "16-bit SNES/Genesis pixel-art, limited retro palette of obsidian, tarnished gold, " +
@@ -143,16 +151,40 @@ async function generateLevelJson(brief: (typeof LEVEL_BRIEFS)[number], key: stri
  * art (Imagen): every image knows its level, its neighbours, and its job.
  */
 function composeArtPrompt(level: Level, asset: Level["art"][number]): string {
+  // Base style + biome always. The STORY BEAT names the hero, so only fold it in
+  // for character art — NEVER for backdrops/props (it makes Imagen bake Jim into
+  // the sky or a building, which would double the hero on screen).
+  const isCharacter = asset.role === "npc";
   const ctx =
-    `${STYLE} This image is for the level "${level.title}" (biome: ${level.biome}). ` +
-    `Story beat: ${level.story.beat} It is the ${asset.role} "${asset.key}".`;
-  const backdrop =
-    asset.isolation === "transparent"
-      ? " Render ONE object ONLY, centered on a FLAT SOLID MAGENTA (#FF00FF) background filling the entire frame edge to edge — no border, no scenery, no ground, no shadow."
-      : asset.isolation === "tileable"
-        ? " Render a horizontally SEAMLESS, edge-to-edge tileable strip (left and right edges must match for repetition)."
-        : " Render a full painted background layer for this biome, edge to edge.";
-  return `${ctx} ${asset.prompt}.${backdrop}`;
+    `${STYLE} This is the ${asset.role} "${asset.key}" for the level "${level.title}" ` +
+    `(biome: ${level.biome}).` +
+    (isCharacter ? ` Context: ${level.story.beat}` : "");
+  if (asset.isolation === "transparent") {
+    return (
+      `${ctx} ${asset.prompt}. Render ONE object ONLY (the ${asset.role}), centered on a ` +
+      "FLAT SOLID MAGENTA (#FF00FF) background filling the entire frame edge to edge — " +
+      "NO border, NO scenery, NO other objects, NO ground line, NO characters other than " +
+      "this one, NO shadow on the background."
+    );
+  }
+  if (asset.isolation === "tileable") {
+    return (
+      `${STYLE} A ${asset.key} ground/surface texture for biome ${level.biome}. ${asset.prompt}. ` +
+      "Render a horizontally SEAMLESS, edge-to-edge tileable strip — left and right edges " +
+      "match for repetition. NO characters, NO props, NO sky — only the surface material."
+    );
+  }
+  // scene = a parallax BACKDROP layer. Image models IGNORE negations ("no
+  // characters"), so frame POSITIVELY: an empty atmospheric SKY/DISTANCE band only,
+  // the subject small along the lower edge, the upper 70% open sky. An empty,
+  // depopulated, wilderness backdrop — that positive framing keeps Jim/the village/
+  // the ground out far better than forbidding them.
+  return (
+    `${STYLE} An empty, depopulated, wide atmospheric PARALLAX SKY-AND-DISTANCE backdrop ` +
+    `band for biome ${level.biome}: ${asset.prompt} — but as a DISTANT, EMPTY wilderness ` +
+    "vista: the upper two-thirds is open sky, the subject sits small and far along the " +
+    "lower edge, an uninhabited horizon with no foreground. A serene empty backdrop."
+  );
 }
 
 async function generateArt(level: Level, key: string): Promise<void> {
@@ -185,15 +217,26 @@ async function main() {
     process.exit(1);
   }
   const jsonOnly = process.argv.includes("--json-only");
-
-  console.warn(`Generating level ${order}: ${brief.title}`);
-  const level = await generateLevelJson(brief, key);
-
+  const reuseJson = process.argv.includes("--reuse-json");
   const outDir = join(ROOT, "src", "levels");
-  mkdirSync(outDir, { recursive: true });
-  const outPath = join(outDir, `${level.id}.level.json`);
-  writeFileSync(outPath, `${JSON.stringify(level, null, 2)}\n`);
-  console.warn(`  wrote ${outPath}`);
+  const briefId = briefIdFor(brief);
+  const outPath = join(outDir, `${briefId}.level.json`);
+
+  let level: Level;
+  if (reuseJson) {
+    // Generate art from the already-LOCKED JSON (Gemini is non-deterministic, so we
+    // freeze the layout once, then generate its art — keys stay in sync).
+    console.warn(`Reusing locked Level JSON for level ${order}: ${outPath}`);
+    level = parseLevel(JSON.parse(readFileSync(outPath, "utf8")));
+  } else {
+    console.warn(`Generating level ${order}: ${brief.title}`);
+    const generated = await generateLevelJson(brief, key);
+    // Force the stable id so file names + asset dirs are predictable across runs.
+    level = { ...generated, id: briefId };
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(outPath, `${JSON.stringify(level, null, 2)}\n`);
+    console.warn(`  wrote ${outPath}`);
+  }
 
   if (!jsonOnly) await generateArt(level, key);
   console.warn("Done.");
