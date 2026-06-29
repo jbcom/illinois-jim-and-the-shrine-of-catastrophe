@@ -27,4 +27,10 @@ describe("paintingFromLevel — problem-solving-layer art", () => {
     expect(gateKeys.length).toBe(level.gates.length);
     expect(gateKeys).toContain("gate:0");
   });
+
+  it("tags each switch with a switch:<index> key for the renderer to light up when ON", () => {
+    const switchKeys = art.map((a) => a.key).filter((k): k is string => !!k && k.startsWith("switch:"));
+    expect(switchKeys.length).toBe(level.switches.length);
+    expect(switchKeys).toContain("switch:0");
+  });
 });

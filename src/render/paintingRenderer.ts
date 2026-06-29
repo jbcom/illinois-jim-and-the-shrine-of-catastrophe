@@ -18,7 +18,7 @@ import { bakedNpcBase, npcSpecFor } from "@render/npcRoster.ts";
 import { createParallax, type Parallax } from "@render/parallax.ts";
 import { createPlayerSprite } from "@render/playerSprite.ts";
 import { loadPotFrames } from "@render/pots.ts";
-import { Collectible, Enemy, Facing, Gate, Npc, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
+import { Collectible, Enemy, Facing, Gate, Npc, Player, Position, Pot, Size, Switch } from "@sim/ecs/traits.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { Camera } from "@sim/world/camera.ts";
 import type { ParallaxLayerSpec } from "@render/parallax.ts";
@@ -227,6 +227,18 @@ export async function createPaintingRenderer(
         const sprite = gateSprites.get(`gate:${gi}`);
         gi++;
         if (sprite) sprite.alpha = gate.open ? 0.15 : 1;
+      });
+    }
+
+    // Reflect switch state on the painted lever art: a latched (ON) switch lights up
+    // white-hot so the player can read "this is thrown"; an idle switch stays its base
+    // tint. Switch entities spawn in level order → the Nth maps to `switch:N`.
+    if (gateSprites) {
+      let si = 0;
+      o.world.query(Switch).readEach(([sw]) => {
+        const sprite = gateSprites.get(`switch:${si}`);
+        si++;
+        if (sprite) sprite.tint = sw.on ? 0xffffff : 0x9aa0b0;
       });
     }
   }
