@@ -78,6 +78,11 @@ describe("game levels", () => {
 
     // The idol goal sits deep in the level.
     expect(SHRINE.goalX).toBeGreaterThan(1800);
+    // EVERY enemy and pot must sit BEFORE the goal line — else the climactic
+    // Warden + payoff pot would be unreachable (the run ends the instant the
+    // player crosses goalX). Regression guard for the "win fires too early" bug.
+    for (const e of SHRINE.enemies) expect(e.x).toBeLessThan(SHRINE.goalX);
+    for (const p of SHRINE.pots) expect(p.x).toBeLessThan(SHRINE.goalX);
   });
 
   it("the shrine is the hardest level: most enemies, several chasers, spread out", () => {

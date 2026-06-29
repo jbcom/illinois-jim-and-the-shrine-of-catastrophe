@@ -177,7 +177,10 @@ export const SHRINE: GameLevel = {
     { x: 2120, y: 288, color: "red", drop: "relic" },
   ],
   npcs: [],
-  goalX: 2000, // reaching the idol on the altar
+  // Past the idol tableau AND the Warden (x2020) + final relic pot (x2120), so the
+  // climactic guardian is a real obstacle and the payoff pot is smashable before
+  // the level ends (a goalX at the idol's front edge would end the run too early).
+  goalX: 2160,
 };
 
 /**
