@@ -18,7 +18,7 @@ import { bakedNpcBase, npcSpecFor } from "@render/npcRoster.ts";
 import { createParallax, type Parallax } from "@render/parallax.ts";
 import { createPlayerSprite } from "@render/playerSprite.ts";
 import { loadPotFrames } from "@render/pots.ts";
-import { Collectible, Enemy, Facing, Npc, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
+import { Collectible, Enemy, Facing, Gate, Npc, Player, Position, Pot, Size } from "@sim/ecs/traits.ts";
 import { lerp } from "@sim/math/vec2.ts";
 import type { Camera } from "@sim/world/camera.ts";
 import type { ParallaxLayerSpec } from "@render/parallax.ts";
@@ -215,6 +215,19 @@ export async function createPaintingRenderer(
         v.dispose();
         views.delete(e);
       }
+    }
+
+    // Reflect gate state on the painted gate art: an OPEN gate fades out (it's now
+    // passable). Gate entities spawn in the level's gate order, so the Nth gate maps
+    // to the `gate:N` painting sprite tagged in paintingFromLevel.
+    const gateSprites = painting.byKey;
+    if (gateSprites) {
+      let gi = 0;
+      o.world.query(Gate).readEach(([gate]) => {
+        const sprite = gateSprites.get(`gate:${gi}`);
+        gi++;
+        if (sprite) sprite.alpha = gate.open ? 0.15 : 1;
+      });
     }
   }
 

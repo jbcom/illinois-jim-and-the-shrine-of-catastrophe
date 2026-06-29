@@ -85,6 +85,19 @@ export function paintingFromLevel(level: Level): ArtPlacement[] {
     out.push({ url: url(p.art), x, y, worldHeight: artByKey(level, p.art).worldHeight, z: p.z, flipX: p.flipX, anchor: "base" });
   }
 
+  // Problem-solving-layer art (hazards/switches/gates/platforms/secrets). These live in
+  // their own schema arrays (not `placements`), so emit their baked art here, anchored
+  // on their surface. Gates carry a `gate:<i>` key so the renderer can fade them open.
+  const puzzle = (art: string, at: typeof level.spawn, key?: string) => {
+    const { x, y } = resolveAnchor(level, resolved, at);
+    out.push({ url: url(art), x, y, worldHeight: artByKey(level, art).worldHeight, z: 3, flipX: false, anchor: "base", ...(key ? { key } : {}) });
+  };
+  for (const h of level.hazards) puzzle(h.art, h.at);
+  for (const s of level.switches) puzzle(s.art, s.at);
+  level.gates.forEach((g, i) => puzzle(g.art, g.at, `gate:${i}`));
+  for (const m of level.movingPlatforms) puzzle(m.art, m.at);
+  for (const s of level.secrets) puzzle(s.art, s.at);
+
   return out;
 }
 

@@ -36,6 +36,8 @@ export interface Placement {
 
 export interface Painting {
   readonly container: Container;
+  /** Sprites that carried a `key` (GenAI art only), so the runtime can mutate them. */
+  readonly byKey?: ReadonlyMap<string, Sprite>;
   destroy(): void;
 }
 
@@ -103,6 +105,8 @@ export interface ArtPlacement {
   readonly flipX: boolean;
   /** 'base' bottom-rests the image on (x,y); 'top' top-aligns it at (x,y). */
   readonly anchor: "base" | "top";
+  /** Optional handle so the runtime can find this sprite later (e.g. a gate to fade). */
+  readonly key?: string;
 }
 
 /**
@@ -113,6 +117,7 @@ export interface ArtPlacement {
  */
 export async function paintArt(placements: readonly ArtPlacement[]): Promise<Painting> {
   const container = new Container();
+  const byKey = new Map<string, Sprite>();
   const ordered = [...placements].sort((a, b) => a.z - b.z);
   for (const p of ordered) {
     const tex = await Assets.load<Texture>(p.url);
@@ -126,9 +131,11 @@ export async function paintArt(placements: readonly ArtPlacement[]): Promise<Pai
     const topY = p.anchor === "base" ? p.y - h : p.y;
     sprite.position.set(p.flipX ? p.x + w : p.x, topY);
     container.addChild(sprite);
+    if (p.key) byKey.set(p.key, sprite);
   }
   return {
     container,
+    byKey,
     destroy() {
       container.destroy({ children: true });
     },
