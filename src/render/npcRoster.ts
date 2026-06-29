@@ -83,6 +83,7 @@ export const BAKED_NPCS: Record<string, { base: string }> = {
   "elder-mara": { base: "assets/sprites/elder-mara" },
   "watchman-pell": { base: "assets/sprites/watchman-pell" },
   "ferryman-cole": { base: "assets/sprites/ferryman-cole" },
+  "shrine-warden": { base: "assets/sprites/shrine-warden" },
 };
 
 /** A baked NPC's sprite base, or undefined if it uses the paper-doll path. */
