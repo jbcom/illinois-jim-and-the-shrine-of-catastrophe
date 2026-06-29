@@ -112,14 +112,16 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       grass+parallax, HUD, zero console errors — actors + props read at correct scale.
       (Baked goblin walk also seen animating live on the next level's cave parallax.)
 
+- [x] HAZARDS implemented (review P0 #1): buildCollision lays TileKind.Hazard tiles
+      across each schema hazard's width; systems.ts already kills on Hazard contact, so
+      the baked spikes are now actually deadly. buildFromLevel.test locks it.
+
 ### Queue
-- [ ] IMPLEMENT THE PROBLEM-SOLVING LAYER in the live sim (review P0s — the schema
-      authors hazards/gates/switches/movingPlatforms/secrets, but createSimWorld spawns
-      NONE of them on ANY level, so the baked spike/gate/platform/relic art paints a
-      danger/puzzle that does nothing). Wire each through GameLevel + createSimWorld +
-      the ECS: hazards (Hazard trait exists → damage on contact) FIRST since spikes that
-      don't kill is the most misleading, then gates+switches (lever opens gate), moving
-      platforms (rideable collision), secrets (hidden pickup). Live-verify each. [TOP]
+- [ ] Implement the rest of the problem-solving layer (still unimplemented in the live
+      sim, so their baked art is inert): gates+switches (lever toggles a gate's blocking
+      collision — the level's stated hook), then moving platforms (rideable one-way
+      collision that moves on a path), then secrets (hidden pickup reward). Each needs an
+      ECS trait + system + a GameLevel field + createSimWorld spawn. Live-verify each. [TOP]
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
       Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
 - [ ] Bake the OTHER levels' props + register their GenAI bundles (cave-descent /
