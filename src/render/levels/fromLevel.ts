@@ -44,6 +44,10 @@ const BAKED_PROP: Record<string, string> = {
   "vine-tangle-gate": "vine-tangle-gate",
   "strangler-fig-platform": "strangler-fig-platform",
   "jungle-weight-lever": "jungle-weight-lever",
+  "carnivorous-plant": "carnivorous-plant",
+  "golden-orchid": "golden-orchid",
+  "vine-bridge": "vine-bridge",
+  "collapsing-log": "collapsing-log",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */
@@ -99,7 +103,10 @@ export function paintingFromLevel(level: Level): ArtPlacement[] {
   };
   for (const h of level.hazards) puzzle(h.art, h.at);
   for (const s of level.switches) puzzle(s.art, s.at);
-  level.gates.forEach((g, i) => puzzle(g.art, g.at, `gate:${i}`));
+  for (let i = 0; i < level.gates.length; i++) {
+    const g = level.gates[i];
+    puzzle(g.art, g.at, `gate:${i}`);
+  }
   for (const m of level.movingPlatforms) puzzle(m.art, m.at);
   for (const s of level.secrets) puzzle(s.art, s.at);
 

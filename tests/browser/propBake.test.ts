@@ -43,6 +43,10 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "vine-tangle-gate",
     "strangler-fig-platform",
     "jungle-weight-lever",
+    "carnivorous-plant",
+    "golden-orchid",
+    "vine-bridge",
+    "collapsing-log",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {
