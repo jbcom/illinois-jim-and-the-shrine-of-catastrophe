@@ -165,6 +165,79 @@ export const PlacementSchema = z
   .describe("A painted art placement anchored to a surface.");
 
 // ---------------------------------------------------------------------------
+// PROBLEM-SOLVING primitives — the old-school COMMITMENT mechanics: gates the
+// player must figure out how to open, keys to find, moving platforms to time,
+// secrets to discover, checkpoints that gate progress. These make a level a place
+// you THINK in, not a linear run. (THE GOVERNING THESIS in docs/LEVEL_OUTLINE.md.)
+// ---------------------------------------------------------------------------
+
+/** A switch/lever/pressure-plate/light-receiver the player activates to open a gate. */
+export const SwitchSchema = z
+  .object({
+    id: z.string().describe("Unique id; a gate references this to know what opens it."),
+    art: z.string().describe("Art key for the switch sprite (lever/plate/crystal-receiver)."),
+    at: AnchorSchema,
+    kind: z
+      .enum(["lever", "pressure-plate", "light-receiver", "weight"])
+      .describe("How it's triggered: pull a lever, stand on a plate, aim a light beam, drop a weight."),
+  })
+  .describe("A puzzle activator.");
+
+/** A gate/door/barrier that blocks progress until its switch(es) are satisfied. */
+export const GateSchema = z
+  .object({
+    art: z.string().describe("Art key for the gate sprite (door/portcullis/crystal-wall)."),
+    at: AnchorSchema,
+    opensWith: z
+      .array(z.string())
+      .describe("Switch ids (or key ids) that must ALL be satisfied to open this gate."),
+    blocksSurface: z
+      .number()
+      .int()
+      .describe("The surface index this gate blocks until opened (the way forward / to a secret)."),
+  })
+  .describe("A progress gate the player must solve to pass.");
+
+/** A key/relic the player collects to open a matching gate. */
+export const KeySchema = z
+  .object({
+    id: z.string().describe("Unique id a gate's opensWith references."),
+    art: z.string().describe("Art key for the key/relic sprite."),
+    at: AnchorSchema,
+  })
+  .describe("A pickup that opens a matching gate.");
+
+/** A platform that moves on a path — timing/traversal challenge over hazards/gaps. */
+export const MovingPlatformSchema = z
+  .object({
+    art: z.string().describe("Art key for the platform (its top is standable)."),
+    at: AnchorSchema.describe("Start position."),
+    axis: z.enum(["horizontal", "vertical"]).describe("Direction of travel."),
+    distance: z.number().positive().describe("Travel distance in px from start."),
+    speed: z.number().positive().default(40).describe("Px per second."),
+    width: z.number().positive().default(64).describe("Standable width in px."),
+  })
+  .describe("A moving platform (timing challenge).");
+
+/** A checkpoint — sparse, so deaths cost real progress (earned commitment). */
+export const CheckpointSchema = z
+  .object({
+    art: z.string().optional().describe("Optional art key (a banner/shrine); else invisible."),
+    at: AnchorSchema,
+  })
+  .describe("A respawn point. Use SPARINGLY — old-school stakes.");
+
+/** A SECRET area reward — depth + exploration. Reached via a hidden route/gate. */
+export const SecretSchema = z
+  .object({
+    art: z.string().describe("Art key for the secret's reward (a rare relic/upgrade)."),
+    at: AnchorSchema,
+    hint: z.string().describe("How the player discovers it (a suspicious wall, an out-of-reach ledge)."),
+    value: z.number().int().positive().default(500).describe("Score/reward — richer than a normal pickup."),
+  })
+  .describe("A hidden reward rewarding exploration + persistence.");
+
+// ---------------------------------------------------------------------------
 // The whole level.
 // ---------------------------------------------------------------------------
 
@@ -241,10 +314,23 @@ export const LevelSchema = z
     pots: z.array(PotSchema).default([]),
     npcs: z.array(NpcSchema).default([]),
     hazards: z.array(HazardSchema).default([]),
+    // Problem-solving / commitment layer (THE GOVERNING THESIS): the puzzle gates,
+    // keys, moving platforms, secrets, and sparse checkpoints that make the level a
+    // place you THINK in and EARN. A standard (non-chase/minecart) level SHOULD use
+    // several of these — a level with none is a hand-held run and fails the thesis.
+    switches: z.array(SwitchSchema).default([]),
+    gates: z.array(GateSchema).default([]),
+    keys: z.array(KeySchema).default([]),
+    movingPlatforms: z.array(MovingPlatformSchema).default([]),
+    secrets: z.array(SecretSchema).default([]),
+    checkpoints: z.array(CheckpointSchema).default([]),
     spawn: AnchorSchema.describe("Where the player starts."),
     goal: AnchorSchema.describe("Reaching this world-x clears the level."),
   })
-  .describe("A complete, playable level — story + generated art + layout + entities.");
+  .describe(
+    "A complete, playable level — story + generated art + layout + entities + the " +
+      "problem-solving layer that makes it old-school COMMITTING, not a quick run.",
+  );
 
 export type Level = z.infer<typeof LevelSchema>;
 export type ArtAsset = z.infer<typeof ArtAssetSchema>;
@@ -278,5 +364,33 @@ export function danglingArtRefs(level: Level): string[] {
   for (const n of level.npcs) check(n.art);
   for (const h of level.hazards) check(h.art);
   for (const s of level.surfaces) if (s.anchorArt) check(s.anchorArt);
+  for (const s of level.switches) check(s.art);
+  for (const g of level.gates) check(g.art);
+  for (const k of level.keys) check(k.art);
+  for (const m of level.movingPlatforms) check(m.art);
+  for (const s of level.secrets) check(s.art);
+  for (const c of level.checkpoints) if (c.art) check(c.art);
   return [...new Set(refs)];
+}
+
+/**
+ * Check that every gate's `opensWith` references a real switch or key id, and that
+ * its `blocksSurface` is a valid surface index. A gate that can never open (or
+ * blocks nothing) is a soft-lock / dead puzzle — returns the broken gate reasons.
+ */
+export function brokenGates(level: Level): string[] {
+  const switchIds = new Set(level.switches.map((s) => s.id));
+  const keyIds = new Set(level.keys.map((k) => k.id));
+  const problems: string[] = [];
+  for (const g of level.gates) {
+    for (const req of g.opensWith) {
+      if (!switchIds.has(req) && !keyIds.has(req)) {
+        problems.push(`gate(${g.art}) opensWith unknown id "${req}"`);
+      }
+    }
+    if (g.blocksSurface < 0 || g.blocksSurface >= level.surfaces.length) {
+      problems.push(`gate(${g.art}) blocksSurface ${g.blocksSurface} is out of range`);
+    }
+  }
+  return problems;
 }

@@ -1,4 +1,4 @@
-import { danglingArtRefs, type Level, LevelSchema, parseLevel } from "@sim/world/levelSchema.ts";
+import { brokenGates, danglingArtRefs, type Level, LevelSchema, parseLevel } from "@sim/world/levelSchema.ts";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -96,5 +96,46 @@ describe("levelSchema — the Gemini level contract", () => {
   it("the schema exposes a describe() contract for every field (Gemini-facing)", () => {
     // The top-level schema is described, so the prompt builder can surface it.
     expect(LevelSchema.description).toBeTruthy();
+  });
+
+  // The problem-solving / commitment layer (the old-school thesis).
+  const PUZZLE: unknown = {
+    ...(SAMPLE as object),
+    art: [
+      ...(SAMPLE as { art: unknown[] }).art,
+      { key: "stone-lever", role: "prop", isolation: "transparent", prompt: "a single ancient stone lever on a flat solid magenta background", worldHeight: 32 },
+      { key: "vine-gate", role: "structure", isolation: "transparent", prompt: "a single overgrown stone gate on a flat solid magenta background", worldHeight: 90 },
+      { key: "rare-idol", role: "collectible", isolation: "transparent", prompt: "a single rare jade idol on a flat solid magenta background", worldHeight: 24 },
+    ],
+    switches: [{ id: "sw-1", art: "stone-lever", at: { surface: 0, t: 0.5 }, kind: "lever" }],
+    gates: [{ art: "vine-gate", at: { surface: 3, t: 0.1 }, opensWith: ["sw-1"], blocksSurface: 3 }],
+    secrets: [{ art: "rare-idol", at: { surface: 0, t: 0.95, dy: 80 }, hint: "a cracked wall behind the waterfall", value: 500 }],
+  };
+
+  it("validates a level with the problem-solving layer (switch → gate, secret)", () => {
+    const level = parseLevel(PUZZLE);
+    expect(level.switches[0]!.id).toBe("sw-1");
+    expect(level.gates[0]!.opensWith).toEqual(["sw-1"]);
+    expect(level.secrets[0]!.value).toBe(500);
+  });
+
+  it("brokenGates is empty when every gate's opener exists and surface is valid", () => {
+    expect(brokenGates(parseLevel(PUZZLE))).toEqual([]);
+  });
+
+  it("brokenGates catches a gate that can never open (soft-lock)", () => {
+    const softlock = parseLevel({
+      ...(PUZZLE as object),
+      gates: [{ art: "vine-gate", at: { surface: 3, t: 0.1 }, opensWith: ["sw-NONEXISTENT"], blocksSurface: 3 }],
+    });
+    expect(brokenGates(softlock).join(" ")).toContain("sw-NONEXISTENT");
+  });
+
+  it("brokenGates catches a gate blocking an out-of-range surface", () => {
+    const bad = parseLevel({
+      ...(PUZZLE as object),
+      gates: [{ art: "vine-gate", at: { surface: 0, t: 0.1 }, opensWith: ["sw-1"], blocksSurface: 99 }],
+    });
+    expect(brokenGates(bad).join(" ")).toContain("out of range");
   });
 });
