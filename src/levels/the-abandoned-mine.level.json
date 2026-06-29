@@ -1,0 +1,438 @@
+{
+  "id": "the-abandoned-mine",
+  "title": "The Abandoned Mine",
+  "order": 4,
+  "biome": "collapsing-mine",
+  "types": [
+    "minecart",
+    "autoscroller"
+  ],
+  "targetMinutes": 7,
+  "story": {
+    "beat": "Past the gorge, an old expedition's mine bores into the mountain. Their rusted cart still sits on the rails. Jim takes it.",
+    "narration": [
+      "This old track looks ready to collapse, but it's the only way through.",
+      "Hold on tight, Jim! If you hit a dead end, throw the track switches!"
+    ]
+  },
+  "baselineY": 250,
+  "art": [
+    {
+      "key": "parallax-deep-mine",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit SNES pixel art scene, deep collapsing mine shaft, massive jagged obsidian walls, shimmering veins of tarnished gold ore, glowing red lava pools far below casting dramatic blood-red and gold light, dark retro palette, horizontal tileable parallax backdrop.",
+      "aspect": "16:9",
+      "worldHeight": 450
+    },
+    {
+      "key": "parallax-timber-scaffold",
+      "role": "parallax",
+      "isolation": "scene",
+      "prompt": "16-bit Genesis pixel art scene, foreground timber supports, rotting scaffolding, hanging ropes, dripping water, dramatic teal lantern light casting long shadows, transparent elements revealing deeper cavern, retro adventure mood.",
+      "aspect": "16:9",
+      "worldHeight": 450
+    },
+    {
+      "key": "ground-rocky",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit retro pixel art tileable ground texture, dark jagged obsidian rock floor, rough cracked stone surface, highlights of gold dust, side scrolling platformer style.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "rail-straight",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "16-bit retro pixel art tileable minecart rail, rusted iron tracks bolted onto rotted dark wooden ties, suspended over darkness, side-scrolling style.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "mine-cart-rusted",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, single rusted iron mine-cart, tarnished metal plating, heavy iron wheels, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "support-beam-low",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, thick rotting timber support beam jutting down horizontally from the ceiling, rusted iron brackets, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 80
+    },
+    {
+      "key": "falling-debris",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, cluster of jagged obsidian boulders and crumbling stone debris falling downwards, motion lines, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "cave-bat",
+      "role": "npc",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, screeching cave bat with leathery wings, glowing red eyes, flapping pose, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "dynamite-crate",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, wooden dynamite crate with 'TNT' stamped in blood red, bubbling fuse sticking out, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 40
+    },
+    {
+      "key": "gold-ore-chunk",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, raw glittering chunk of tarnished gold ore, obsidian crust, glowing faintly, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 24
+    },
+    {
+      "key": "relic-old-lantern",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, ancient explorer lantern, tarnished brass frame, bright teal magical flame burning inside, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "switch-lever",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, heavy rusty iron track-switching lever mounted on a dark wooden base, tilted forward, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 48
+    },
+    {
+      "key": "gate-barricade",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, heavy wooden barricade reinforced with rusted iron bands, blocking the rail track, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 96
+    },
+    {
+      "key": "lava-glow",
+      "role": "decor",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, bubbling surface of molten blood-red lava, dramatic heat haze, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "checkpoint-bell",
+      "role": "decor",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, weathered brass alarm bell on a wooden post, tarnished gold luster, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 64
+    },
+    {
+      "key": "pot-clay",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "16-bit retro pixel art, ancient clay jar bound in rotted rope, storing old miner supplies, on a flat solid magenta background, transparent.",
+      "aspect": "1:1",
+      "worldHeight": 40
+    }
+  ],
+  "parallax": [
+    {
+      "art": "parallax-deep-mine",
+      "factor": 0.2
+    },
+    {
+      "art": "parallax-timber-scaffold",
+      "factor": 0.5
+    }
+  ],
+  "surfaces": [
+    {
+      "kind": "ground",
+      "length": 300,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 500,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 150,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 600,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 600,
+      "top": 120,
+      "anchorArt": "rail-straight"
+    },
+    {
+      "kind": "gap",
+      "length": 200,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "gap",
+      "length": 350,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 500,
+      "top": -40,
+      "anchorArt": "rail-straight"
+    },
+    {
+      "kind": "gap",
+      "length": 180,
+      "top": 0
+    },
+    {
+      "kind": "rail",
+      "length": 400,
+      "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 300,
+      "top": 0
+    }
+  ],
+  "placements": [
+    {
+      "art": "mine-cart-rusted",
+      "at": {
+        "surface": 0,
+        "t": 0.8,
+        "dy": 0
+      },
+      "z": 3,
+      "flipX": false
+    },
+    {
+      "art": "lava-glow",
+      "at": {
+        "surface": 8,
+        "t": 0.5,
+        "dy": -120
+      },
+      "z": 1,
+      "flipX": false
+    }
+  ],
+  "enemies": [
+    {
+      "art": "cave-bat",
+      "at": {
+        "surface": 2,
+        "t": 0.5,
+        "dy": 80
+      },
+      "behavior": "patrol",
+      "range": 60
+    },
+    {
+      "art": "cave-bat",
+      "at": {
+        "surface": 6,
+        "t": 0.5,
+        "dy": 100
+      },
+      "behavior": "chase",
+      "range": 0
+    }
+  ],
+  "collectibles": [
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 1,
+        "t": 0.3,
+        "dy": 40
+      },
+      "value": 100
+    },
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 1,
+        "t": 0.6,
+        "dy": 60
+      },
+      "value": 100
+    },
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 1,
+        "t": 0.9,
+        "dy": 40
+      },
+      "value": 100
+    },
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 5,
+        "t": 0.2,
+        "dy": 30
+      },
+      "value": 200
+    },
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 5,
+        "t": 0.5,
+        "dy": 30
+      },
+      "value": 200
+    },
+    {
+      "art": "gold-ore-chunk",
+      "at": {
+        "surface": 5,
+        "t": 0.8,
+        "dy": 30
+      },
+      "value": 200
+    }
+  ],
+  "pots": [
+    {
+      "art": "pot-clay",
+      "at": {
+        "surface": 9,
+        "t": 0.5,
+        "dy": 0
+      },
+      "drop": "health"
+    }
+  ],
+  "npcs": [],
+  "hazards": [
+    {
+      "art": "support-beam-low",
+      "at": {
+        "surface": 4,
+        "t": 0.3,
+        "dy": 0
+      },
+      "width": 48
+    },
+    {
+      "art": "dynamite-crate",
+      "at": {
+        "surface": 4,
+        "t": 0.7,
+        "dy": 0
+      },
+      "width": 32
+    },
+    {
+      "art": "falling-debris",
+      "at": {
+        "surface": 5,
+        "t": 0.6,
+        "dy": 120
+      },
+      "width": 40
+    },
+    {
+      "art": "support-beam-low",
+      "at": {
+        "surface": 11,
+        "t": 0.5,
+        "dy": 0
+      },
+      "width": 48
+    }
+  ],
+  "switches": [
+    {
+      "id": "lever-track-1",
+      "art": "switch-lever",
+      "at": {
+        "surface": 3,
+        "t": 0.4,
+        "dy": 0
+      },
+      "kind": "lever"
+    }
+  ],
+  "gates": [
+    {
+      "art": "gate-barricade",
+      "at": {
+        "surface": 5,
+        "t": 0.1,
+        "dy": 0
+      },
+      "opensWith": [
+        "lever-track-1"
+      ],
+      "blocksSurface": 5
+    }
+  ],
+  "keys": [],
+  "movingPlatforms": [],
+  "secrets": [
+    {
+      "art": "relic-old-lantern",
+      "at": {
+        "surface": 5,
+        "t": 0.9,
+        "dy": 100
+      },
+      "hint": "High speed track leap rewards the daring explorer with the lost lantern relic.",
+      "value": 1000
+    }
+  ],
+  "checkpoints": [
+    {
+      "art": "checkpoint-bell",
+      "at": {
+        "surface": 7,
+        "t": 0.2,
+        "dy": 0
+      }
+    }
+  ],
+  "spawn": {
+    "surface": 0,
+    "t": 0.1,
+    "dy": 0
+  },
+  "goal": {
+    "surface": 12,
+    "t": 0.8,
+    "dy": 0
+  }
+}
