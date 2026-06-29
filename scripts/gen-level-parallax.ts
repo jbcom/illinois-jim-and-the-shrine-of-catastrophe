@@ -17,26 +17,43 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const STYLE =
   "16-bit SNES/Genesis-era pixel art, painterly parallax, rich saturated retro palette, " +
-  "clean readable shapes, no text, no UI.";
+  "clean readable shapes.";
+
+/**
+ * Hard negative constraint appended to EVERY layer prompt. Gemini has a strong
+ * habit of painting a faux arcade chrome into level backdrops — a top HUD bar
+ * reading "SCORE: 00000  ILLINOIS JIM", a wordmark, a frame border. A passive
+ * "no text" in the positive style string was not enough (it shipped that exact
+ * bar into the jungle leaves layer), so we name the failure explicitly and put
+ * it last, where it carries the most weight.
+ */
+const NO_CHROME =
+  " ABSOLUTELY NO TEXT of any kind: no letters, no words, no numbers, no SCORE counter, " +
+  "no HUD bar, no status bar, no title, no wordmark (never the words 'ILLINOIS JIM'), " +
+  "no UI, no frame border, no watermark, no logo. Pure scenery art only — every pixel is " +
+  "the depicted environment, edge to edge, with nothing overlaid on top of it.";
 
 function promptFor(level: Level, asset: Level["art"][number]): string {
   if (asset.role === "parallax") {
     return (
       `${STYLE} A wide empty PARALLAX BACKDROP layer for biome ${level.biome}: ${asset.prompt}. ` +
       "A distant, depopulated atmospheric vista filling the whole frame — open sky and far " +
-      "scenery only, no characters, no foreground objects, no walkable ground path."
+      "scenery only, no characters, no foreground objects, no walkable ground path." +
+      NO_CHROME
     );
   }
   if (asset.role === "ground") {
     return (
       `${STYLE} A seamless horizontally-tileable GROUND/SURFACE strip for biome ${level.biome}: ` +
-      `${asset.prompt}. Fills the frame edge to edge, no characters, no props, top-lit.`
+      `${asset.prompt}. Fills the frame edge to edge, no characters, no props, top-lit.` +
+      NO_CHROME
     );
   }
   // decor / overlay (e.g. a waterfall sheet) — a full-frame translucent-looking sheet.
   return (
     `${STYLE} A full-frame atmospheric OVERLAY sheet for biome ${level.biome}: ${asset.prompt}. ` +
-    "Centered vertical motion element, dark margins, no characters, no ground, no props."
+    "Centered vertical motion element, dark margins, no characters, no ground, no props." +
+    NO_CHROME
   );
 }
 
@@ -55,6 +72,10 @@ async function main() {
   const rolesIdx = process.argv.indexOf("--roles");
   const rolesArg = (rolesIdx >= 0 ? process.argv[rolesIdx + 1] : undefined) ?? "parallax,ground,decor";
   const roles = new Set(rolesArg.split(","));
+  // `--only <key[,key2]>` regenerates just the named asset(s) — e.g. re-roll a
+  // single defective layer without spending credits re-rolling its clean siblings.
+  const onlyIdx = process.argv.indexOf("--only");
+  const only = onlyIdx >= 0 ? new Set((process.argv[onlyIdx + 1] ?? "").split(",")) : undefined;
 
   // biome-only import of the level JSON.
   const raw = await import(`../src/levels/${levelId}.level.json`, { with: { type: "json" } });
@@ -64,8 +85,9 @@ async function main() {
   const outDir = join(ROOT, "raw-assets", "generated", "levels", level.id);
   mkdirSync(outDir, { recursive: true });
 
-  const targets = level.art.filter((a) => roles.has(a.role));
-  console.warn(`level ${level.id}: generating ${targets.length} layer(s) [${[...roles].join(",")}]`);
+  const targets = level.art.filter((a) => roles.has(a.role) && (!only || only.has(a.key)));
+  const scope = only ? `only [${[...only].join(",")}]` : `[${[...roles].join(",")}]`;
+  console.warn(`level ${level.id}: generating ${targets.length} layer(s) ${scope}`);
   for (const asset of targets) {
     const big = asset.role === "parallax";
     const opts = { aspectRatio: asset.aspect, imageSize: big ? "2K" : "1K", model: big ? IMAGE_MODEL_PRO : IMAGE_MODEL_FLASH };
