@@ -14,5 +14,9 @@
     "noUnusedParameters": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "vitest.config.ts", "scripts/**/*.ts"]
+  "include": ["vite.config.ts", "playwright.config.ts", "vitest.config.ts", "scripts/**/*.ts"],
+  // The genai-level pipeline is a tsx-run tool that imports app code via @sim path
+  // aliases + the .mjs Gemini client; it's exercised by RUNNING it (TSX_TSCONFIG_PATH
+  // =tsconfig.app.json), not by the node typecheck, which lacks the app paths.
+  "exclude": ["scripts/genai-level.ts", "scripts/levelBriefs.ts"]
 }

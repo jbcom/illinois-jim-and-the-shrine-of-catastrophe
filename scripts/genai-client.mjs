@@ -11,6 +11,7 @@ import { GoogleGenAI } from "@google/genai";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const DEFAULT_IMAGE_MODEL = "imagen-4.0-fast-generate-001";
+export const DEFAULT_TEXT_MODEL = "gemini-2.5-pro";
 
 /** Read GEMINI_API_KEY from env or the gitignored .env. */
 export function readGeminiKey() {
@@ -39,5 +40,28 @@ export function geminiGenerateImage(apiKey, model = DEFAULT_IMAGE_MODEL) {
     });
     const b64 = res?.generatedImages?.[0]?.image?.imageBytes;
     return b64 ? Buffer.from(b64, "base64") : null;
+  };
+}
+
+/**
+ * Text/code generation — (system, user) → string. Used to have Gemini emit a Level
+ * JSON conforming to the Zod schema. `responseMimeType: application/json` asks the
+ * model for raw JSON; the caller still validates with parseLevel (and retries with
+ * the ZodError fed back). Throws without a key.
+ */
+export function geminiGenerateText(apiKey, model = DEFAULT_TEXT_MODEL) {
+  if (!apiKey) throw new Error("geminiGenerateText: missing GEMINI_API_KEY");
+  const ai = new GoogleGenAI({ apiKey });
+  return async (system, user, { json = true } = {}) => {
+    const res = await ai.models.generateContent({
+      model,
+      contents: [{ role: "user", parts: [{ text: user }] }],
+      config: {
+        systemInstruction: system,
+        ...(json ? { responseMimeType: "application/json" } : {}),
+        temperature: 0.9,
+      },
+    });
+    return res?.text ?? res?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   };
 }
