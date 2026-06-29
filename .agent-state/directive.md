@@ -63,13 +63,17 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       arms fail Meshy rigging — captured in [[character-bake-pipeline]]). Full baked cast:
       player(5) + 2 enemies + 4 NPCs.
 
+- [x] Goblin + skeleton hurt + death clips authored + baked + wired (enemies animate on
+      hit/death, no idle fallback). author_anim.py CLIP_AUTHORS; bake-character.sh takes
+      an optional clip-set arg. 5-state enemy test asserts each clip non-blank.
+
 ### Queue
-- [ ] Bake goblin/skeleton hurt + death clips (author non-loop poses) so enemies don't
-      fall back to idle on hit/death; extend author_anim.py with those clip types. [TOP]
+- [ ] LEVEL 1 ASSEMBLY (clifftop-village): generate the gemini-3.1-flash-image parallax
+      background(s), then compose baked actors (Jim + elder-mara + watchman-pell) + a few
+      props onto it; live-verify the full scene screenshot — craft + zero asset loss. [TOP]
+- [ ] Props/buildings/cave GLBs via Meshy → bake (static or simple anims) for Level 1.
 - [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d (or keep strip art);
-      decide per-enemy. Then props/buildings/cave GLBs via Meshy → bake (static).
-- [ ] Assemble + live-verify a full Level 1 scene (baked actors + props on a gemini
-      parallax background), reading the screenshot for craft + zero asset loss.
+      decide per-enemy.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
       fall back to idle on hit/death; extend author_anim.py with those clip types.
 - [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
