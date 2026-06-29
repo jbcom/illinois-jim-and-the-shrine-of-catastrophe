@@ -26,7 +26,16 @@ describe("baked prop over parallax (transparent building proof)", () => {
     host.remove();
   });
 
-  const PROPS = ["pitched-house", "pitched-house-2", "market-stall", "cliff-ledge", "pot"] as const;
+  const PROPS = [
+    "pitched-house",
+    "pitched-house-2",
+    "market-stall",
+    "cliff-ledge",
+    "pot",
+    "switch-lever",
+    "gate-trailhead",
+    "relic-coin",
+  ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {
     const level = parseLevel(levelJson);
