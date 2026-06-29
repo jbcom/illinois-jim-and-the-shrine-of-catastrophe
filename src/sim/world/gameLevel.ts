@@ -29,6 +29,8 @@ export interface PotSpawn extends GameLevelSpawn {
 export interface EnemySpawn extends GameLevelSpawn {
   readonly kind: "patrol" | "chase";
   readonly visual: "goblin" | "skeleton" | "mushroom" | "flyingEye";
+  /** Authored patrol half-width in px (ignored for chase). Omitted → engine default. */
+  readonly range?: number;
 }
 
 /** A story NPC placed by design; `dialogueId` keys src/sim/story/dialogue.ts. */

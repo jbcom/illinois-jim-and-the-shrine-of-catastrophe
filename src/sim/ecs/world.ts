@@ -90,8 +90,15 @@ export function createSimWorld(level: Level, tuning: PlayerTuning = DEFAULT_TUNI
         visual: (e as { visual?: "goblin" | "skeleton" | "mushroom" | "flyingEye" }).visual ??
           (e.kind === "chase" ? "skeleton" : "goblin"),
         speed: e.kind === "chase" ? 55 : 40,
-        minX: e.x - ts * 3,
-        maxX: e.x + ts * 4,
+        // Use the authored patrol half-width when a GameLevel provides one, so wide
+        // designed patrols read as intended; older ASCII levels keep the ±3-4 tile default.
+        ...(() => {
+          const range = (e as { range?: number }).range;
+          const half = range && range > 0 ? range : undefined;
+          return half !== undefined
+            ? { minX: e.x - half, maxX: e.x + half }
+            : { minX: e.x - ts * 3, maxX: e.x + ts * 4 };
+        })(),
         alive: true,
       }),
     );

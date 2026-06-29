@@ -110,12 +110,14 @@ function genaiBundle(json: unknown, groundFill?: LevelBundle["groundFill"]): Lev
       ...built.collectibles.map((c) => ({ x: c.x, y: c.y, value: c.value })),
       ...built.secrets.map((s) => ({ x: s.x, y: s.y, value: s.value })),
     ],
-    // Route each enemy to its visual by art key (crow→flyingEye, etc.).
+    // Route each enemy to its visual by art key (crow→flyingEye, etc.) and carry the
+    // authored patrol range so wide-pacing foes read as designed (not a fixed ±3-4 tiles).
     enemies: built.enemies.map((e) => ({
       x: e.x,
       y: e.y,
       kind: e.behavior,
       visual: ENEMY_VISUAL[e.art] ?? "flyingEye",
+      range: e.range,
     })),
     pots: built.pots.map((p) => ({ x: p.x, y: p.y, color: "gray" as const, drop: p.drop })),
     switches: built.switches.map((s) => ({ x: s.x, y: s.y, id: s.id })),

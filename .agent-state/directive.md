@@ -163,21 +163,25 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       baked + 4 reused (Meshy credits ran dry mid-batch), parallax curated, bundle registered
       (5th), live-verified in Chrome. crystal-spider→goblin, lost-miner→watchman-pell.
 
-- [ ] **[BLOCKED — Meshy credits exhausted (balance 3)]** Levels 6-10 each need ~10 baked
-      3D props; generating them requires Meshy credits I can't purchase without payment
-      authorization. When credits return: author Levels 6-10 (sunken-ruins, lava-temple,
-      sky-fortress?, … per briefs) → bake props → gen-level-parallax → register → live-verify,
-      one per cycle. ALSO swap the 4 Level-5 reuse props for dedicated bakes. [TOP, blocked]
-- [ ] Non-blocked polish while credits are out: each live level could use a per-level
-      groundFill review, the gate OPEN/CLOSED switch-on/off visual state (gate fade exists;
-      switch on/off remains), and a story-flow pass so the 5 baked levels chain via cutscenes.
-- [ ] Jungle enemies (canopy-panther, carnivorous-plant) render as goblin/mushroom stand-ins.
-      Bake dedicated jungle-enemy characters: panther via image-to-3d (quadruped, not the
-      humanoid rig) + carnivorous-plant as an animated snapping prop; wire new visual kinds.
+- [x] Switch ON/OFF visual state shipped — paintingFromLevel tags each switch `switch:<i>`,
+      paintingRenderer lights the lever white-hot when latched (mirrors the gate-fade pass).
+      The problem-solving-layer feedback loop is now complete (gate fade + switch light).
+
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
       Add range to EnemySpawn + use it in createSimWorld so wide patrols read as authored.
-- [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
-      fall back to idle on hit/death; extend author_anim.py with those clip types.
+      Pure-sim, no Meshy — improves all 5 live levels' patrol read. [TOP]
+- [ ] [WAIT-USER] **Meshy credits exhausted (balance 3; a prop preview costs 20).** Levels
+      6-10 each need ~10 baked 3D props — generating them needs credits I can't purchase
+      without the user's payment authorization. When topped up: author Levels 6-10 (sunken-
+      ruins, lava-temple, … per briefs) → bake props → gen-level-parallax → register → live-
+      verify, one per cycle. ALSO swap the 4 Level-5 reuse props for dedicated bakes.
+- [ ] [WAIT-USER] (Meshy-blocked) Jungle enemies (canopy-panther, carnivorous-plant) render
+      as goblin/mushroom stand-ins. Bake dedicated jungle-enemy characters: panther via
+      image-to-3d (quadruped, not the humanoid rig) + carnivorous-plant as an animated
+      snapping prop; wire new visual kinds. Needs Meshy credits.
+- [ ] [WAIT-USER] (Meshy-blocked) Bake hurt/death clips for the goblin (author non-loop
+      poses) so enemies don't fall back to idle on hit/death; extend author_anim.py with
+      those clip types. Needs the rigged goblin GLB re-baked → Meshy credits.
 - [x] Mushroom + flyingEye non-humanoid: kept strip art (decided per-enemy). Level 1
       props/buildings/cave GLBs via Meshy → baked static. (Level 1 ships live.)
 - [x] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → baked.
