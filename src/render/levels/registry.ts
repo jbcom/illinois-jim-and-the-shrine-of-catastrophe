@@ -47,7 +47,10 @@ const REGISTRY: Record<string, LevelBundle> = {
     frame: VILLAGE_APPROACH_FRAME,
     // Overworld grass-topped dirt tiles are partly transparent — fill the floor
     // with a solid earth brown from the ground line down so no sky shows through.
-    groundFill: { color: 0x2c1d10, groundY: 318, width: 2240 },
+    // A slim crafted-earth band directly under the grass cap (grass top 250, cap
+    // ~34px) — a warm soil tone, not flat black. The frame bottom is just below it
+    // so the floor is a thin strip, never a dark void.
+    groundFill: { color: 0x6b4a2a, groundY: 276, width: 2240 },
   },
   "cave-descent": {
     id: "cave-descent",

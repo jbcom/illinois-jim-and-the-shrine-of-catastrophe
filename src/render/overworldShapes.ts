@@ -63,6 +63,13 @@ export const OVERWORLD = {
    * sparse tufts over the sky parallax.
    */
   ground: { sheet: `${OW}/Floor Tiles1.png`, x: 0, y: 0, w: 96, h: 96 },
+  /**
+   * GRASS CAP — just the grass crown + a thin dirt lip from the top of the ground
+   * tile (top ~34px). Tiled along the surface line it gives a THIN crafted earth
+   * strip (the groundFill earth backs it just below), instead of the full 96px
+   * dark-dirt block that read as a wasted brown void.
+   */
+  grassCap: { sheet: `${OW}/Floor Tiles1.png`, x: 0, y: 0, w: 96, h: 34 },
 } as const;
 
 /**

@@ -222,6 +222,11 @@ export async function createGame(
       pos.y + sim.tuning.height / 2,
       bounds,
     );
+    // PIN the vertical view to the authored band (the renderer cover-scales the
+    // frame top→bottom to fill the screen). Vertical camera scroll would reveal the
+    // dead world BELOW the floor (the dirt void) or above the ceiling — the level
+    // is authored so the whole playable band fits the frame, so we never scroll Y.
+    camera = { ...camera, y: 0 };
   }
 
   /** Handle player death: lose a life + rebuild, or end the run at zero lives. */

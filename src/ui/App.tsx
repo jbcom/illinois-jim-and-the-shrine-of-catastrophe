@@ -19,6 +19,7 @@ import { hudStore, useHud } from "@ui/hudState.ts";
 import { Landing } from "@ui/Landing.tsx";
 import { ResultScreen } from "@ui/Screens.tsx";
 import { RotatePrompt } from "@ui/RotatePrompt.tsx";
+import { TouchControls } from "@ui/TouchControls.tsx";
 import { useOrientation } from "@ui/orientationStore.ts";
 import { useMachine } from "@xstate/react";
 import { useEffect, useRef } from "react";
@@ -139,6 +140,7 @@ export function App() {
     <main className="relative h-full w-full">
       <div ref={hostRef} className="absolute inset-0 h-full w-full" />
       {state === "playing" && <Hud />}
+      {state === "playing" && <TouchControls />}
       {state === "playing" && <DialogueBox />}
       {state === "cutscene" && cutscene && (
         <CutscenePlayer cutscene={cutscene} onComplete={() => send({ type: "CUTSCENE_DONE" })} />

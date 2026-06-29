@@ -12,6 +12,7 @@
  * lock-required device is held in portrait (see RotatePrompt in the UI).
  */
 import { classifyDevice, type DeviceClass } from "@engine/viewport/deviceProfile.ts";
+import { isAndroidUA } from "@engine/viewport/ua.ts";
 import { Capacitor } from "@capacitor/core";
 
 export interface OrientationState {
@@ -36,6 +37,9 @@ export function readOrientationState(win: {
     height: win.innerHeight,
     dpr: win.devicePixelRatio || 1,
     platform,
+    // On the web build (always platform:"web" on Pages), the UA hint lets a large
+    // unfolded foldable classify as foldable (free orientation) instead of phone.
+    androidUA: isAndroidUA(),
   });
   const isPortrait = win.innerHeight > win.innerWidth;
   const needsRotatePrompt = profile.lockLandscape && platform === "web" && isPortrait;

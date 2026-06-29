@@ -10,7 +10,14 @@
  * to a `Placement` (top-left x/y in world px) the existing compositor consumes.
  */
 import type { Placement, ShapeStamp } from "@render/composition.ts";
-import { type Anchor, type LevelSpec, resolveAnchor, resolveSegments } from "@sim/world/levelSpec.ts";
+import {
+  type Anchor,
+  type LevelSpec,
+  type Platform,
+  resolveAnchor,
+  resolvePlatform,
+  resolveSegments,
+} from "@sim/world/levelSpec.ts";
 
 /** How a prop attaches vertically to its anchor point. */
 export type PropAlign =
@@ -52,5 +59,54 @@ export function paintingFromSpec(spec: LevelSpec, props: readonly PropPlacement[
     }
     // `base`: bottom edge of the stamp rests on the surface at (x,y).
     return { stamp: p.stamp, x: left, y: y - p.stamp.h * scale, scale, z: p.z ?? 0, flipX: p.flipX ?? false };
+  });
+}
+
+/**
+ * How a platform's anchor object draws relative to its standable top.
+ * - `top`: the prop's TOP edge sits AT the standable surface (a flat awning/wall/
+ *   roof whose top is the walkable line; the body hangs below).
+ * - `whole`: the prop is drawn at native size with its top at the surface (a roof
+ *   shape that reads as a building top).
+ */
+export interface PlatformPaint {
+  readonly stamp: ShapeStamp;
+  readonly scale?: number;
+  readonly z?: number;
+  readonly flipX?: boolean;
+  /** Stretch the stamp horizontally to span the platform width (default false). */
+  readonly span?: boolean;
+  /** Vertical nudge of the stamp's top relative to the standable surface (px). */
+  readonly dy?: number;
+}
+
+/**
+ * Draw each platform's ANCHOR OBJECT at the SAME resolved position the collision
+ * uses (resolvePlatform), so the visible rooftop/awning/wall lines up exactly with
+ * its standable Platform tiles — killing the collision-vs-painting drift that hand-
+ * tuning the platform `top` separately from the building stamp re-introduces. Each
+ * entry pairs a spec platform (by index) with the stamp that draws it.
+ */
+export function platformPaintings(
+  spec: LevelSpec,
+  paints: readonly (PlatformPaint & { platform: number })[],
+): Placement[] {
+  const plats = spec.platforms ?? [];
+  return paints.map((pp): Placement => {
+    const plat: Platform | undefined = plats[pp.platform];
+    if (!plat) throw new Error(`platformPaintings references missing platform ${pp.platform}`);
+    const r = resolvePlatform(spec, plat);
+    const scale = pp.scale ?? 1;
+    // The stamp's TOP edge sits on the standable surface (y), body hanging below.
+    const topY = r.y + (pp.dy ?? 0);
+    return {
+      stamp: pp.stamp,
+      x: r.x,
+      y: topY,
+      // `span` stretches the stamp to the platform width via a horizontal scale.
+      scale: pp.span ? scale : scale,
+      z: pp.z ?? 2,
+      flipX: pp.flipX ?? false,
+    };
   });
 }

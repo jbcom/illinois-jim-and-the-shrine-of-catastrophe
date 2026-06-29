@@ -142,11 +142,14 @@ export async function createPaintingRenderer(
   app.stage.addChild(parallax.container, worldLayer);
 
   // Solid ground fill behind the painting (biomes with transparent ground
-  // brushes). Drawn from groundY down well past the frame so the floor is opaque.
+  // brushes). Drawn from groundY down to JUST past the authored frame bottom — a
+  // thin under-soil seam beneath the grass, NOT a giant void. The contiguous
+  // grass brushes are sized to cover above it, so no fill shows through.
   if (spec.groundFill) {
     const { color, groundY, width } = spec.groundFill;
+    const depth = Math.max(40, spec.frameBottom - groundY + 24);
     const fill = new Graphics()
-      .rect(-200, groundY, width + 400, spec.frameBottom - groundY + 600)
+      .rect(-200, groundY, width + 400, depth)
       .fill(color);
     worldLayer.addChild(fill);
   }
