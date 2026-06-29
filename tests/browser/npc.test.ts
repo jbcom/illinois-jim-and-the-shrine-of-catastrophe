@@ -8,6 +8,7 @@ import {
   npcLayerUrls,
   type NpcSpec,
 } from "@render/npc.ts";
+import { BAKED_NPCS } from "@render/npcRoster.ts";
 import { page } from "vitest/browser";
 import { AnimatedSprite, Application } from "pixi.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -147,22 +148,28 @@ describe("baked NPC (3D→WebP)", () => {
     canvas?.remove();
   });
 
-  it("renders the baked Elder Mara idle (visual proof)", async () => {
-    app = new Application();
-    await app.init({ canvas: canvas!, width: 240, height: 200, background: "#17110b", resolution: 1 });
+  // Every registered baked NPC must load + render real pixels (the registry is the
+  // source of truth, so a newly-added NPC is covered without editing the test).
+  it.each(Object.keys(BAKED_NPCS))(
+    "renders the baked NPC %s (visual proof)",
+    async (id) => {
+      const base = BAKED_NPCS[id]?.base as string;
+      app = new Application();
+      await app.init({ canvas: canvas!, width: 240, height: 200, background: "#17110b", resolution: 1 });
 
-    const npc = await createBakedNpcSprite("assets/sprites/elder-mara");
-    npc.sprite.scale.set(0.62);
-    npc.sprite.x = 120;
-    npc.sprite.y = 194;
-    app.stage.addChild(npc.sprite);
-    app.render();
+      const npc = await createBakedNpcSprite(base);
+      npc.sprite.scale.set(0.62);
+      npc.sprite.x = 120;
+      npc.sprite.y = 194;
+      app.stage.addChild(npc.sprite);
+      app.render();
 
-    await page.screenshot({ path: "npc-elder-mara.png" });
-    const { pixels } = app.renderer.extract.pixels(app.stage);
-    let opaque = 0;
-    for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
-    expect(opaque).toBeGreaterThan(1500);
-    npc.destroy();
-  });
+      await page.screenshot({ path: `npc-${id}.png` });
+      const { pixels } = app.renderer.extract.pixels(app.stage);
+      let opaque = 0;
+      for (let i = 3; i < pixels.length; i += 4) if ((pixels[i] ?? 0) > 16) opaque++;
+      expect(opaque, `${id} blank`).toBeGreaterThan(1500);
+      npc.destroy();
+    },
+  );
 });
