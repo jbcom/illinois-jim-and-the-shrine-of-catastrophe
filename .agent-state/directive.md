@@ -87,12 +87,13 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       props + baked actors (Jim, Mara, Pell, Cole, goblin) compose into a crafted
       dusk-village scene, no checkerboard. The 3D-bake art pipeline is proven end to end.
 
+- [x] Baked the last 3 Level 1 props (hazard-spikes, moving-platform, secret-relic).
+      ALL 11 Level 1 structure/prop art keys are now transparent baked-3D — zero Gemini
+      checkerboard art remains in the level.
+
 ### Queue
-- [ ] Bake hazard-spikes + moving-platform-wood + secret-relic props (the last 3
-      transparent Level 1 art keys still on broken Gemini art) → add to fromLevel
-      BAKED_PROP. [TOP]
 - [ ] Mushroom + flyingEye enemies are non-humanoid — image-to-3d → bake; wire into the
-      enemySprites BAKED backend. Then they too animate transparent in-engine.
+      enemySprites BAKED backend. Then they too animate transparent in-engine. [TOP]
 - [ ] Wire the live game loop (App.tsx) to mount the painting renderer on Level 1 so
       the assembled scene runs interactively, not just in tests — live-verify in browser.
 - [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
