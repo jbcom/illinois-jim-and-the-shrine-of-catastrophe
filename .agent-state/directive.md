@@ -43,15 +43,22 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       public/assets/sprites/jim/. Contract test tests/unit/spriteSheets.test.ts (4 pass).
       Screenshot-verified: clean side profile facing right, real stride, arms at sides.
 
+### Done (continued)
+- [x] Jim whip-attack clip baked + wired; orphaned old player PNGs deleted; bake +
+      renderer reviewer fixes folded forward. Player ships idle/walk/run/jump/attack.
+- [x] GOBLIN enemy: Meshy 3D (t-pose→texture→rig, same 24-bone humanoid) baked with
+      the SAME pipeline (zero script changes) → 5 WebP clips, wired into enemySprites
+      via a BAKED backend, screenshot-verified in-engine. Pipeline proven reusable.
+
 ### Queue
-- [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
-      Also bake Jim's WHIP-ATTACK clip (attack currently falls back to idle) and delete
-      the orphaned public/assets/player/*.png (superseded by baked sheets). [TOP]
-- [ ] Reviewer fixes for the bake pipeline (commit 489c667): (#1) pack-sheet.ts guard
-      all-transparent bbox → throw not anchorY=0; (#2) bake.py use evaluated/deformed
-      bounds across anim frames so jump doesn't clip; (#3) view_layer.update() right
-      after NLA promote; (#4/#5) bake-character.sh: don't double-bake walk, log Blender
-      stderr instead of 2>/dev/null; (#7) spriteSheets.test anchor-consistency assert.
+- [ ] SKELETON enemy via Meshy (t-pose→rig→bake) → wire into the enemySprites BAKED
+      backend like the goblin. [TOP]
+- [ ] At least one story NPC via Meshy (t-pose→rig→bake idle/walk) → wire into the NPC
+      factory (src/render/npc.ts / npcRoster.ts) as a baked actor.
+- [ ] Bake hurt/death clips for the goblin (author non-loop poses) so enemies don't
+      fall back to idle on hit/death; extend author_anim.py with those clip types.
+- [ ] Mushroom + flyingEye are non-humanoid — image-to-3d (or keep strip art); decide
+      per-enemy. Props/buildings/cave GLBs via Meshy → bake (static) for Level 1.
 - [ ] NPCs + humanoid enemies via Meshy (T-pose → rig → custom animate attack) → bake.
 - [ ] PROPS / BUILDINGS / CAVE / obstacle / collectible GLBs via Meshy → bake to webp
       (static or simple anims) for Level 1.
