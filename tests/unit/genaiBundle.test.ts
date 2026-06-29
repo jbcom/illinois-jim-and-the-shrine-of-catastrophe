@@ -148,3 +148,37 @@ describe("GenAI Level 3 bundle (the-rushing-gorge)", () => {
     }
   });
 });
+
+/**
+ * The GenAI Level 4 (the-abandoned-mine) is registered as the live fourth level.
+ * The cave-bat enemy adapts to a flying visual; the rocky/rail/lava-glow ground &
+ * decor textures must stay out of the painting (groundFill + parallax only).
+ */
+describe("GenAI Level 4 bundle (the-abandoned-mine)", () => {
+  const ID = "the-abandoned-mine";
+
+  it("is registered and plays right after Level 3", () => {
+    expect(LEVEL_ORDER).toContain(ID);
+    expect(nextLevelId("the-rushing-gorge")).toBe(ID);
+  });
+
+  it("adapts the cave-bat enemy to a valid flying visual", () => {
+    const b = levelBundle(ID);
+    expect(b.sim.enemies.length).toBeGreaterThan(0);
+    for (const e of b.sim.enemies) {
+      expect(["patrol", "chase"]).toContain(e.kind);
+      expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+    }
+  });
+
+  it("fills the mine floor and never paints an OPAQUE level-art ground/lava sprite", () => {
+    const b = levelBundle(ID);
+    expect(b.groundFill).toBeDefined();
+    // The opaque Gemini ground/decor textures (served from /levels/<id>/) must never
+    // be painted as foreground sprites. A baked transparent rail PROP (served from
+    // /assets/props/) is fine — rails must read as visible track on a minecart level.
+    for (const p of b.artPainting ?? []) {
+      expect(p.url).not.toMatch(/\/levels\/the-abandoned-mine\/(ground-rocky|rail-straight|lava-glow|parallax)/);
+    }
+  });
+});

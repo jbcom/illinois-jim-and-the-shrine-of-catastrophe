@@ -235,16 +235,6 @@
       },
       "z": 3,
       "flipX": false
-    },
-    {
-      "art": "lava-glow",
-      "at": {
-        "surface": 8,
-        "t": 0.5,
-        "dy": -120
-      },
-      "z": 1,
-      "flipX": false
     }
   ],
   "enemies": [

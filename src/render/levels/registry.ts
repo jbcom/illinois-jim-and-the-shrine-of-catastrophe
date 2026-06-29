@@ -21,6 +21,7 @@ import { parseLevel } from "@sim/world/levelSchema.ts";
 import halwardJson from "@/levels/halward-s-reach.level.json";
 import whisperingJungleJson from "@/levels/the-whispering-jungle.level.json";
 import rushingGorgeJson from "@/levels/the-rushing-gorge.level.json";
+import abandonedMineJson from "@/levels/the-abandoned-mine.level.json";
 import {
   type EnemySpawn,
   type GameLevel,
@@ -71,6 +72,9 @@ const ENEMY_VISUAL: Record<string, EnemySpawn["visual"]> = {
   // Level 3 — The Rushing Gorge. The river serpent is a sinuous water threat;
   // the flyingEye's floating/weaving visual reads closest until a baked serpent.
   "river-serpent": "flyingEye",
+  // Level 4 — The Abandoned Mine. The cave bat is a flying cave creature — the
+  // flyingEye's hovering visual is an exact fit.
+  "cave-bat": "flyingEye",
 };
 
 /** Schema NPC dialogueId → baked roster id. Unmapped ids pass through (warned). */
@@ -139,11 +143,15 @@ const WHISPERING_JUNGLE = genaiBundle(whisperingJungleJson, { color: 0x2c3a22, g
 // waterline (the riverbed/water-surface art are parallax/ground textures, never
 // foreground sprites). baselineY 250, map 300 tiles × 16px.
 const RUSHING_GORGE = genaiBundle(rushingGorgeJson, { color: 0x1b3a44, groundY: 276, width: 4800 });
+// The mine floor is dark rock — a near-black warm-brown band (the rocky/rail
+// textures are ground/parallax, never sprites). baselineY 250, map 305 tiles × 16px.
+const ABANDONED_MINE = genaiBundle(abandonedMineJson, { color: 0x231a14, groundY: 276, width: 4880 });
 
 const REGISTRY: Record<string, LevelBundle> = {
   [HALWARD.id]: HALWARD,
   [WHISPERING_JUNGLE.id]: WHISPERING_JUNGLE,
   [RUSHING_GORGE.id]: RUSHING_GORGE,
+  [ABANDONED_MINE.id]: ABANDONED_MINE,
   "village-approach": {
     id: "village-approach",
     sim: VILLAGE,
@@ -204,6 +212,7 @@ export const LEVEL_ORDER: readonly string[] = [
   HALWARD.id,
   WHISPERING_JUNGLE.id,
   RUSHING_GORGE.id,
+  ABANDONED_MINE.id,
   "village-approach",
   "cave-descent",
   "shrine-approach",

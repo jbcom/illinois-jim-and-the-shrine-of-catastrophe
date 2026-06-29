@@ -64,6 +64,16 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "runic-disk-key",
     "floating-crate-pot",
     "sharp-river-rocks",
+    // Level 4 — The Abandoned Mine.
+    "rail-straight",
+    "mine-cart-rusted",
+    "support-beam-low",
+    "falling-debris",
+    "dynamite-crate",
+    "gold-ore-chunk",
+    "relic-old-lantern",
+    "gate-barricade",
+    "pot-clay",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {

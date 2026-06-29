@@ -65,6 +65,18 @@ const BAKED_PROP: Record<string, string> = {
   "runic-disk-key": "runic-disk-key",
   "floating-crate-pot": "floating-crate-pot",
   "sharp-river-rocks": "sharp-river-rocks",
+  // Level 4 — The Abandoned Mine (switch-lever reuses Level 1's baked prop).
+  // rail-straight is the rail SURFACE anchorArt (role:ground) — baked transparent so
+  // the track reads as visible rails, not an opaque Gemini ground-texture rectangle.
+  "rail-straight": "rail-straight",
+  "mine-cart-rusted": "mine-cart-rusted",
+  "support-beam-low": "support-beam-low",
+  "falling-debris": "falling-debris",
+  "dynamite-crate": "dynamite-crate",
+  "gold-ore-chunk": "gold-ore-chunk",
+  "relic-old-lantern": "relic-old-lantern",
+  "gate-barricade": "gate-barricade",
+  "pot-clay": "pot-clay",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */
