@@ -159,13 +159,18 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       opaque-trap), parallax curated, bundle registered (4th), live-verified in Chrome.
       cave-bat→flyingEye. Rule extended: role:ground reaches the painting via SURFACE
       anchorArt too (not just placements) — bake it transparent or it stamps rectangles.
-- [ ] Author Level 5 (The Crystal Cavern — crystal-cavern, puzzle/platformer) per its brief:
-      pnpm level:gen --level 5 → validate → bake props (crystal formations/platforms, geodes,
-      light-receiver crystals, crystal gates, shard collectibles) → gen-level-parallax (luminous
-      crystal layers) → register bundle (5th) → live-verify in Chrome. [TOP]
-- [ ] Author Levels 6-10 GenAI JSONs per their briefs; bake each biome's props + curate
-      parallax; register each bundle in LEVEL_ORDER so the full adventure runs baked. One
-      level per work cycle, each live-verified in Chrome before the next.
+- [x] Level 5 (The Crystal Cavern — crystal-cavern) authored, validated, 6 crystal props
+      baked + 4 reused (Meshy credits ran dry mid-batch), parallax curated, bundle registered
+      (5th), live-verified in Chrome. crystal-spider→goblin, lost-miner→watchman-pell.
+
+- [ ] **[BLOCKED — Meshy credits exhausted (balance 3)]** Levels 6-10 each need ~10 baked
+      3D props; generating them requires Meshy credits I can't purchase without payment
+      authorization. When credits return: author Levels 6-10 (sunken-ruins, lava-temple,
+      sky-fortress?, … per briefs) → bake props → gen-level-parallax → register → live-verify,
+      one per cycle. ALSO swap the 4 Level-5 reuse props for dedicated bakes. [TOP, blocked]
+- [ ] Non-blocked polish while credits are out: each live level could use a per-level
+      groundFill review, the gate OPEN/CLOSED switch-on/off visual state (gate fade exists;
+      switch on/off remains), and a story-flow pass so the 5 baked levels chain via cutscenes.
 - [ ] Jungle enemies (canopy-panther, carnivorous-plant) render as goblin/mushroom stand-ins.
       Bake dedicated jungle-enemy characters: panther via image-to-3d (quadruped, not the
       humanoid rig) + carnivorous-plant as an animated snapping prop; wire new visual kinds.
