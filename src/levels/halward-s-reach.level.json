@@ -4,182 +4,190 @@
   "order": 1,
   "biome": "clifftop-village",
   "types": [
-    "platformer",
-    "puzzle"
+    "platformer"
   ],
   "targetMinutes": 7,
   "story": {
     "beat": "Dusk over a windswept clifftop village that has feared the mountain for a hundred years. Elder Mara begs Jim to end the curse before the last seal breaks.",
     "narration": [
-      "The ferryman dropped me at the docks of Halward's Reach. A strange quiet hangs over this place.",
-      "They say the mountain watches. I'm here to find out why."
+      "The wind off the sea carries the smell of woodsmoke and old secrets.",
+      "Elder Mara spoke of a curse, but Illinois Jim only heard the call of adventure.",
+      "The trail ahead is blocked by the old village gate. There must be a release lever nearby."
     ]
   },
-  "baselineY": 280,
+  "baselineY": 250,
   "art": [
     {
-      "key": "px-sky",
+      "key": "parallax-sky",
       "role": "parallax",
       "isolation": "scene",
-      "prompt": "16-bit pixel art landscape of a dramatic dusk sky. Clouds are painted in streaks of blood red, tarnished gold, and deep obsidian. A pale moon hangs in the sky. SNES/Genesis style.",
+      "prompt": "16-bit retro SNES style windswept dusk sky with blood-red and gold clouds, dramatic lighting, pixel art landscape",
       "aspect": "16:9",
-      "worldHeight": 540
+      "worldHeight": 450
     },
     {
-      "key": "px-sea-mountains",
+      "key": "parallax-distant-sea-mountain",
       "role": "parallax",
       "isolation": "scene",
-      "prompt": "16-bit pixel art landscape. In the far distance, a stormy sea in shades of teal and obsidian meets the base of a colossal, jagged mountain. The mountain peak is lost in shadow. SNES/Genesis style.",
+      "prompt": "16-bit pixel art distant dark sea and towering obsidian mountain under a twilight sky, Genesis retro color palette",
       "aspect": "16:9",
-      "worldHeight": 540
+      "worldHeight": 400
     },
     {
-      "key": "px-near-cliffs",
+      "key": "parallax-near-cliffs",
       "role": "parallax",
       "isolation": "scene",
-      "prompt": "16-bit pixel art landscape layer. Detailed, weathered cliff faces in shades of parchment and obsidian, with sparse, wind-blasted trees clinging to the rock. Dramatic lighting. SNES/Genesis style.",
+      "prompt": "16-bit retro platformer background jagged near-cliff edges and silhouettes of distant village roofs, dark teal tones",
       "aspect": "16:9",
-      "worldHeight": 540
+      "worldHeight": 350
     },
     {
-      "key": "house-a",
-      "role": "structure",
-      "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art house with a steep pitched roof of teal-colored thatch and timber-frame walls of parchment-colored plaster. A small lantern with a golden glow hangs by the door. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "3:4",
-      "worldHeight": 180
-    },
-    {
-      "key": "house-b",
-      "role": "structure",
-      "isolation": "transparent",
-      "prompt": "A single tall, narrow 2-story 16-bit pixel art house. Timber-frame construction with a dark obsidian wood and parchment plaster. The roof is steep and covered in tarnished gold tiles. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "3:4",
-      "worldHeight": 240
-    },
-    {
-      "key": "market-stall",
-      "role": "prop",
-      "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art market stall. Simple wooden frame with a tattered, striped awning of teal and parchment. A few empty crates are visible underneath. On a flat solid magenta (#FF00FF) background.",
+      "key": "ground-village",
+      "role": "ground",
+      "isolation": "tileable",
+      "prompt": "Windswept stone-cobbled street of a clifftop village, obsidian stone and golden grass tufts, retro 16-bit tileable floor",
       "aspect": "1:1",
-      "worldHeight": 96
+      "worldHeight": 64
     },
     {
-      "key": "clothesline",
-      "role": "decor",
+      "key": "pitched-house-1",
+      "role": "structure",
       "isolation": "transparent",
-      "prompt": "A single long, sagging 16-bit pixel art clothesline with several pieces of parchment-colored cloth fluttering in the wind. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "16:9",
-      "worldHeight": 48
-    },
-    {
-      "key": "gate-trailhead",
-      "role": "obstacle",
-      "isolation": "transparent",
-      "prompt": "A single heavy, imposing 16-bit pixel art gate made of obsidian-dark wood and bound with tarnished gold iron straps. A complex locking mechanism is visible in the center. On a flat solid magenta (#FF00FF) background.",
+      "prompt": "A cozy cottage with a steep gabled wood roof, warm glowing windows, pixel art on a flat solid magenta (#FF00FF) background",
       "aspect": "1:1",
       "worldHeight": 160
     },
     {
-      "key": "lever-gate",
-      "role": "prop",
+      "key": "pitched-house-2",
+      "role": "structure",
       "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art floor-mounted lever. The base is heavy obsidian iron bolted to the ground, and the handle is made of tarnished gold. On a flat solid magenta (#FF00FF) background.",
+      "prompt": "A taller village home with a tarnished gold tiled roof and dark timber frame, pixel art on a flat solid magenta (#FF00FF) background",
       "aspect": "1:1",
-      "worldHeight": 48
+      "worldHeight": 200
+    },
+    {
+      "key": "market-stall",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A canvas-topped wooden market stall with hanging parchment banners and ropes, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 110
+    },
+    {
+      "key": "cliff-ledge-structure",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A natural stone pillar cliff with a flat wooden scaffold built on top, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 220
     },
     {
       "key": "npc-mara",
       "role": "npc",
       "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art character, Elder Mara. She is a stooped, elderly woman with long, parchment-white hair, wearing simple obsidian robes. Her expression is worried. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "3:4",
-      "worldHeight": 72
+      "prompt": "Elder Mara, an old village woman in a parchment shawl holding a tarnished gold staff, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
     },
     {
       "key": "npc-watchman",
       "role": "npc",
       "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art character, a village watchman. He stands tall and stern, wearing a tarnished gold chest plate over a teal tunic, and holds a long spear. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "3:4",
-      "worldHeight": 80
+      "prompt": "The village watchman in light armor, holding a torch with a warm amber glow, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
     },
     {
       "key": "npc-ferryman",
       "role": "npc",
       "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art character, the ferryman. A burly man with a thick parchment-colored beard, wearing a teal cap and a simple tunic. He has his arms crossed. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "3:4",
-      "worldHeight": 78
+      "prompt": "A rugged old ferryman with a thick beard and a heavy rope coiled over his shoulder, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 48
     },
     {
       "key": "enemy-crow",
-      "role": "obstacle",
+      "role": "npc",
       "isolation": "transparent",
-      "prompt": "A single menacing 16-bit pixel art crow. Its feathers are pure obsidian, and its eyes glow a faint blood red. It is perched as if ready to strike. On a flat solid magenta (#FF00FF) background.",
+      "prompt": "A shadow-winged mountain crow with glowing blood-red eyes, retro pixel art on a flat solid magenta (#FF00FF) background",
       "aspect": "1:1",
       "worldHeight": 32
     },
     {
-      "key": "relic-coin",
+      "key": "hazard-spikes",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "Sharp wooden defensive stakes lashed together with coarse twine, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 40
+    },
+    {
+      "key": "switch-lever",
+      "role": "prop",
+      "isolation": "transparent",
+      "prompt": "A rustic iron wall lever with a heavy wooden handle in a stone housing, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "gate-trailhead",
+      "role": "obstacle",
+      "isolation": "transparent",
+      "prompt": "A heavy wooden security gate reinforced with thick obsidian iron bands, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 128
+    },
+    {
+      "key": "collectible-relic-coin",
       "role": "collectible",
       "isolation": "transparent",
-      "prompt": "A single 16-bit pixel art coin. It is made of tarnished gold and etched with an ancient, glowing teal symbol. It slowly spins. On a flat solid magenta (#FF00FF) background.",
+      "prompt": "A shiny, tarnished gold coin stamped with an ancient seal, pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 16
+    },
+    {
+      "key": "secret-relic",
+      "role": "collectible",
+      "isolation": "transparent",
+      "prompt": "A rare crystal idol glowing with a faint teal light, retro pixel art on a flat solid magenta (#FF00FF) background",
+      "aspect": "1:1",
+      "worldHeight": 32
+    },
+    {
+      "key": "moving-platform-wood",
+      "role": "structure",
+      "isolation": "transparent",
+      "prompt": "A sturdy wooden lift suspended by thick hemp ropes, pixel art on a flat solid magenta (#FF00FF) background",
       "aspect": "1:1",
       "worldHeight": 24
     },
     {
-      "key": "secret-relic-pendant",
-      "role": "collectible",
-      "isolation": "transparent",
-      "prompt": "A single ornate 16-bit pixel art pendant. A large, polished teal gem is set in an intricate tarnished gold frame. It gives off a soft, magical glow. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "1:1",
-      "worldHeight": 32
-    },
-    {
-      "key": "breakable-pot",
+      "key": "breakables-pot",
       "role": "prop",
       "isolation": "transparent",
-      "prompt": "A single simple, 16-bit pixel art clay pot. It is a light parchment color with a few cracks already visible. On a flat solid magenta (#FF00FF) background.",
+      "prompt": "A clay village urn painted with teal and gold stripes, pixel art on a flat solid magenta (#FF00FF) background",
       "aspect": "1:1",
       "worldHeight": 32
-    },
-    {
-      "key": "ground-cobblestone",
-      "role": "ground",
-      "isolation": "tileable",
-      "prompt": "A seamless, horizontally tileable strip of 16-bit pixel art ground. It's a weathered cobblestone path, with stones in shades of obsidian and parchment. SNES/Genesis style.",
-      "aspect": "16:9",
-      "worldHeight": 64
-    },
-    {
-      "key": "checkpoint-shrine",
-      "role": "prop",
-      "isolation": "transparent",
-      "prompt": "A single small stone shrine, 16-bit pixel art style. Carved from obsidian-colored rock, with a small alcove where a single, magical teal flame flickers. On a flat solid magenta (#FF00FF) background.",
-      "aspect": "1:1",
-      "worldHeight": 64
     }
   ],
   "parallax": [
     {
-      "art": "px-sky",
+      "art": "parallax-sky",
       "factor": 0.1
     },
     {
-      "art": "px-sea-mountains",
+      "art": "parallax-distant-sea-mountain",
       "factor": 0.3
     },
     {
-      "art": "px-near-cliffs",
+      "art": "parallax-near-cliffs",
       "factor": 0.6
     }
   ],
   "surfaces": [
     {
       "kind": "ground",
-      "length": 400,
+      "length": 500,
       "top": 0
     },
     {
@@ -188,43 +196,37 @@
       "top": 0
     },
     {
-      "kind": "raised",
-      "length": 250,
-      "top": 120,
-      "anchorArt": "house-a"
-    },
-    {
-      "kind": "ground",
-      "length": 500,
-      "top": 0
-    },
-    {
-      "kind": "raised",
-      "length": 220,
-      "top": 140,
-      "anchorArt": "house-b"
-    },
-    {
-      "kind": "gap",
-      "length": 70,
-      "top": 0
-    },
-    {
-      "kind": "raised",
-      "length": 200,
-      "top": 120,
-      "anchorArt": "house-a"
-    },
-    {
       "kind": "ground",
       "length": 600,
       "top": 0
     },
     {
       "kind": "raised",
+      "length": 200,
+      "top": 120,
+      "anchorArt": "pitched-house-1"
+    },
+    {
+      "kind": "raised",
       "length": 220,
       "top": 160,
-      "anchorArt": "house-b"
+      "anchorArt": "pitched-house-2"
+    },
+    {
+      "kind": "gap",
+      "length": 90,
+      "top": 0
+    },
+    {
+      "kind": "raised",
+      "length": 150,
+      "top": 90,
+      "anchorArt": "market-stall"
+    },
+    {
+      "kind": "ground",
+      "length": 700,
+      "top": 0
     },
     {
       "kind": "gap",
@@ -233,96 +235,41 @@
     },
     {
       "kind": "ground",
-      "length": 350,
+      "length": 500,
       "top": 0
     },
     {
       "kind": "raised",
-      "length": 180,
-      "top": 100,
-      "anchorArt": "house-a"
+      "length": 250,
+      "top": 180,
+      "anchorArt": "cliff-ledge-structure"
     },
     {
       "kind": "ground",
       "length": 500,
       "top": 0
+    },
+    {
+      "kind": "ground",
+      "length": 450,
+      "top": 0
     }
   ],
   "placements": [
     {
-      "art": "ground-cobblestone",
+      "art": "pitched-house-1",
       "at": {
         "surface": 0,
-        "t": 0,
+        "t": 0.5,
         "dy": 0
       },
-      "z": 0,
-      "flipX": false
-    },
-    {
-      "art": "house-a",
-      "at": {
-        "surface": 2,
-        "t": 0.5,
-        "dy": -10
-      },
       "z": 1,
-      "flipX": false
-    },
-    {
-      "art": "ground-cobblestone",
-      "at": {
-        "surface": 3,
-        "t": 0,
-        "dy": 0
-      },
-      "z": 0,
-      "flipX": false
-    },
-    {
-      "art": "house-b",
-      "at": {
-        "surface": 4,
-        "t": 0.5,
-        "dy": -10
-      },
-      "z": 1,
-      "flipX": true
-    },
-    {
-      "art": "house-a",
-      "at": {
-        "surface": 6,
-        "t": 0.5,
-        "dy": -10
-      },
-      "z": 1,
-      "flipX": false
-    },
-    {
-      "art": "clothesline",
-      "at": {
-        "surface": 5,
-        "t": 0.5,
-        "dy": 150
-      },
-      "z": 3,
-      "flipX": false
-    },
-    {
-      "art": "ground-cobblestone",
-      "at": {
-        "surface": 7,
-        "t": 0,
-        "dy": 0
-      },
-      "z": 0,
       "flipX": false
     },
     {
       "art": "market-stall",
       "at": {
-        "surface": 7,
+        "surface": 2,
         "t": 0.2,
         "dy": 0
       },
@@ -330,53 +277,33 @@
       "flipX": false
     },
     {
+      "art": "pitched-house-2",
+      "at": {
+        "surface": 2,
+        "t": 0.7,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": true
+    },
+    {
+      "art": "pitched-house-1",
+      "at": {
+        "surface": 7,
+        "t": 0.1,
+        "dy": 0
+      },
+      "z": 1,
+      "flipX": false
+    },
+    {
       "art": "market-stall",
       "at": {
         "surface": 7,
-        "t": 0.6,
+        "t": 0.8,
         "dy": 0
       },
       "z": 2,
-      "flipX": true
-    },
-    {
-      "art": "house-b",
-      "at": {
-        "surface": 8,
-        "t": 0.5,
-        "dy": -10
-      },
-      "z": 1,
-      "flipX": false
-    },
-    {
-      "art": "ground-cobblestone",
-      "at": {
-        "surface": 10,
-        "t": 0,
-        "dy": 0
-      },
-      "z": 0,
-      "flipX": false
-    },
-    {
-      "art": "house-a",
-      "at": {
-        "surface": 11,
-        "t": 0.5,
-        "dy": -10
-      },
-      "z": 1,
-      "flipX": true
-    },
-    {
-      "art": "ground-cobblestone",
-      "at": {
-        "surface": 12,
-        "t": 0,
-        "dy": 0
-      },
-      "z": 0,
       "flipX": false
     }
   ],
@@ -384,128 +311,176 @@
     {
       "art": "enemy-crow",
       "at": {
-        "surface": 4,
-        "t": 0.5,
-        "dy": 5
+        "surface": 2,
+        "t": 0.4,
+        "dy": 80
       },
       "behavior": "patrol",
-      "range": 80
+      "range": 60
     },
     {
       "art": "enemy-crow",
       "at": {
-        "surface": 8,
-        "t": 0.7,
-        "dy": 5
+        "surface": 3,
+        "t": 0.5,
+        "dy": 30
       },
       "behavior": "patrol",
-      "range": 60
+      "range": 40
+    },
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 4,
+        "t": 0.3,
+        "dy": 40
+      },
+      "behavior": "chase",
+      "range": 0
+    },
+    {
+      "art": "enemy-crow",
+      "at": {
+        "surface": 9,
+        "t": 0.5,
+        "dy": 90
+      },
+      "behavior": "patrol",
+      "range": 80
     }
   ],
   "collectibles": [
     {
-      "art": "relic-coin",
+      "art": "collectible-relic-coin",
       "at": {
-        "surface": 2,
-        "t": 0.5,
-        "dy": 20
+        "surface": 3,
+        "t": 0.2,
+        "dy": 30
       },
       "value": 100
     },
     {
-      "art": "relic-coin",
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 3,
+        "t": 0.8,
+        "dy": 30
+      },
+      "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
       "at": {
         "surface": 4,
-        "t": 0.1,
-        "dy": 20
+        "t": 0.5,
+        "dy": 40
       },
       "value": 100
     },
     {
-      "art": "relic-coin",
+      "art": "collectible-relic-coin",
       "at": {
         "surface": 6,
-        "t": 0.9,
-        "dy": 20
-      },
-      "value": 100
-    },
-    {
-      "art": "relic-coin",
-      "at": {
-        "surface": 7,
-        "t": 0.4,
-        "dy": 100
-      },
-      "value": 100
-    },
-    {
-      "art": "relic-coin",
-      "at": {
-        "surface": 11,
         "t": 0.5,
-        "dy": 20
+        "dy": 30
       },
       "value": 100
+    },
+    {
+      "art": "collectible-relic-coin",
+      "at": {
+        "surface": 10,
+        "t": 0.2,
+        "dy": 40
+      },
+      "value": 200
     }
   ],
   "pots": [
     {
-      "art": "breakable-pot",
-      "at": {
-        "surface": 3,
-        "t": 0.9,
-        "dy": 0
-      },
-      "drop": "health"
-    },
-    {
-      "art": "breakable-pot",
-      "at": {
-        "surface": 7,
-        "t": 0.8,
-        "dy": 0
-      },
-      "drop": "relic"
-    }
-  ],
-  "npcs": [
-    {
-      "art": "npc-ferryman",
+      "art": "breakables-pot",
       "at": {
         "surface": 0,
         "t": 0.8,
         "dy": 0
       },
-      "dialogueId": "ferryman-intro"
+      "drop": "health"
     },
+    {
+      "art": "breakables-pot",
+      "at": {
+        "surface": 7,
+        "t": 0.4,
+        "dy": 0
+      },
+      "drop": "relic"
+    },
+    {
+      "art": "breakables-pot",
+      "at": {
+        "surface": 11,
+        "t": 0.1,
+        "dy": 0
+      },
+      "drop": "secret"
+    }
+  ],
+  "npcs": [
     {
       "art": "npc-mara",
       "at": {
-        "surface": 3,
-        "t": 0.2,
+        "surface": 7,
+        "t": 0.5,
         "dy": 0
       },
-      "dialogueId": "mara-plea"
+      "dialogueId": "mara_farewell"
     },
     {
       "art": "npc-watchman",
       "at": {
-        "surface": 3,
-        "t": 0.4,
+        "surface": 7,
+        "t": 0.55,
         "dy": 0
       },
-      "dialogueId": "watchman-warning"
+      "dialogueId": "watchman_warning"
+    },
+    {
+      "art": "npc-ferryman",
+      "at": {
+        "surface": 7,
+        "t": 0.6,
+        "dy": 0
+      },
+      "dialogueId": "ferryman_tip"
     }
   ],
-  "hazards": [],
+  "hazards": [
+    {
+      "art": "hazard-spikes",
+      "at": {
+        "surface": 2,
+        "t": 0.9,
+        "dy": 0
+      },
+      "width": 32
+    },
+    {
+      "art": "hazard-spikes",
+      "at": {
+        "surface": 9,
+        "t": 0.7,
+        "dy": 0
+      },
+      "width": 32
+    }
+  ],
   "switches": [
     {
-      "id": "switch-trailhead",
-      "art": "lever-gate",
+      "id": "trailhead-switch",
+      "art": "switch-lever",
       "at": {
-        "surface": 11,
-        "t": 0.5,
+        "surface": 10,
+        "t": 0.8,
         "dy": 0
       },
       "kind": "lever"
@@ -515,36 +490,48 @@
     {
       "art": "gate-trailhead",
       "at": {
-        "surface": 12,
-        "t": 0.1,
+        "surface": 11,
+        "t": 0.5,
         "dy": 0
       },
       "opensWith": [
-        "switch-trailhead"
+        "trailhead-switch"
       ],
       "blocksSurface": 12
     }
   ],
   "keys": [],
-  "movingPlatforms": [],
-  "secrets": [
+  "movingPlatforms": [
     {
-      "art": "secret-relic-pendant",
+      "art": "moving-platform-wood",
       "at": {
         "surface": 8,
         "t": 0.5,
-        "dy": 20
+        "dy": 50
       },
-      "hint": "A faint glint from the highest rooftop in the village.",
+      "axis": "vertical",
+      "distance": 100,
+      "speed": 50,
+      "width": 64
+    }
+  ],
+  "secrets": [
+    {
+      "art": "secret-relic",
+      "at": {
+        "surface": 4,
+        "t": 0.9,
+        "dy": 80
+      },
+      "hint": "High jump from the tallest pitched roof to discover an invisible wind-scaffold.",
       "value": 1000
     }
   ],
   "checkpoints": [
     {
-      "art": "checkpoint-shrine",
       "at": {
-        "surface": 10,
-        "t": 0.5,
+        "surface": 7,
+        "t": 0.3,
         "dy": 0
       }
     }
@@ -556,7 +543,7 @@
   },
   "goal": {
     "surface": 12,
-    "t": 0.9,
+    "t": 0.8,
     "dy": 0
   }
 }

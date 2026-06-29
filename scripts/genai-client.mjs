@@ -10,8 +10,18 @@ import { GoogleGenAI } from "@google/genai";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-export const DEFAULT_IMAGE_MODEL = "imagen-4.0-fast-generate-001";
-export const DEFAULT_TEXT_MODEL = "gemini-2.5-pro";
+// Nano Banana image models (latest, via generateContent — NOT Imagen's predict).
+// They follow instructions precisely and output NATIVE TRANSPARENT PNGs when asked
+// (outputMimeType image/png preserves the alpha the model paints for a "transparent
+// background" prompt) — so props/NPCs are isolated at generation, NO chromakey.
+//   - flash: gemini-3.1-flash-image (fast, great for props/NPCs/obstacles)
+//   - pro:   gemini-3-pro-image (highest quality, for parallax/hero key-art)
+export const IMAGE_MODEL_FLASH = "gemini-3.1-flash-image";
+export const IMAGE_MODEL_PRO = "gemini-3-pro-image";
+export const DEFAULT_IMAGE_MODEL = IMAGE_MODEL_FLASH;
+// gemini-3.5-flash — the latest flash text model (confirmed via the live models
+// list), for emitting the schema-conformant Level JSON.
+export const DEFAULT_TEXT_MODEL = "gemini-3.5-flash";
 
 /** Read GEMINI_API_KEY from env or the gitignored .env. */
 export function readGeminiKey() {
@@ -25,21 +35,37 @@ export function readGeminiKey() {
 }
 
 /**
- * (prompt, aspectRatio?) → PNG bytes (Buffer) or null. Throws without a key.
- * aspectRatio is an Imagen ratio string ("16:9" | "9:16" | "1:1" | "4:3" | "3:4");
- * defaults to "1:1" when omitted.
+ * (prompt, opts?) → PNG bytes (Buffer) or null. Throws without a key. Uses a Nano
+ * Banana model via generateContent with the researched imageConfig:
+ *   - responseModalities ["IMAGE"]; the model returns a PNG whose ALPHA is preserved
+ *     (native transparency when the prompt asks for a transparent background — no
+ *     chromakey isolation needed). NOTE: outputMimeType / imageOutputOptions are
+ *     Vertex/Enterprise-only and REJECTED by the Gemini Developer API — don't send them.
+ *   - aspectRatio ("16:9" | "9:16" | "1:1" | "4:3" | "3:4"), imageSize ("1K"|"2K"|"4K").
+ * opts: { aspectRatio, imageSize, model }. Back-compat: a string opts = aspectRatio.
  */
-export function geminiGenerateImage(apiKey, model = DEFAULT_IMAGE_MODEL) {
+export function geminiGenerateImage(apiKey, defaultModel = DEFAULT_IMAGE_MODEL) {
   if (!apiKey) throw new Error("geminiGenerateImage: missing GEMINI_API_KEY");
   const ai = new GoogleGenAI({ apiKey });
-  return async (prompt, aspectRatio = "1:1") => {
-    const res = await ai.models.generateImages({
+  return async (prompt, opts = {}) => {
+    const o = typeof opts === "string" ? { aspectRatio: opts } : opts;
+    const aspectRatio = o.aspectRatio ?? "1:1";
+    const imageSize = o.imageSize ?? "1K";
+    const model = o.model ?? defaultModel;
+    const res = await ai.models.generateContent({
       model,
-      prompt,
-      config: { numberOfImages: 1, aspectRatio },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        responseModalities: ["IMAGE"],
+        imageConfig: { aspectRatio, imageSize },
+      },
     });
-    const b64 = res?.generatedImages?.[0]?.image?.imageBytes;
-    return b64 ? Buffer.from(b64, "base64") : null;
+    const parts = res?.candidates?.[0]?.content?.parts ?? [];
+    for (const p of parts) {
+      const data = p?.inlineData?.data;
+      if (data) return Buffer.from(data, "base64");
+    }
+    return null;
   };
 }
 

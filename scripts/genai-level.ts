@@ -28,7 +28,13 @@ import {
 } from "../src/sim/world/levelSchema.ts";
 import { entitiesBeforeGoal } from "../src/sim/world/buildFromLevel.ts";
 import { LEVEL_BRIEFS } from "./levelBriefs.ts";
-import { geminiGenerateImage, geminiGenerateText, readGeminiKey } from "./genai-client.mjs";
+import {
+  geminiGenerateImage,
+  geminiGenerateText,
+  IMAGE_MODEL_FLASH,
+  IMAGE_MODEL_PRO,
+  readGeminiKey,
+} from "./genai-client.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -151,40 +157,47 @@ async function generateLevelJson(brief: (typeof LEVEL_BRIEFS)[number], key: stri
  * art (Imagen): every image knows its level, its neighbours, and its job.
  */
 function composeArtPrompt(level: Level, asset: Level["art"][number]): string {
-  // Base style + biome always. The STORY BEAT names the hero, so only fold it in
-  // for character art — NEVER for backdrops/props (it makes Imagen bake Jim into
-  // the sky or a building, which would double the hero on screen).
   const isCharacter = asset.role === "npc";
   const ctx =
     `${STYLE} This is the ${asset.role} "${asset.key}" for the level "${level.title}" ` +
     `(biome: ${level.biome}).` +
     (isCharacter ? ` Context: ${level.story.beat}` : "");
   if (asset.isolation === "transparent") {
+    // Nano Banana outputs NATIVE TRANSPARENCY (PNG alpha) — ask for it directly,
+    // no magenta/chromakey. One object, fully transparent everywhere else.
     return (
-      `${ctx} ${asset.prompt}. Render ONE object ONLY (the ${asset.role}), centered on a ` +
-      "FLAT SOLID MAGENTA (#FF00FF) background filling the entire frame edge to edge — " +
-      "NO border, NO scenery, NO other objects, NO ground line, NO characters other than " +
-      "this one, NO shadow on the background."
+      `${ctx} ${asset.prompt}. Render ONLY this single ${asset.role} as a game sprite, ` +
+      "full and complete, on a FULLY TRANSPARENT background (alpha) — no scenery, no " +
+      "ground, no backdrop, no other objects, no shadow; everything except the object " +
+      "itself must be transparent."
     );
   }
   if (asset.isolation === "tileable") {
     return (
-      `${STYLE} A ${asset.key} ground/surface texture for biome ${level.biome}. ${asset.prompt}. ` +
-      "Render a horizontally SEAMLESS, edge-to-edge tileable strip — left and right edges " +
-      "match for repetition. NO characters, NO props, NO sky — only the surface material."
+      `${STYLE} A ${asset.key} ground/surface material texture for biome ${level.biome}. ` +
+      `${asset.prompt}. A horizontally SEAMLESS, edge-to-edge tileable strip (left and ` +
+      "right edges match for repetition) — only the surface material, filling the frame, " +
+      "no characters, no props, no sky."
     );
   }
-  // scene = a parallax BACKDROP layer. Image models IGNORE negations ("no
-  // characters"), so frame POSITIVELY: an empty atmospheric SKY/DISTANCE band only,
-  // the subject small along the lower edge, the upper 70% open sky. An empty,
-  // depopulated, wilderness backdrop — that positive framing keeps Jim/the village/
-  // the ground out far better than forbidding them.
+  // scene = a parallax BACKDROP layer: an empty atmospheric vista, no actors/ground.
   return (
-    `${STYLE} An empty, depopulated, wide atmospheric PARALLAX SKY-AND-DISTANCE backdrop ` +
-    `band for biome ${level.biome}: ${asset.prompt} — but as a DISTANT, EMPTY wilderness ` +
-    "vista: the upper two-thirds is open sky, the subject sits small and far along the " +
-    "lower edge, an uninhabited horizon with no foreground. A serene empty backdrop."
+    `${STYLE} A wide empty PARALLAX BACKDROP layer for biome ${level.biome}: ${asset.prompt}. ` +
+    "A distant, depopulated atmospheric vista filling the whole frame — open sky and far " +
+    "scenery only, no characters, no hero, no foreground objects, no walkable ground path; " +
+    "a serene backdrop the gameplay is drawn in front of."
   );
+}
+
+/** Image model + size per asset role: PRO + 2K for the big painted backdrops/
+ *  structures (quality matters at scale), flash + 1K for small sprites. */
+function imageOptsFor(asset: Level["art"][number]): { aspectRatio: string; imageSize: string; model: string } {
+  const big = asset.isolation === "scene" || asset.role === "structure";
+  return {
+    aspectRatio: asset.aspect,
+    imageSize: big ? "2K" : "1K",
+    model: big ? IMAGE_MODEL_PRO : IMAGE_MODEL_FLASH,
+  };
 }
 
 async function generateArt(level: Level, key: string): Promise<void> {
@@ -192,8 +205,9 @@ async function generateArt(level: Level, key: string): Promise<void> {
   const rawDir = join(ROOT, "raw-assets", "generated", "levels", level.id);
   mkdirSync(rawDir, { recursive: true });
   for (const asset of level.art) {
-    console.warn(`  art ${asset.key} (${asset.role}, ${asset.isolation}, ${asset.aspect}, h=${asset.worldHeight})…`);
-    const bytes = await genImg(composeArtPrompt(level, asset), asset.aspect);
+    const opts = imageOptsFor(asset);
+    console.warn(`  art ${asset.key} (${asset.role}, ${asset.isolation}, ${opts.aspectRatio}, ${opts.imageSize}, ${opts.model})…`);
+    const bytes = await genImg(composeArtPrompt(level, asset), opts);
     if (!bytes) {
       console.warn(`    ⚠ no image for ${asset.key}`);
       continue;
