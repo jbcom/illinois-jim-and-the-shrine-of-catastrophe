@@ -19,6 +19,7 @@ import type { ArtPlacement, Placement } from "@render/composition.ts";
 import { buildFromLevel } from "@sim/world/buildFromLevel.ts";
 import { parseLevel } from "@sim/world/levelSchema.ts";
 import halwardJson from "@/levels/halward-s-reach.level.json";
+import whisperingJungleJson from "@/levels/the-whispering-jungle.level.json";
 import {
   type EnemySpawn,
   type GameLevel,
@@ -60,6 +61,12 @@ const ENEMY_VISUAL: Record<string, EnemySpawn["visual"]> = {
   "enemy-goblin": "goblin",
   "enemy-skeleton": "skeleton",
   "enemy-mushroom": "mushroom",
+  // Level 2 — The Whispering Jungle. The canopy panther is a ground melee beast
+  // (goblin's chase/whip cadence reads closest); the carnivorous plant is a
+  // rooted snapping ambusher (mushroom's stationary-bob visual). Dedicated baked
+  // jungle-enemy characters are a tracked forward item, not this bundle's scope.
+  "canopy-panther": "goblin",
+  "carnivorous-plant": "mushroom",
 };
 
 /** Schema NPC dialogueId → baked roster id. Unmapped ids pass through (warned). */
@@ -67,9 +74,12 @@ const NPC_ALIAS: Record<string, string> = {
   mara_farewell: "elder-mara",
   watchman_warning: "watchman-pell",
   ferryman_tip: "ferryman-cole",
+  // Level 2 — the jungle guardian who warns Jim at the ruin gate.
+  guardian_warning: "elder-mara",
+  "guardian-warning": "elder-mara",
 };
 
-function genaiBundle(json: unknown): LevelBundle {
+function genaiBundle(json: unknown, groundFill?: LevelBundle["groundFill"]): LevelBundle {
   const level = parseLevel(json);
   const built = buildFromLevel(level);
   const sim: GameLevel = {
@@ -109,13 +119,19 @@ function genaiBundle(json: unknown): LevelBundle {
     artPainting: paintingFromLevel(level),
     parallax: parallaxFromLevel(level),
     frame: frameFromLevel(level),
+    ...(groundFill ? { groundFill } : {}),
   };
 }
 
 const HALWARD = genaiBundle(halwardJson);
+// The jungle floor is a solid damp-earth band under the grass line, not a stamped
+// tile sprite — Gemini's opaque ground-tile only works as the parallax floor, so the
+// foreground floor is filled like the village. baselineY 250, map 332 tiles × 16px.
+const WHISPERING_JUNGLE = genaiBundle(whisperingJungleJson, { color: 0x2c3a22, groundY: 276, width: 5312 });
 
 const REGISTRY: Record<string, LevelBundle> = {
   [HALWARD.id]: HALWARD,
+  [WHISPERING_JUNGLE.id]: WHISPERING_JUNGLE,
   "village-approach": {
     id: "village-approach",
     sim: VILLAGE,
@@ -173,6 +189,8 @@ export function levelBundle(id: string): LevelBundle {
 
 /** The play order of the story's levels (drives "next level" after a cutscene). */
 export const LEVEL_ORDER: readonly string[] = [
+  HALWARD.id,
+  WHISPERING_JUNGLE.id,
   "village-approach",
   "cave-descent",
   "shrine-approach",

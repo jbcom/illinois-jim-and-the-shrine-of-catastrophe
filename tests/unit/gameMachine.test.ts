@@ -1,4 +1,4 @@
-import { gameMachine } from "@ui/gameMachine.ts";
+import { devBootLevel, gameMachine } from "@ui/gameMachine.ts";
 import { describe, expect, it } from "vitest";
 import { createActor } from "xstate";
 
@@ -12,6 +12,15 @@ describe("gameMachine", () => {
   it("starts on the title screen", () => {
     const a = boot();
     expect(a.getSnapshot().value).toBe("title");
+  });
+
+  /**
+   * The DEV `?level=` boot override is window-driven; with no DOM (unit/headless
+   * context) it returns undefined, so the machine keeps the normal title flow.
+   * This guards the production path: no stray dev jump when there's no query.
+   */
+  it("devBootLevel is undefined without a window (normal title flow preserved)", () => {
+    expect(devBootLevel()).toBeUndefined();
   });
 
   /** START shows the intro cutscene; CUTSCENE_DONE enters the level. */

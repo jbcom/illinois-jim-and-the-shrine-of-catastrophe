@@ -35,6 +35,20 @@ function levelAfterCutscene(cutsceneId: string): string {
 }
 
 /**
+ * DEV-only boot override: `?level=<id>` jumps straight into `playing` on that
+ * level, skipping the title + cutscene chain. Lets us live-verify any single
+ * level (e.g. the-whispering-jungle) without playing the whole story up to it.
+ * Returns `undefined` in production or when no (valid) param is present, so the
+ * normal title → intro flow is untouched.
+ */
+export function devBootLevel(): string | undefined {
+  if (!import.meta.env.DEV) return undefined;
+  if (typeof window === "undefined") return undefined;
+  const id = new URLSearchParams(window.location.search).get("level");
+  return id && id.trim() ? id.trim() : undefined;
+}
+
+/**
  * The cutscene to play AFTER clearing a level — the next story beat. It's the
  * cutscene whose `nextLevel` is the level that FOLLOWS the one just cleared, so
  * the sequence cutscene → level → cutscene → level chains automatically. Falls
@@ -47,10 +61,13 @@ function cutsceneAfterLevel(levelId: string): string {
   return beat?.id ?? "escape";
 }
 
+const BOOT_LEVEL = devBootLevel();
+
 export const gameMachine = createMachine({
   id: "game",
-  initial: "title",
-  context: { score: 0, bestScore: 0, cutsceneId: "intro", levelId: FIRST_LEVEL_ID },
+  // DEV `?level=<id>` boots straight into that level; otherwise the title screen.
+  initial: BOOT_LEVEL ? "playing" : "title",
+  context: { score: 0, bestScore: 0, cutsceneId: "intro", levelId: BOOT_LEVEL ?? FIRST_LEVEL_ID },
   types: {} as { context: GameContext; events: GameEvent },
   // Available in any state: seed the best score from persistence on mount.
   on: {

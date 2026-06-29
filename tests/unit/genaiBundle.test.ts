@@ -1,4 +1,4 @@
-import { FIRST_LEVEL_ID, levelBundle } from "@render/levels/registry.ts";
+import { FIRST_LEVEL_ID, LEVEL_ORDER, levelBundle, nextLevelId } from "@render/levels/registry.ts";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -61,6 +61,53 @@ describe("GenAI level bundle (halward-s-reach as the live first level)", () => {
     const switchIds = new Set((b.sim.switches ?? []).map((s) => s.id));
     for (const g of b.sim.gates ?? []) {
       expect(g.opensWith.some((id) => switchIds.has(id))).toBe(true);
+    }
+  });
+});
+
+/**
+ * The GenAI Level 2 (the-whispering-jungle) is registered as the live second level
+ * and follows Level 1 in the story order. Its free-form jungle enemy/NPC art keys
+ * (canopy-panther / carnivorous-plant / guardian-warning) must adapt to valid
+ * runtime visual kinds + a baked NPC roster id, or the live game crashes on boot.
+ */
+describe("GenAI Level 2 bundle (the-whispering-jungle)", () => {
+  const ID = "the-whispering-jungle";
+
+  it("is registered and plays right after Level 1", () => {
+    expect(LEVEL_ORDER).toContain(ID);
+    expect(nextLevelId(FIRST_LEVEL_ID)).toBe(ID);
+  });
+
+  it("carries a GameLevel sim with a forward goal", () => {
+    const b = levelBundle(ID);
+    expect(b.sim.id).toBe(ID);
+    expect(b.sim.map.width).toBeGreaterThan(0);
+    expect(b.sim.goalX).toBeGreaterThan(b.sim.spawnX);
+  });
+
+  it("adapts the jungle enemy + npc art keys to valid runtime kinds/ids", () => {
+    const b = levelBundle(ID);
+    expect(b.sim.enemies.length).toBeGreaterThan(0);
+    for (const e of b.sim.enemies) {
+      expect(["patrol", "chase"]).toContain(e.kind);
+      // No enemy falls through to the generic flyingEye default — the jungle
+      // beasts map explicitly (panther→goblin, plant→mushroom).
+      expect(["goblin", "skeleton", "mushroom", "flyingEye"]).toContain(e.visual);
+    }
+    // The guardian NPC aliases to a real baked roster id (never a raw dialogueId).
+    for (const n of b.sim.npcs) {
+      expect(["elder-mara", "watchman-pell", "ferryman-cole"]).toContain(n.dialogueId);
+    }
+  });
+
+  it("uses the baked-prop artPainting path with a parallax stack", () => {
+    const b = levelBundle(ID);
+    expect(b.painting).toHaveLength(0);
+    expect(b.artPainting && b.artPainting.length).toBeGreaterThan(0);
+    expect(b.parallax.length).toBeGreaterThan(0);
+    for (const p of b.artPainting ?? []) {
+      expect(p.url).toMatch(/\.(webp|png)$/);
     }
   });
 });

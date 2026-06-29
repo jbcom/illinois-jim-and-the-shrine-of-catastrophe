@@ -299,28 +299,7 @@
       "top": 0
     }
   ],
-  "placements": [
-    {
-      "art": "jungle-ground-tile",
-      "at": {
-        "surface": 0,
-        "t": 0.5,
-        "dy": 0
-      },
-      "z": 1,
-      "flipX": false
-    },
-    {
-      "art": "jungle-ground-tile",
-      "at": {
-        "surface": 14,
-        "t": 0.5,
-        "dy": 0
-      },
-      "z": 1,
-      "flipX": false
-    }
-  ],
+  "placements": [],
   "enemies": [
     {
       "art": "carnivorous-plant",
