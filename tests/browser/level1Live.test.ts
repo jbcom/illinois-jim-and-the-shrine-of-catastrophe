@@ -59,7 +59,7 @@ describe("Level 1 live through the painting renderer (GenAI art path)", () => {
       Size({ w: 14, h: 14 }),
       Facing({ dir: -1 }),
       Gravity({ scale: 1 }),
-      Enemy({ kind: "goblin", speed: 40, minX: built.spawnX, maxX: built.spawnX + 180, alive: true }),
+      Enemy({ kind: "patrol", visual: "goblin", speed: 40, minX: built.spawnX, maxX: built.spawnX + 180, alive: true }),
     );
 
     const camera = { ...createCamera(640, frame.bottom - frame.top), x: built.spawnX - 40, y: 0 };

@@ -17,17 +17,21 @@
  * contract: a destroyed renderer's canvas must be gone, and a second renderer on
  * the same host must mint a NEW, healthy canvas/context.
  */
-import { CAVE_DESCENT } from "@render/levels/caveDescent.ts";
 import { createPaintingRenderer } from "@render/paintingRenderer.ts";
-import { CAVE_PARALLAX } from "@render/parallax.ts";
+import { levelBundle } from "@render/levels/registry.ts";
 import { describe, expect, it } from "vitest";
+
+// Drive the renderer from a real live level bundle (any will do — this test pins the
+// WebGL context-ownership contract, not the level's content).
+const BUNDLE = levelBundle("the-whispering-jungle");
 
 const renderer = (host: HTMLElement) =>
   createPaintingRenderer(host, {
-    parallax: CAVE_PARALLAX,
-    painting: CAVE_DESCENT,
-    frameTop: -20,
-    frameBottom: 360,
+    parallax: BUNDLE.parallax,
+    painting: [],
+    artPainting: BUNDLE.artPainting ?? [],
+    frameTop: BUNDLE.frame.top,
+    frameBottom: BUNDLE.frame.bottom,
   });
 
 function makeHost(): HTMLDivElement {

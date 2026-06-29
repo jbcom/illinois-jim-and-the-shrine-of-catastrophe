@@ -8,13 +8,8 @@
  * coordinates (GROUND_Y/FLOOR_Y 300); this registry is where the two halves of a
  * "level as a painting" are paired.
  */
-import { CAVE_DESCENT, CAVE_DESCENT_FRAME } from "@render/levels/caveDescent.ts";
-import { ESCAPE_RUN, ESCAPE_RUN_FRAME } from "@render/levels/escapeRun.ts";
-import { SHRINE_APPROACH, SHRINE_APPROACH_FRAME } from "@render/levels/shrineApproach.ts";
-import { SHRINE_HEART, SHRINE_HEART_FRAME } from "@render/levels/shrineHeart.ts";
-import { VILLAGE_APPROACH, VILLAGE_APPROACH_FRAME } from "@render/levels/villageApproach.ts";
 import { frameFromLevel, paintingFromLevel, parallaxFromLevel } from "@render/levels/fromLevel.ts";
-import { CAVE_PARALLAX, OVERWORLD_PARALLAX, type ParallaxLayerSpec } from "@render/parallax.ts";
+import type { ParallaxLayerSpec } from "@render/parallax.ts";
 import type { ArtPlacement, Placement } from "@render/composition.ts";
 import { buildFromLevel } from "@sim/world/buildFromLevel.ts";
 import { parseLevel } from "@sim/world/levelSchema.ts";
@@ -24,15 +19,7 @@ import rushingGorgeJson from "@/levels/the-rushing-gorge.level.json";
 import abandonedMineJson from "@/levels/the-abandoned-mine.level.json";
 import crystalCavernJson from "@/levels/the-crystal-cavern.level.json";
 import { campaignLevelOrder, firstLevelId, nextCampaignLevelId } from "@sim/story/campaign.ts";
-import {
-  type EnemySpawn,
-  type GameLevel,
-  DESCENT,
-  ESCAPE_RUN as ESCAPE_RUN_SIM,
-  SHRINE,
-  SHRINE_HEART as SHRINE_HEART_SIM,
-  VILLAGE,
-} from "@sim/world/gameLevel.ts";
+import type { EnemySpawn, GameLevel } from "@sim/world/gameLevel.ts";
 
 export interface LevelBundle {
   readonly id: string;
@@ -166,49 +153,6 @@ const REGISTRY: Record<string, LevelBundle> = {
   [RUSHING_GORGE.id]: RUSHING_GORGE,
   [ABANDONED_MINE.id]: ABANDONED_MINE,
   [CRYSTAL_CAVERN.id]: CRYSTAL_CAVERN,
-  "village-approach": {
-    id: "village-approach",
-    sim: VILLAGE,
-    painting: VILLAGE_APPROACH,
-    parallax: OVERWORLD_PARALLAX,
-    frame: VILLAGE_APPROACH_FRAME,
-    // Overworld grass-topped dirt tiles are partly transparent — fill the floor
-    // with a solid earth brown from the ground line down so no sky shows through.
-    // A slim crafted-earth band directly under the grass cap (grass top 250, cap
-    // ~34px) — a warm soil tone, not flat black. The frame bottom is just below it
-    // so the floor is a thin strip, never a dark void.
-    groundFill: { color: 0x6b4a2a, groundY: 276, width: 2240 },
-  },
-  "cave-descent": {
-    id: "cave-descent",
-    sim: DESCENT,
-    painting: CAVE_DESCENT,
-    parallax: CAVE_PARALLAX,
-    frame: CAVE_DESCENT_FRAME,
-  },
-  "shrine-approach": {
-    id: "shrine-approach",
-    sim: SHRINE,
-    painting: SHRINE_APPROACH,
-    // The shrine is deep underground — the cave depth stack reads as deep stone
-    // behind the carved sanctum (the red glow comes from the props, not the bg).
-    parallax: CAVE_PARALLAX,
-    frame: SHRINE_APPROACH_FRAME,
-  },
-  "shrine-heart": {
-    id: "shrine-heart",
-    sim: SHRINE_HEART_SIM,
-    painting: SHRINE_HEART,
-    parallax: CAVE_PARALLAX,
-    frame: SHRINE_HEART_FRAME,
-  },
-  "escape-run": {
-    id: "escape-run",
-    sim: ESCAPE_RUN_SIM,
-    painting: ESCAPE_RUN,
-    parallax: CAVE_PARALLAX,
-    frame: ESCAPE_RUN_FRAME,
-  },
 };
 
 /**
