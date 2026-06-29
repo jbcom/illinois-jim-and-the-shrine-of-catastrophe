@@ -38,6 +38,11 @@ describe("baked prop over parallax (transparent building proof)", () => {
     "hazard-spikes",
     "moving-platform",
     "secret-relic",
+    // Level 2 — The Whispering Jungle.
+    "giant-root-platform",
+    "vine-tangle-gate",
+    "strangler-fig-platform",
+    "jungle-weight-lever",
   ] as const;
 
   it("composites all baked props onto the clifftop parallax, each transparent", async () => {

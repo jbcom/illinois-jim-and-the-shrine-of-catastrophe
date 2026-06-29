@@ -39,6 +39,11 @@ const BAKED_PROP: Record<string, string> = {
   "hazard-spikes": "hazard-spikes",
   "moving-platform-wood": "moving-platform",
   "secret-relic": "secret-relic",
+  // Level 2 — The Whispering Jungle (keys match the prop names directly).
+  "giant-root-platform": "giant-root-platform",
+  "vine-tangle-gate": "vine-tangle-gate",
+  "strangler-fig-platform": "strangler-fig-platform",
+  "jungle-weight-lever": "jungle-weight-lever",
 };
 
 /** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */
