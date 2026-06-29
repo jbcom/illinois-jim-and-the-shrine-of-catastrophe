@@ -132,12 +132,17 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       console errors). Each mechanic proven deterministically by unit tests
       (hazards kill, switches latch, gates open/block, platforms carry, secrets reward).
 
+- [x] Puzzle-layer art now PAINTS (it was never emitted — hazards/switches/gates/
+      platforms/secrets live in their own schema arrays, not `placements`) + an OPEN gate
+      fades to alpha 0.15 via a sim Gate→`gate:<i>` sprite bridge. Verified live in Chrome
+      (gate barrier visible, baked goblin walking, zero errors). paintingFromLevel.test.
+
 ### Queue
-- [ ] Render the gate's OPEN vs CLOSED state + switch on/off in the painting renderer
-      (the gate/lever currently always paint their authored art regardless of state) so
-      the puzzle reads visually. Needs an entity→art-state bridge from the sim. [TOP]
-- [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
-      so the whole 10-level adventure runs on the baked pipeline.
+- [ ] Bake Level 2 (collapsing-mine / cave) props + author its GenAI level JSON (or wire
+      the existing cave-descent into the GenAI bundle path) + register the bundle, so
+      Level 2 also runs baked-3D. Live-verify. [TOP]
+- [ ] Author Levels 3-10 GenAI JSONs per the 10-level outline; bake each biome's props +
+      parallax; register all bundles so the full adventure runs on the baked pipeline.
 - [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
       so the whole 10-level adventure runs on the baked pipeline.
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
