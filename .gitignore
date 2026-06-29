@@ -51,27 +51,25 @@ blob-report/
 .agent-state/.last-compaction
 .agent-state/batch.json
 
-# Dead level reference art: Gemini 2D prop/npc images that prep-level regenerates
-# but the runtime never loads (props/NPCs render from baked-3D sprites — see
-# src/render/levels/fromLevel.ts ART_TO_BAKED_PROP). Only the parallax + ground
-# layers in these dirs are runtime assets and stay tracked; this ignores the rest.
-public/assets/levels/*/giant-root-platform.webp
-public/assets/levels/*/vine-bridge.webp
-public/assets/levels/*/strangler-fig-platform.webp
-public/assets/levels/*/mushroom-shelf.webp
-public/assets/levels/*/canopy-walkway.webp
-public/assets/levels/*/collapsing-log.webp
-public/assets/levels/*/ancient-stone-foundation.webp
-public/assets/levels/*/guardian-npc.webp
-public/assets/levels/*/carnivorous-plant.webp
-public/assets/levels/*/canopy-panther.webp
-public/assets/levels/*/glow-fruit.webp
-public/assets/levels/*/jungle-thorns.webp
-public/assets/levels/*/vine-tangle-gate.webp
-public/assets/levels/*/jungle-weight-lever.webp
-public/assets/levels/*/jungle-totem.webp
-public/assets/levels/*/golden-orchid.webp
-public/assets/levels/*/jungle-urn.webp
+# Dead level reference art: prep-level regenerates a Gemini 2D image for EVERY art
+# key in a level (props, NPCs, obstacles, structures), but the runtime renders all
+# of those from baked-3D sprites (src/render/levels/fromLevel.ts ART_TO_BAKED_PROP) —
+# only the parallax/ground/decor LAYERS are actually loaded. Rather than chase a
+# per-prop list across all five levels (incomplete by construction as levels grow),
+# ignore EVERYTHING under each level dir, then un-ignore the finite, stable set of
+# runtime layers by name. New props are ignored automatically; a new runtime layer
+# just needs one un-ignore line here.
+public/assets/levels/*/*.webp
+# — runtime layers (kept tracked): parallax backdrops, ground/tile strips, overlays —
+!public/assets/levels/*/*parallax*.webp
+!public/assets/levels/*/*-ground-*.webp
+!public/assets/levels/*/ground-*.webp
+!public/assets/levels/*/*-tile.webp
+!public/assets/levels/*/water-surface.webp
+!public/assets/levels/*/waterfall-overlay.webp
+!public/assets/levels/*/lava-glow.webp
+!public/assets/levels/*/checkpoint-bell.webp
+!public/assets/levels/*/rail-straight.webp
 
 # Logs
 *.log
