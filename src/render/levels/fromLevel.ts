@@ -21,6 +21,29 @@ export function levelArtDir(levelId: string): string {
   return assetUrl(`assets/levels/${levelId}`);
 }
 
+/**
+ * Structure/prop art keys whose Gemini 2D art was opaque-with-fake-checkerboard and is
+ * replaced by a transparent baked-3D prop (public/assets/props/<name>.webp). Keyed by
+ * the level's art key → baked prop name. Keys not listed keep their level art.
+ * See the props-buildings-also-3d memory.
+ */
+const BAKED_PROP: Record<string, string> = {
+  "pitched-house-1": "pitched-house",
+  "pitched-house-2": "pitched-house-2",
+  "market-stall": "market-stall",
+  "cliff-ledge-structure": "cliff-ledge",
+  "switch-lever": "switch-lever",
+  "gate-trailhead": "gate-trailhead",
+  "collectible-relic-coin": "relic-coin",
+  "breakables-pot": "pot",
+};
+
+/** Resolve an art key to its URL — a baked prop WebP if one exists, else level art. */
+function artUrl(levelId: string, key: string): string {
+  const baked = BAKED_PROP[key];
+  return baked ? assetUrl(`assets/props/${baked}.webp`) : `${levelArtDir(levelId)}/${key}.webp`;
+}
+
 /** Look up an art asset by key (throws if missing — danglingArtRefs caught it earlier). */
 function artByKey(level: Level, key: string): Level["art"][number] {
   const a = level.art.find((x: Level["art"][number]) => x.key === key);
@@ -45,7 +68,7 @@ export function parallaxFromLevel(level: Level): ParallaxLayerSpec[] {
 export function paintingFromLevel(level: Level): ArtPlacement[] {
   const resolved = resolveSurfaces(level);
   const out: ArtPlacement[] = [];
-  const url = (key: string) => `${levelArtDir(level.id)}/${key}.webp`;
+  const url = (key: string) => artUrl(level.id, key);
 
   for (const r of resolved) {
     const anchorArt = r.surface.anchorArt;
