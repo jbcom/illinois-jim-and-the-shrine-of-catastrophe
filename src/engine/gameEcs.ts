@@ -157,10 +157,17 @@ export async function createGame(
   viewport.onChange((state) => {
     const view = cameraView(canvas.width || state.viewport.viewW, canvas.height || state.viewport.viewH);
     camera = { ...camera, viewW: view.viewW, viewH: view.viewH };
-    input.resize(
-      canvas.clientWidth || state.viewport.viewW,
-      canvas.clientHeight || state.viewport.viewH,
-    );
+    // Touch zones live in CSS px — localPoint() maps pointers via the surface's
+    // getBoundingClientRect, and input binds to `container`. Size the layout from
+    // the container's CSS box, NOT canvas.clientWidth (can read 0 mid-resize before
+    // Pixi's resizeTo ResizeObserver reflows) and NEVER viewport.viewW (that's
+    // design-space units = designW × scale, not CSS px). The old fallback put the
+    // absolute-positioned jump/whip zones off-screen on an unfolded foldable — the
+    // unfold's resize tick fired with canvas.clientWidth==0 → design-space units →
+    // unreachable bottom controls. window.innerWidth is a same-unit last resort.
+    const cssW = container.clientWidth || window.innerWidth;
+    const cssH = container.clientHeight || window.innerHeight;
+    input.resize(cssW, cssH);
   });
 
   /** Snapshot current actor positions so the next frame can interpolate from them. */
