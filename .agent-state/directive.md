@@ -216,9 +216,9 @@ Started: 2026-06-29T11:55:58Z
 ### task-001 Create CAMPAIGN single-source-of-truth
 - [x] task-001 src/sim/story/campaign.ts exports CAMPAIGN (5 GenAI levels + intro cutscene each); tsc 0
 ### task-002 Rewrite cutscenes for the 5-level chain + cliffhanger
-- [ ] task-002 CUTSCENES = intro + 4 bridges + cliffhanger; no legacy ids; beats from briefs; unit test
+- [x] task-002 CUTSCENES = intro + 4 bridges + cliffhanger; no legacy ids; beats from briefs; unit test
 ### task-003 Derive registry order from CAMPAIGN
-- [ ] task-003 LEVEL_ORDER/FIRST_LEVEL_ID/nextLevelId derive from CAMPAIGN; genaiBundle.test asserts the 5 ids
+- [x] task-003 LEVEL_ORDER/FIRST_LEVEL_ID/nextLevelId derive from CAMPAIGN; genaiBundle.test asserts the 5 ids
 ### task-004 Simplify gameMachine chaining to CAMPAIGN lookups
 - [ ] task-004 levelAfterCutscene/cutsceneAfterLevel via CAMPAIGN; gameMachine.test covers intro→…→crystal→cliffhanger→won
 ### task-005 Delete legacy shape-stamp levels + callers

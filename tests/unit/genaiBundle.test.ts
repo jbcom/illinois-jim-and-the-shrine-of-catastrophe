@@ -11,6 +11,16 @@ describe("GenAI level bundle (halward-s-reach as the live first level)", () => {
     expect(FIRST_LEVEL_ID).toBe("halward-s-reach");
   });
 
+  it("LEVEL_ORDER is exactly the five live GenAI levels (campaign-derived, no legacy)", () => {
+    expect([...LEVEL_ORDER]).toEqual([
+      "halward-s-reach",
+      "the-whispering-jungle",
+      "the-rushing-gorge",
+      "the-abandoned-mine",
+      "the-crystal-cavern",
+    ]);
+  });
+
   it("carries a GameLevel sim (collision map + spawn + goal)", () => {
     const b = levelBundle(FIRST_LEVEL_ID);
     expect(b.sim.id).toBe("halward-s-reach");

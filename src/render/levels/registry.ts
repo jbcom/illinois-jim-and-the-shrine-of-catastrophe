@@ -23,6 +23,7 @@ import whisperingJungleJson from "@/levels/the-whispering-jungle.level.json";
 import rushingGorgeJson from "@/levels/the-rushing-gorge.level.json";
 import abandonedMineJson from "@/levels/the-abandoned-mine.level.json";
 import crystalCavernJson from "@/levels/the-crystal-cavern.level.json";
+import { campaignLevelOrder, firstLevelId, nextCampaignLevelId } from "@sim/story/campaign.ts";
 import {
   type EnemySpawn,
   type GameLevel,
@@ -210,8 +211,12 @@ const REGISTRY: Record<string, LevelBundle> = {
   },
 };
 
-/** The level the story opens on (the overworld village, NOT the cave). */
-export const FIRST_LEVEL_ID = HALWARD.id;
+/**
+ * The level the story opens on + the play order + "next level" all DERIVE from the
+ * CAMPAIGN (src/sim/story/campaign.ts), the single source of truth. Appending a
+ * chapter there extends the game with no edits here.
+ */
+export const FIRST_LEVEL_ID = firstLevelId();
 
 const FIRST_BUNDLE = REGISTRY[FIRST_LEVEL_ID] as LevelBundle;
 
@@ -220,22 +225,10 @@ export function levelBundle(id: string): LevelBundle {
   return REGISTRY[id] ?? FIRST_BUNDLE;
 }
 
-/** The play order of the story's levels (drives "next level" after a cutscene). */
-export const LEVEL_ORDER: readonly string[] = [
-  HALWARD.id,
-  WHISPERING_JUNGLE.id,
-  RUSHING_GORGE.id,
-  ABANDONED_MINE.id,
-  CRYSTAL_CAVERN.id,
-  "village-approach",
-  "cave-descent",
-  "shrine-approach",
-  "shrine-heart",
-  "escape-run",
-];
+/** The play order of the campaign's levels (drives "next level" after a cutscene). */
+export const LEVEL_ORDER: readonly string[] = campaignLevelOrder();
 
-/** The level that follows `id` in the story (undefined if it's the last). */
+/** The level that follows `id` in the campaign (undefined if it's the last). */
 export function nextLevelId(id: string): string | undefined {
-  const i = LEVEL_ORDER.indexOf(id);
-  return i >= 0 && i < LEVEL_ORDER.length - 1 ? LEVEL_ORDER[i + 1] : undefined;
+  return nextCampaignLevelId(id);
 }
