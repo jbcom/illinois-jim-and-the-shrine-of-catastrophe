@@ -47,8 +47,31 @@ blob-report/
 .agent-state/cursor.md
 .agent-state/.indexed-sha
 .agent-state/.last-stop-sha
+.agent-state/.last-stop-fingerprint
 .agent-state/.last-compaction
 .agent-state/batch.json
+
+# Dead level reference art: Gemini 2D prop/npc images that prep-level regenerates
+# but the runtime never loads (props/NPCs render from baked-3D sprites — see
+# src/render/levels/fromLevel.ts ART_TO_BAKED_PROP). Only the parallax + ground
+# layers in these dirs are runtime assets and stay tracked; this ignores the rest.
+public/assets/levels/*/giant-root-platform.webp
+public/assets/levels/*/vine-bridge.webp
+public/assets/levels/*/strangler-fig-platform.webp
+public/assets/levels/*/mushroom-shelf.webp
+public/assets/levels/*/canopy-walkway.webp
+public/assets/levels/*/collapsing-log.webp
+public/assets/levels/*/ancient-stone-foundation.webp
+public/assets/levels/*/guardian-npc.webp
+public/assets/levels/*/carnivorous-plant.webp
+public/assets/levels/*/canopy-panther.webp
+public/assets/levels/*/glow-fruit.webp
+public/assets/levels/*/jungle-thorns.webp
+public/assets/levels/*/vine-tangle-gate.webp
+public/assets/levels/*/jungle-weight-lever.webp
+public/assets/levels/*/jungle-totem.webp
+public/assets/levels/*/golden-orchid.webp
+public/assets/levels/*/jungle-urn.webp
 
 # Logs
 *.log
