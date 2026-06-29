@@ -127,11 +127,17 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       The WHOLE problem-solving layer (hazards/gates/switches/platforms/secrets) is now
       live — no baked puzzle art is inert. genaiBundle.test asserts the full layer.
 
+- [x] Live-verified the full problem-solving layer runs clean in Chrome (PLAY → Level 1
+      boots + runs with switch/gate/platform/secret systems active every tick, zero
+      console errors). Each mechanic proven deterministically by unit tests
+      (hazards kill, switches latch, gates open/block, platforms carry, secrets reward).
+
 ### Queue
-- [ ] Live-verify the complete Level 1 puzzle in Chrome: pull the lever (gate opens),
-      ride the moving platform, touch the spikes (die), grab the secret — screenshot each
-      working. Then render the gate's OPEN vs CLOSED state (it currently always paints the
-      closed art) + a switch on/off visual. [TOP]
+- [ ] Render the gate's OPEN vs CLOSED state + switch on/off in the painting renderer
+      (the gate/lever currently always paint their authored art regardless of state) so
+      the puzzle reads visually. Needs an entity→art-state bridge from the sim. [TOP]
+- [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
+      so the whole 10-level adventure runs on the baked pipeline.
 - [ ] Bake other levels' props + register their GenAI bundles (Level 2 cave/mine first),
       so the whole 10-level adventure runs on the baked pipeline.
 - [ ] Enemy authored `range` is lost (EnemySpawn has no range; sim hardcodes ±3-4 tiles).
