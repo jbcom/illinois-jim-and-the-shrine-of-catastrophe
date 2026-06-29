@@ -154,11 +154,16 @@ layout all still apply. [[pivot-3d-glb-on-parallax]] [[gemini-crafts-whole-level
       via the new gen-level-parallax tool, bundle registered (3rd), live-verified in Chrome.
       Rule established: role:ground/decor art (riverbed/water/waterfall) is parallax/groundFill,
       NEVER a foreground placement sprite (Gemini 2D is opaque; chroma-key is forbidden).
-- [ ] Author Level 4 (The Abandoned Mine — collapsing-mine, minecart/autoscroller) per its
-      brief: pnpm level:gen --level 4 → validate → bake props (rusted cart, rail segments,
-      support beams, dynamite crates, ore) → gen-level-parallax (mine-shaft layers) → register
-      bundle (4th) → live-verify in Chrome. The mine-cart rail-riding hook already exists. [TOP]
-- [ ] Author Levels 5-10 GenAI JSONs per their briefs; bake each biome's props + curate
+- [x] Level 4 (The Abandoned Mine — collapsing-mine) authored, validated, 9 props baked
+      (incl. a transparent rail-segment prop — a unit assertion caught the rail anchorArt
+      opaque-trap), parallax curated, bundle registered (4th), live-verified in Chrome.
+      cave-bat→flyingEye. Rule extended: role:ground reaches the painting via SURFACE
+      anchorArt too (not just placements) — bake it transparent or it stamps rectangles.
+- [ ] Author Level 5 (The Crystal Cavern — crystal-cavern, puzzle/platformer) per its brief:
+      pnpm level:gen --level 5 → validate → bake props (crystal formations/platforms, geodes,
+      light-receiver crystals, crystal gates, shard collectibles) → gen-level-parallax (luminous
+      crystal layers) → register bundle (5th) → live-verify in Chrome. [TOP]
+- [ ] Author Levels 6-10 GenAI JSONs per their briefs; bake each biome's props + curate
       parallax; register each bundle in LEVEL_ORDER so the full adventure runs baked. One
       level per work cycle, each live-verified in Chrome before the next.
 - [ ] Jungle enemies (canopy-panther, carnivorous-plant) render as goblin/mushroom stand-ins.
